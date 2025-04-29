@@ -1,0 +1,16 @@
+/* Shine effect triggered by hover */
+@keyframes edgeShine {
+  0% {
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.5); /* White color */
+  }
+  50% {
+    box-shadow: 0 0 30px 4px rgba(255, 255, 255, 0.7); /* White color */
+  }
+  100% {
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.5); /* White color */
+  }
+}
+
+.container-shine:hover {
+  animation: edgeShine 4.5s ease-in-out forwards; /* Apply the animation on hover */
+}

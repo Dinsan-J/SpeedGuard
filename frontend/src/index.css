@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+/* Custom Animations */
+@keyframes fadeInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Apply Animations */
+.animate-fadeInDown {
+  animation: fadeInDown 1s ease-out forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 2s ease-in forwards;
+}
+
+.animate-carMove {
+  animation: carMove 20s linear infinite;
+}
+
+@keyframes blink1 {
+  0%,
+  20%,
+  100% {
+    opacity: 0.2;
+  }
+  10% {
+    opacity: 1;
+  }
+}
+
+@keyframes blink2 {
+  0%,
+  30%,
+  100% {
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 1;
+  }
+}
+
+@keyframes blink3 {
+  0%,
+  40%,
+  100% {
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+.animate-blink1 {
+  animation: blink1 2s infinite;
+}
+
+.animate-blink2 {
+  animation: blink2 2s infinite;
+}
+
+.animate-blink3 {
+  animation: blink3 2s infinite;
+}
