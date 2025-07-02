@@ -1,11 +1,22 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [showBulbs, setShowBulbs] = useState(false);
 
   const handleSelect = (role) => {
-    navigate("/signup", { state: { role } });
+    navigate("/register", { state: { role } });
   };
+
+  // Show bulbs after 2s (after content animation)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowBulbs(true);
+    }, 2000); // Adjust time if your content animation is longer
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4">
@@ -23,10 +34,14 @@ const LandingPage = () => {
           </div>
 
           {/* Bulbs next to SpeedGuard */}
-          <div className="flex flex-col items-center space-y-4">
-            <div className="w-4 h-4 bg-red-500 rounded-full animate-blink1"></div>
-            <div className="w-4 h-4 bg-yellow-500 rounded-full animate-blink2"></div>
-            <div className="w-4 h-4 bg-green-500 rounded-full animate-blink3"></div>
+          <div
+            className={`flex flex-col items-center space-y-4 transition-opacity duration-200 ${
+              showBulbs ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <div className="w-5 h-5 bg-red-500 rounded-full animate-traffic-red"></div>
+            <div className="w-5 h-5 bg-yellow-500 rounded-full animate-traffic-yellow"></div>
+            <div className="w-5 h-5 bg-green-500 rounded-full animate-traffic-green"></div>
           </div>
         </div>
 

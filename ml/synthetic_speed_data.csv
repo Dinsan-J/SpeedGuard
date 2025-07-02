@@ -1,0 +1,1001 @@
+Vehicle_Type,Speed,Location_Risk,Road_Condition,Speed_Exceeded,Previous_Violations
+Auto,14,Medium,Highway,no,0
+Car,85,Low,Residential,yes,2
+Auto,14,Medium,Expressway,no,0
+Bike,83,Medium,Expressway,yes,1
+Bike,102,Medium,Residential,yes,0
+Heavy Vehicle,15,Medium,School,no,0
+Auto,2,Low,Residential,no,2
+Heavy Vehicle,86,High,Residential,yes,1
+Auto,32,Medium,Highway,no,3
+Bike,95,Low,School,yes,3
+Auto,80,High,School,yes,2
+Car,45,Low,School,no,3
+Car,14,Low,Highway,no,1
+Auto,119,High,Residential,yes,0
+Auto,58,Low,School,yes,1
+Bike,119,Low,School,yes,1
+Heavy Vehicle,106,Low,Highway,yes,1
+Bike,96,Medium,Expressway,yes,2
+Auto,108,Medium,Expressway,yes,3
+Car,18,High,Highway,no,0
+Bike,34,Low,Highway,no,1
+Car,23,Low,Expressway,no,1
+Bike,76,Low,Residential,yes,3
+Heavy Vehicle,7,Low,Highway,no,0
+Heavy Vehicle,11,High,Residential,no,3
+Auto,99,Medium,Residential,yes,1
+Auto,118,High,Residential,yes,3
+Car,118,High,Highway,yes,0
+Bike,8,Low,School,no,1
+Bike,26,Medium,Residential,no,0
+Bike,51,Medium,Highway,no,1
+Bike,21,High,Highway,no,1
+Heavy Vehicle,57,Low,School,no,1
+Heavy Vehicle,78,Medium,Residential,yes,0
+Auto,90,Low,School,yes,3
+Auto,14,High,Highway,no,0
+Heavy Vehicle,35,High,Expressway,no,3
+Heavy Vehicle,93,High,Expressway,yes,3
+Heavy Vehicle,103,Medium,Highway,yes,1
+Heavy Vehicle,9,Medium,Highway,no,1
+Bike,14,Medium,Residential,no,0
+Car,14,Low,School,no,0
+Car,39,High,Highway,no,2
+Heavy Vehicle,73,Low,Residential,yes,2
+Auto,17,High,Highway,no,3
+Car,50,Low,Highway,no,3
+Auto,99,Low,Highway,yes,3
+Auto,114,Medium,Highway,yes,1
+Car,46,Low,Highway,no,2
+Car,65,High,Expressway,no,0
+Bike,78,High,School,yes,0
+Heavy Vehicle,6,High,Expressway,no,3
+Auto,118,Medium,Highway,yes,3
+Car,32,Medium,Residential,no,3
+Bike,17,Medium,Expressway,no,3
+Heavy Vehicle,13,Medium,Residential,no,1
+Car,34,Low,Expressway,no,2
+Auto,94,High,School,yes,1
+Auto,60,High,School,yes,3
+Auto,82,Low,Expressway,yes,3
+Car,110,Medium,Highway,yes,1
+Car,87,Medium,School,yes,2
+Heavy Vehicle,102,High,School,yes,2
+Auto,97,Low,Expressway,yes,2
+Bike,120,High,Expressway,yes,1
+Auto,40,High,Residential,no,1
+Auto,28,Low,Expressway,no,3
+Auto,8,High,School,no,1
+Auto,31,High,Residential,no,1
+Car,11,Medium,Residential,no,1
+Car,60,Low,School,no,2
+Auto,7,High,School,no,1
+Bike,61,High,Residential,yes,1
+Bike,60,Medium,Highway,no,0
+Heavy Vehicle,50,High,Expressway,no,2
+Bike,24,High,School,no,0
+Car,62,Medium,School,no,3
+Auto,90,Low,Expressway,yes,3
+Auto,46,Low,Expressway,no,2
+Car,68,Medium,Highway,no,1
+Car,78,Low,Residential,no,0
+Car,57,High,Expressway,no,1
+Car,96,High,Residential,yes,0
+Auto,37,Low,School,no,3
+Car,9,Low,Residential,no,2
+Bike,98,Low,Highway,yes,3
+Bike,20,Medium,Expressway,no,0
+Car,8,Medium,School,no,3
+Auto,89,Low,Residential,yes,2
+Bike,23,High,Expressway,no,2
+Car,102,Low,Highway,yes,1
+Car,11,Medium,Expressway,no,0
+Bike,26,High,Highway,no,1
+Heavy Vehicle,101,Medium,Expressway,yes,1
+Heavy Vehicle,70,Medium,Residential,no,3
+Car,105,Medium,School,yes,0
+Bike,108,Low,School,yes,2
+Auto,101,Low,Expressway,yes,1
+Car,59,Medium,Expressway,no,3
+Auto,29,Low,Expressway,no,3
+Car,97,Medium,Highway,yes,2
+Auto,86,High,Highway,yes,2
+Bike,1,Low,Residential,no,1
+Auto,36,Low,School,no,2
+Auto,52,Low,School,yes,1
+Heavy Vehicle,22,Low,School,no,1
+Car,119,Low,School,yes,1
+Heavy Vehicle,3,Medium,School,no,0
+Car,92,Low,Residential,yes,1
+Bike,119,Low,Residential,yes,2
+Heavy Vehicle,77,High,School,yes,3
+Bike,100,High,Highway,yes,0
+Car,44,High,Residential,no,2
+Auto,59,Low,Expressway,yes,1
+Heavy Vehicle,72,Low,Highway,yes,0
+Bike,34,High,School,no,3
+Bike,110,Medium,Expressway,yes,3
+Bike,75,High,Highway,yes,3
+Auto,88,Medium,Residential,yes,0
+Auto,55,Medium,Highway,yes,2
+Auto,20,Low,School,no,1
+Auto,11,High,Residential,no,2
+Auto,96,Low,Highway,yes,3
+Car,26,High,Highway,no,0
+Auto,76,High,School,yes,2
+Car,29,Medium,Highway,no,1
+Heavy Vehicle,49,High,Residential,no,1
+Auto,92,High,School,yes,0
+Car,105,High,Residential,yes,3
+Auto,26,High,Residential,no,1
+Bike,97,Low,Expressway,yes,1
+Heavy Vehicle,49,Medium,Expressway,no,3
+Bike,105,Medium,Expressway,yes,0
+Heavy Vehicle,47,Low,School,no,1
+Heavy Vehicle,102,Medium,School,yes,3
+Heavy Vehicle,24,Low,Highway,no,2
+Bike,53,Low,Expressway,no,1
+Auto,31,Low,Residential,no,1
+Auto,40,Medium,Highway,no,2
+Car,28,High,Highway,no,3
+Auto,2,Low,Highway,no,3
+Heavy Vehicle,99,Low,Expressway,yes,3
+Bike,64,Medium,School,yes,3
+Auto,112,Low,School,yes,1
+Car,107,Medium,Highway,yes,3
+Car,7,High,Expressway,no,3
+Bike,56,High,Residential,no,2
+Car,120,Medium,Expressway,yes,0
+Heavy Vehicle,82,Medium,School,yes,3
+Auto,67,Medium,School,yes,0
+Car,108,Low,Highway,yes,1
+Bike,72,Medium,Residential,yes,0
+Car,64,High,Residential,no,3
+Auto,57,Medium,School,yes,1
+Heavy Vehicle,116,Medium,School,yes,2
+Heavy Vehicle,15,Medium,Residential,no,0
+Auto,114,Medium,Expressway,yes,1
+Car,110,Medium,School,yes,1
+Bike,71,Low,School,yes,0
+Car,79,Low,Residential,no,3
+Car,38,Medium,Residential,no,0
+Heavy Vehicle,39,Low,School,no,0
+Auto,81,Low,Residential,yes,2
+Heavy Vehicle,43,High,Highway,no,3
+Heavy Vehicle,113,High,Expressway,yes,0
+Bike,103,High,School,yes,2
+Bike,18,Medium,School,no,2
+Heavy Vehicle,110,Low,Expressway,yes,2
+Bike,103,Medium,Residential,yes,3
+Auto,27,Low,Residential,no,3
+Car,19,Low,School,no,1
+Auto,92,Low,School,yes,0
+Heavy Vehicle,119,High,Expressway,yes,0
+Car,32,Medium,Expressway,no,0
+Car,111,Low,Highway,yes,3
+Bike,17,High,Highway,no,1
+Auto,42,Low,Residential,no,0
+Bike,59,Medium,Residential,no,2
+Car,14,Medium,School,no,3
+Bike,92,Medium,Residential,yes,2
+Bike,96,Medium,Expressway,yes,0
+Heavy Vehicle,26,Medium,Residential,no,3
+Auto,36,High,School,no,1
+Auto,112,High,Residential,yes,0
+Car,118,Medium,Expressway,yes,3
+Heavy Vehicle,112,High,School,yes,2
+Car,97,Medium,Highway,yes,0
+Bike,88,Low,Highway,yes,1
+Car,103,Low,Residential,yes,3
+Car,13,Medium,School,no,0
+Bike,41,High,Highway,no,1
+Auto,51,Low,Expressway,yes,0
+Auto,74,Low,Residential,yes,3
+Auto,3,Medium,Highway,no,0
+Car,32,High,Expressway,no,1
+Auto,98,Low,Residential,yes,1
+Auto,2,Medium,Highway,no,2
+Auto,59,High,School,yes,1
+Heavy Vehicle,94,Low,School,yes,3
+Heavy Vehicle,89,High,School,yes,2
+Heavy Vehicle,20,Low,Residential,no,3
+Car,111,High,School,yes,0
+Heavy Vehicle,6,High,Residential,no,3
+Heavy Vehicle,69,Low,Expressway,no,1
+Heavy Vehicle,20,High,Expressway,no,2
+Bike,61,High,Highway,yes,0
+Auto,107,Low,Residential,yes,2
+Car,36,Medium,Expressway,no,1
+Heavy Vehicle,71,Medium,Expressway,yes,0
+Heavy Vehicle,56,Medium,Residential,no,2
+Car,80,Low,Highway,no,1
+Bike,106,High,School,yes,1
+Car,31,Low,Highway,no,2
+Auto,101,Low,Highway,yes,0
+Heavy Vehicle,29,Medium,Highway,no,1
+Heavy Vehicle,61,Low,Expressway,no,0
+Auto,107,Low,Residential,yes,1
+Car,53,Medium,Highway,no,1
+Bike,93,High,Highway,yes,3
+Car,105,High,Expressway,yes,3
+Heavy Vehicle,57,Medium,Highway,no,1
+Car,106,High,Residential,yes,3
+Bike,18,Low,School,no,3
+Auto,106,Low,Highway,yes,0
+Auto,114,Low,Expressway,yes,2
+Bike,41,Low,Highway,no,3
+Auto,3,Medium,School,no,2
+Car,73,Low,Residential,no,2
+Bike,103,Medium,School,yes,3
+Auto,103,High,Expressway,yes,1
+Bike,115,High,School,yes,0
+Car,72,Low,Residential,no,1
+Heavy Vehicle,111,Medium,School,yes,1
+Heavy Vehicle,17,Medium,Expressway,no,1
+Auto,85,Low,Expressway,yes,1
+Bike,59,High,Highway,no,0
+Bike,47,High,Expressway,no,3
+Car,117,Medium,Highway,yes,2
+Car,34,Low,School,no,0
+Car,63,High,School,no,1
+Bike,104,High,School,yes,1
+Heavy Vehicle,50,Medium,School,no,2
+Auto,41,High,Highway,no,3
+Car,31,Medium,Expressway,no,3
+Bike,115,Medium,Highway,yes,2
+Auto,96,High,Highway,yes,2
+Bike,49,Low,Residential,no,2
+Car,34,High,Residential,no,0
+Bike,112,Medium,School,yes,3
+Auto,115,Medium,Residential,yes,0
+Car,35,Low,School,no,2
+Heavy Vehicle,20,Medium,School,no,2
+Car,116,High,Highway,yes,1
+Car,80,High,Expressway,no,2
+Car,41,Medium,School,no,3
+Bike,40,Medium,Residential,no,2
+Bike,77,Medium,School,yes,1
+Bike,99,Low,Expressway,yes,2
+Bike,90,Medium,Highway,yes,1
+Bike,74,Medium,Highway,yes,2
+Heavy Vehicle,28,Low,School,no,0
+Car,58,Low,School,no,1
+Heavy Vehicle,65,High,Residential,no,3
+Heavy Vehicle,20,High,Expressway,no,0
+Car,43,Low,Highway,no,2
+Auto,62,Medium,School,yes,2
+Car,35,Medium,Highway,no,1
+Auto,45,High,School,no,2
+Heavy Vehicle,50,Medium,School,no,1
+Heavy Vehicle,70,Low,Expressway,no,1
+Car,13,High,Residential,no,0
+Auto,35,Low,Residential,no,2
+Car,83,Medium,Expressway,yes,0
+Heavy Vehicle,2,Medium,Residential,no,1
+Auto,52,Low,Expressway,yes,3
+Auto,11,Medium,Residential,no,2
+Heavy Vehicle,12,Medium,Expressway,no,2
+Bike,95,Medium,School,yes,0
+Heavy Vehicle,3,High,School,no,0
+Bike,97,Medium,School,yes,3
+Bike,34,Medium,Highway,no,1
+Auto,92,High,School,yes,0
+Bike,4,Low,Residential,no,0
+Bike,75,Low,School,yes,1
+Auto,50,High,Residential,no,1
+Heavy Vehicle,87,Medium,School,yes,3
+Heavy Vehicle,0,Low,Highway,no,1
+Heavy Vehicle,98,Low,Highway,yes,3
+Auto,31,Medium,School,no,2
+Car,78,Low,Highway,no,2
+Car,106,Medium,School,yes,2
+Auto,6,Low,Expressway,no,2
+Auto,61,Low,Expressway,yes,0
+Bike,26,Low,Residential,no,2
+Bike,16,Low,Residential,no,1
+Auto,115,Low,Residential,yes,2
+Heavy Vehicle,6,Low,School,no,2
+Heavy Vehicle,86,High,Expressway,yes,1
+Car,0,High,Expressway,no,2
+Heavy Vehicle,45,Medium,Expressway,no,3
+Heavy Vehicle,41,Low,Highway,no,2
+Heavy Vehicle,93,Low,Residential,yes,1
+Heavy Vehicle,6,Low,School,no,1
+Heavy Vehicle,71,High,School,yes,2
+Auto,96,Low,Highway,yes,0
+Car,7,High,Expressway,no,1
+Heavy Vehicle,56,High,School,no,3
+Car,41,Low,Residential,no,1
+Car,46,High,School,no,0
+Bike,12,High,Highway,no,2
+Bike,77,High,School,yes,2
+Heavy Vehicle,46,Low,School,no,3
+Auto,47,Medium,Highway,no,2
+Car,108,High,Expressway,yes,1
+Car,10,Medium,School,no,0
+Heavy Vehicle,117,Medium,Highway,yes,3
+Bike,83,Low,Residential,yes,1
+Heavy Vehicle,32,Low,Residential,no,0
+Bike,37,High,Expressway,no,3
+Heavy Vehicle,45,Medium,Highway,no,3
+Bike,59,Low,Expressway,no,3
+Bike,52,Low,School,no,0
+Car,6,Medium,Highway,no,3
+Heavy Vehicle,95,High,Residential,yes,3
+Car,112,Medium,Residential,yes,3
+Car,118,Medium,School,yes,1
+Heavy Vehicle,97,Low,Residential,yes,0
+Auto,38,Low,School,no,1
+Car,60,Medium,School,no,3
+Auto,100,Low,School,yes,1
+Car,42,Medium,Residential,no,3
+Heavy Vehicle,111,Low,School,yes,0
+Heavy Vehicle,96,High,Residential,yes,0
+Bike,29,Medium,Residential,no,3
+Car,43,High,Residential,no,3
+Car,59,Low,Expressway,no,3
+Bike,48,Medium,Highway,no,2
+Bike,89,High,Residential,yes,1
+Bike,114,High,Residential,yes,2
+Auto,103,Low,Highway,yes,2
+Car,54,Low,Expressway,no,1
+Auto,12,Medium,Expressway,no,1
+Auto,15,Low,Expressway,no,3
+Auto,79,High,Highway,yes,0
+Auto,94,Low,Expressway,yes,2
+Auto,62,Low,Residential,yes,1
+Bike,4,High,School,no,2
+Auto,53,High,Highway,yes,1
+Heavy Vehicle,74,Medium,School,yes,3
+Auto,115,Medium,Highway,yes,1
+Auto,102,Medium,Expressway,yes,3
+Bike,2,High,Highway,no,1
+Car,80,High,Highway,no,0
+Heavy Vehicle,101,High,Expressway,yes,0
+Bike,112,Low,Highway,yes,1
+Bike,115,High,Residential,yes,3
+Auto,103,Low,Highway,yes,0
+Bike,58,Low,School,no,2
+Car,70,High,Expressway,no,1
+Bike,67,Medium,Residential,yes,0
+Bike,44,Medium,Highway,no,0
+Bike,47,High,Residential,no,1
+Bike,58,Low,Highway,no,2
+Bike,7,Medium,Expressway,no,2
+Heavy Vehicle,28,Low,School,no,1
+Auto,109,High,Highway,yes,3
+Heavy Vehicle,104,High,Highway,yes,2
+Heavy Vehicle,44,Medium,Expressway,no,2
+Auto,34,Medium,Residential,no,1
+Heavy Vehicle,120,Low,School,yes,0
+Heavy Vehicle,93,Medium,Highway,yes,0
+Car,24,Low,Highway,no,1
+Heavy Vehicle,6,High,Expressway,no,1
+Bike,106,High,Highway,yes,3
+Heavy Vehicle,28,Low,Residential,no,1
+Heavy Vehicle,4,Low,School,no,1
+Auto,30,Low,School,no,0
+Car,47,High,Residential,no,0
+Car,119,Medium,School,yes,3
+Car,33,High,Residential,no,2
+Car,3,Medium,Expressway,no,3
+Car,118,High,Residential,yes,0
+Heavy Vehicle,54,High,School,no,0
+Auto,2,Low,School,no,2
+Heavy Vehicle,32,High,School,no,0
+Car,29,Medium,Highway,no,3
+Heavy Vehicle,115,High,Expressway,yes,2
+Bike,109,High,Highway,yes,1
+Heavy Vehicle,87,Low,Highway,yes,3
+Car,1,Low,Residential,no,0
+Auto,91,High,Highway,yes,0
+Auto,111,Medium,School,yes,1
+Bike,53,Medium,School,no,3
+Auto,32,High,School,no,0
+Bike,109,High,School,yes,0
+Auto,26,Medium,Highway,no,2
+Car,62,High,School,no,2
+Bike,78,Low,School,yes,3
+Bike,90,Medium,Expressway,yes,0
+Car,82,Low,Residential,yes,0
+Car,108,Medium,Highway,yes,1
+Car,94,Medium,Expressway,yes,2
+Heavy Vehicle,18,Medium,School,no,2
+Bike,51,High,Highway,no,2
+Bike,0,Medium,School,no,0
+Auto,39,Low,Residential,no,1
+Heavy Vehicle,103,High,Highway,yes,1
+Auto,56,Medium,School,yes,0
+Heavy Vehicle,10,Low,Expressway,no,3
+Car,18,High,Residential,no,1
+Car,98,Medium,Residential,yes,3
+Heavy Vehicle,57,Low,Residential,no,3
+Auto,73,High,School,yes,0
+Bike,115,High,Expressway,yes,3
+Car,114,High,Highway,yes,2
+Bike,18,Low,School,no,0
+Bike,23,Medium,School,no,3
+Heavy Vehicle,12,High,School,no,1
+Auto,82,Low,Highway,yes,1
+Bike,55,Medium,School,no,2
+Auto,56,High,School,yes,3
+Car,79,Low,Residential,no,2
+Car,114,High,Expressway,yes,1
+Bike,68,Medium,Highway,yes,1
+Car,30,Low,Highway,no,3
+Bike,72,High,Residential,yes,0
+Auto,68,Low,Expressway,yes,1
+Car,79,Medium,Highway,no,1
+Heavy Vehicle,63,Medium,Expressway,no,2
+Bike,55,Medium,Expressway,no,0
+Heavy Vehicle,105,Medium,School,yes,2
+Auto,34,Medium,School,no,1
+Heavy Vehicle,75,Medium,Residential,yes,1
+Auto,54,Low,Highway,yes,2
+Heavy Vehicle,44,Medium,Expressway,no,3
+Bike,89,Medium,Expressway,yes,1
+Auto,15,Low,School,no,2
+Bike,24,High,Residential,no,3
+Car,91,Low,Residential,yes,3
+Heavy Vehicle,34,High,Expressway,no,2
+Heavy Vehicle,91,High,Residential,yes,0
+Car,1,High,Highway,no,3
+Bike,54,High,Expressway,no,0
+Car,36,Low,Highway,no,1
+Heavy Vehicle,73,Medium,Residential,yes,1
+Heavy Vehicle,18,High,School,no,0
+Car,3,Low,Expressway,no,2
+Auto,112,Medium,School,yes,2
+Car,98,High,Highway,yes,3
+Auto,26,High,School,no,2
+Bike,62,Medium,Expressway,yes,1
+Bike,60,Medium,School,no,0
+Auto,65,Medium,Residential,yes,2
+Auto,41,High,School,no,3
+Bike,68,Low,School,yes,3
+Heavy Vehicle,49,Low,Expressway,no,3
+Heavy Vehicle,83,Low,Expressway,yes,3
+Auto,37,High,Residential,no,1
+Bike,91,High,Residential,yes,3
+Auto,41,Medium,School,no,2
+Heavy Vehicle,97,Medium,Residential,yes,0
+Auto,25,High,Residential,no,0
+Car,21,Medium,Expressway,no,3
+Car,7,Medium,Residential,no,1
+Bike,27,Low,Highway,no,0
+Heavy Vehicle,104,Low,School,yes,1
+Car,77,Medium,Residential,no,1
+Bike,84,Low,School,yes,3
+Car,56,Medium,Highway,no,2
+Auto,17,High,School,no,3
+Auto,53,Medium,Highway,yes,2
+Heavy Vehicle,74,Medium,Highway,yes,1
+Bike,92,High,Expressway,yes,0
+Auto,6,High,Highway,no,3
+Bike,5,Low,School,no,0
+Auto,10,Low,Expressway,no,3
+Auto,25,Low,School,no,0
+Bike,99,Low,Expressway,yes,0
+Heavy Vehicle,2,Medium,Expressway,no,0
+Car,99,Low,Highway,yes,2
+Car,7,Low,Residential,no,2
+Heavy Vehicle,91,Low,School,yes,0
+Heavy Vehicle,49,Low,Expressway,no,1
+Heavy Vehicle,3,Low,School,no,2
+Bike,103,High,Expressway,yes,0
+Car,40,Medium,Highway,no,3
+Bike,84,High,Residential,yes,2
+Bike,64,High,Expressway,yes,1
+Bike,61,Low,Expressway,yes,2
+Bike,13,Medium,Residential,no,3
+Heavy Vehicle,8,Medium,Highway,no,0
+Heavy Vehicle,97,Medium,Highway,yes,2
+Auto,9,Low,Expressway,no,2
+Auto,87,Medium,Residential,yes,1
+Bike,100,Low,Expressway,yes,1
+Car,96,Medium,Expressway,yes,2
+Car,6,High,Highway,no,3
+Bike,77,Low,School,yes,0
+Car,91,Low,Highway,yes,0
+Auto,98,Medium,Highway,yes,2
+Bike,27,Low,Expressway,no,2
+Car,61,High,Expressway,no,0
+Heavy Vehicle,37,High,Expressway,no,1
+Car,37,Low,Highway,no,3
+Bike,113,High,Residential,yes,3
+Auto,48,Low,Expressway,no,1
+Bike,76,Low,Residential,yes,1
+Car,83,Low,Residential,yes,1
+Heavy Vehicle,82,Medium,Highway,yes,1
+Heavy Vehicle,74,Medium,Expressway,yes,1
+Bike,37,Low,Expressway,no,0
+Car,39,High,Residential,no,2
+Bike,6,Medium,School,no,3
+Car,98,Low,Expressway,yes,0
+Auto,118,Low,Highway,yes,2
+Bike,45,Low,School,no,2
+Heavy Vehicle,103,Low,Expressway,yes,2
+Auto,24,Low,Residential,no,1
+Bike,44,Low,Residential,no,1
+Heavy Vehicle,52,High,Residential,no,3
+Car,100,Medium,Highway,yes,1
+Car,26,High,School,no,2
+Auto,94,Low,Expressway,yes,2
+Heavy Vehicle,108,High,Expressway,yes,0
+Bike,90,High,Expressway,yes,3
+Car,76,Low,Residential,no,2
+Car,118,Medium,Residential,yes,1
+Car,70,Low,Residential,no,2
+Heavy Vehicle,91,Medium,Highway,yes,1
+Heavy Vehicle,56,Medium,School,no,1
+Bike,31,High,Highway,no,0
+Auto,110,Medium,Residential,yes,0
+Bike,50,Low,Expressway,no,0
+Auto,21,Low,Expressway,no,1
+Heavy Vehicle,5,Medium,Expressway,no,1
+Heavy Vehicle,26,High,Expressway,no,1
+Bike,105,Medium,School,yes,3
+Heavy Vehicle,109,High,School,yes,3
+Auto,48,Low,Residential,no,2
+Auto,43,Low,Highway,no,2
+Auto,71,Medium,School,yes,2
+Auto,119,Low,Highway,yes,0
+Heavy Vehicle,85,Low,Highway,yes,2
+Bike,106,Low,Highway,yes,0
+Car,28,High,Highway,no,0
+Auto,109,Medium,Highway,yes,2
+Heavy Vehicle,98,High,Highway,yes,0
+Car,79,Medium,Residential,no,1
+Car,57,High,Residential,no,3
+Car,0,High,School,no,3
+Bike,110,High,Residential,yes,0
+Auto,117,High,Residential,yes,2
+Heavy Vehicle,92,Medium,Residential,yes,0
+Bike,22,Medium,Expressway,no,3
+Auto,42,Medium,Expressway,no,3
+Bike,79,High,Residential,yes,0
+Auto,78,Low,School,yes,0
+Heavy Vehicle,72,Low,Highway,yes,2
+Heavy Vehicle,72,High,Highway,yes,1
+Car,5,High,Highway,no,2
+Heavy Vehicle,100,Low,Highway,yes,3
+Auto,3,Low,Highway,no,1
+Heavy Vehicle,25,Medium,Residential,no,3
+Heavy Vehicle,17,Low,Expressway,no,1
+Car,7,Low,School,no,3
+Car,77,High,Expressway,no,0
+Auto,94,High,School,yes,0
+Bike,114,Medium,Expressway,yes,1
+Bike,64,Medium,Expressway,yes,1
+Bike,95,Low,Highway,yes,0
+Bike,86,High,School,yes,3
+Auto,46,High,Highway,no,2
+Heavy Vehicle,86,Medium,Residential,yes,2
+Heavy Vehicle,46,Medium,Highway,no,1
+Bike,45,High,Highway,no,2
+Auto,108,Low,School,yes,3
+Auto,97,High,Residential,yes,2
+Bike,65,Low,Residential,yes,3
+Car,116,Low,Residential,yes,3
+Auto,115,High,School,yes,2
+Bike,7,Medium,Residential,no,1
+Car,73,Medium,Expressway,no,1
+Car,51,Medium,School,no,2
+Bike,11,Low,Residential,no,0
+Auto,21,Low,School,no,0
+Heavy Vehicle,49,Medium,Residential,no,0
+Auto,10,Low,Highway,no,3
+Bike,78,Medium,Highway,yes,1
+Auto,94,Medium,Highway,yes,0
+Bike,56,Medium,Highway,no,1
+Auto,54,High,Highway,yes,3
+Car,71,Low,Expressway,no,1
+Heavy Vehicle,31,High,Residential,no,0
+Bike,92,High,Residential,yes,1
+Bike,79,Medium,School,yes,2
+Car,47,High,Highway,no,0
+Car,40,High,Expressway,no,0
+Heavy Vehicle,50,High,Expressway,no,1
+Bike,72,High,Expressway,yes,1
+Auto,24,Medium,Highway,no,0
+Heavy Vehicle,92,High,Residential,yes,3
+Heavy Vehicle,77,High,Highway,yes,1
+Bike,69,Low,School,yes,2
+Bike,112,Medium,School,yes,0
+Bike,67,High,Residential,yes,2
+Bike,29,Low,School,no,2
+Car,82,Low,School,yes,0
+Heavy Vehicle,63,Low,Residential,no,0
+Heavy Vehicle,108,Low,Residential,yes,0
+Car,39,Medium,School,no,0
+Car,60,Medium,Highway,no,0
+Auto,97,Medium,Residential,yes,2
+Bike,112,High,Highway,yes,1
+Car,57,Medium,School,no,0
+Bike,36,Medium,School,no,1
+Heavy Vehicle,44,High,Expressway,no,3
+Heavy Vehicle,39,Medium,School,no,2
+Car,18,Low,Residential,no,1
+Car,73,High,Highway,no,2
+Bike,15,High,Residential,no,0
+Bike,20,Medium,Residential,no,1
+Auto,86,High,School,yes,0
+Car,9,High,Highway,no,3
+Heavy Vehicle,5,Medium,Residential,no,0
+Bike,87,High,Expressway,yes,2
+Car,115,High,Highway,yes,3
+Bike,111,High,Residential,yes,2
+Car,96,Medium,Residential,yes,0
+Car,65,Low,Highway,no,2
+Car,46,Low,Expressway,no,3
+Auto,120,Low,School,yes,1
+Auto,42,Medium,School,no,3
+Bike,14,Low,Highway,no,2
+Car,28,High,Residential,no,1
+Auto,70,Medium,Highway,yes,1
+Car,58,High,Expressway,no,0
+Car,109,Low,School,yes,1
+Auto,49,Medium,Highway,no,1
+Auto,67,High,School,yes,3
+Car,22,High,School,no,3
+Car,79,Low,Expressway,no,1
+Auto,72,Medium,Residential,yes,2
+Auto,50,Medium,School,no,3
+Auto,17,High,Expressway,no,0
+Car,68,Medium,Highway,no,1
+Car,67,Low,School,no,2
+Auto,69,Medium,School,yes,1
+Bike,67,High,Residential,yes,2
+Car,83,Low,Expressway,yes,3
+Heavy Vehicle,3,High,Expressway,no,3
+Bike,72,Medium,Highway,yes,3
+Bike,41,High,Expressway,no,2
+Heavy Vehicle,99,High,Highway,yes,0
+Bike,114,Medium,School,yes,3
+Auto,7,Medium,Highway,no,2
+Auto,97,Medium,Expressway,yes,3
+Heavy Vehicle,112,Low,Residential,yes,1
+Heavy Vehicle,119,Medium,School,yes,3
+Bike,74,Low,Highway,yes,0
+Car,71,Medium,Expressway,no,2
+Car,46,Medium,Residential,no,3
+Bike,119,High,Residential,yes,0
+Bike,112,High,Expressway,yes,0
+Bike,40,Medium,Expressway,no,0
+Bike,39,Medium,Residential,no,3
+Auto,62,Low,Residential,yes,2
+Auto,105,Medium,School,yes,1
+Auto,47,High,Residential,no,0
+Heavy Vehicle,52,High,Residential,no,3
+Bike,102,High,Expressway,yes,1
+Bike,61,High,Residential,yes,1
+Car,114,Medium,School,yes,2
+Car,2,Medium,Expressway,no,2
+Heavy Vehicle,13,High,Residential,no,1
+Auto,15,Medium,School,no,2
+Auto,54,High,Expressway,yes,0
+Auto,80,Low,Highway,yes,0
+Car,87,Low,Expressway,yes,1
+Bike,108,Medium,Residential,yes,3
+Bike,64,High,Residential,yes,3
+Bike,4,Low,Residential,no,0
+Heavy Vehicle,17,High,School,no,3
+Car,113,High,Residential,yes,2
+Heavy Vehicle,89,High,Expressway,yes,2
+Bike,55,High,Residential,no,0
+Auto,24,High,Highway,no,1
+Auto,72,Medium,Expressway,yes,1
+Car,73,High,Highway,no,0
+Auto,109,Medium,Residential,yes,1
+Heavy Vehicle,90,High,Expressway,yes,0
+Bike,6,High,Residential,no,0
+Bike,58,High,Expressway,no,3
+Auto,3,Medium,School,no,1
+Heavy Vehicle,90,Low,School,yes,1
+Car,60,Medium,Highway,no,1
+Bike,71,Medium,Highway,yes,1
+Car,27,Medium,Highway,no,0
+Car,18,Medium,Expressway,no,2
+Car,31,Medium,School,no,3
+Heavy Vehicle,80,Medium,Highway,yes,1
+Auto,72,Medium,Highway,yes,0
+Car,20,High,Highway,no,1
+Heavy Vehicle,25,High,Highway,no,1
+Car,62,Low,Expressway,no,1
+Auto,17,High,Residential,no,1
+Car,89,Low,School,yes,0
+Car,38,Medium,Highway,no,0
+Car,98,Low,School,yes,2
+Car,32,Low,School,no,3
+Car,50,High,Residential,no,0
+Heavy Vehicle,51,Low,School,no,3
+Bike,49,Low,Highway,no,3
+Car,73,Medium,School,no,1
+Auto,85,Low,Expressway,yes,1
+Car,9,Low,School,no,2
+Car,110,High,Highway,yes,3
+Heavy Vehicle,0,Low,Expressway,no,3
+Bike,91,Low,Expressway,yes,3
+Bike,27,High,Expressway,no,1
+Bike,63,Low,Expressway,yes,0
+Auto,17,Low,Expressway,no,2
+Auto,47,Low,Expressway,no,2
+Auto,85,Low,Residential,yes,0
+Auto,100,High,Residential,yes,2
+Car,109,Medium,Highway,yes,0
+Car,98,Medium,Expressway,yes,1
+Car,17,High,Residential,no,0
+Heavy Vehicle,70,Low,Highway,no,0
+Bike,103,Low,Expressway,yes,2
+Car,18,Medium,Highway,no,3
+Car,14,Medium,Highway,no,0
+Auto,93,High,Highway,yes,3
+Car,46,Low,Highway,no,1
+Heavy Vehicle,98,Low,Residential,yes,3
+Heavy Vehicle,98,Low,Highway,yes,2
+Auto,116,Low,Residential,yes,3
+Car,100,Low,School,yes,3
+Heavy Vehicle,14,High,Expressway,no,2
+Car,99,Low,Residential,yes,2
+Auto,35,Low,Residential,no,2
+Auto,97,High,Highway,yes,1
+Bike,13,Medium,Residential,no,1
+Car,34,Low,Highway,no,2
+Heavy Vehicle,102,High,Expressway,yes,2
+Bike,62,Medium,School,yes,0
+Car,53,Low,Expressway,no,0
+Heavy Vehicle,1,High,School,no,2
+Auto,95,Low,Highway,yes,0
+Heavy Vehicle,46,High,Expressway,no,0
+Bike,41,Low,Residential,no,2
+Bike,62,Low,School,yes,3
+Car,113,High,Residential,yes,2
+Auto,35,High,Expressway,no,1
+Car,13,Low,Expressway,no,1
+Heavy Vehicle,87,Medium,School,yes,1
+Bike,112,Low,School,yes,1
+Auto,17,Medium,Highway,no,2
+Auto,2,Medium,School,no,1
+Auto,35,High,Highway,no,0
+Bike,115,High,Residential,yes,1
+Auto,30,Low,School,no,2
+Heavy Vehicle,6,Medium,Highway,no,0
+Auto,93,Low,Highway,yes,2
+Heavy Vehicle,50,High,School,no,0
+Car,17,High,School,no,3
+Heavy Vehicle,32,Medium,Residential,no,3
+Car,19,High,School,no,3
+Heavy Vehicle,37,Medium,Expressway,no,3
+Auto,78,Low,Highway,yes,2
+Car,52,Low,Residential,no,0
+Car,70,High,Expressway,no,0
+Car,89,High,School,yes,2
+Heavy Vehicle,104,Low,Residential,yes,2
+Bike,85,High,Highway,yes,1
+Heavy Vehicle,80,Medium,Expressway,yes,3
+Heavy Vehicle,55,Low,Residential,no,0
+Auto,14,Medium,Residential,no,1
+Bike,119,High,Residential,yes,3
+Bike,18,Low,Expressway,no,2
+Bike,19,Low,Expressway,no,1
+Heavy Vehicle,61,High,School,no,0
+Car,63,High,Expressway,no,3
+Auto,20,High,School,no,3
+Auto,8,High,Highway,no,0
+Bike,51,Low,Expressway,no,0
+Car,120,Low,Highway,yes,3
+Auto,64,Medium,Highway,yes,1
+Heavy Vehicle,5,Low,School,no,2
+Heavy Vehicle,50,High,School,no,3
+Car,45,High,Expressway,no,2
+Car,101,High,Expressway,yes,3
+Auto,27,Low,Highway,no,1
+Bike,97,Low,School,yes,2
+Heavy Vehicle,29,Medium,Highway,no,3
+Bike,48,Low,Highway,no,1
+Heavy Vehicle,81,Low,Highway,yes,2
+Heavy Vehicle,51,Low,Highway,no,0
+Heavy Vehicle,20,Medium,Highway,no,3
+Heavy Vehicle,79,Low,School,yes,0
+Car,94,Medium,Highway,yes,0
+Auto,35,Low,Expressway,no,3
+Car,12,Low,Highway,no,1
+Car,96,High,Highway,yes,1
+Auto,70,Low,Residential,yes,3
+Car,83,High,Highway,yes,2
+Car,7,Medium,Expressway,no,1
+Auto,100,Low,Highway,yes,2
+Car,77,Medium,Expressway,no,3
+Bike,103,Low,Expressway,yes,1
+Heavy Vehicle,57,Low,Residential,no,1
+Heavy Vehicle,21,Medium,Highway,no,1
+Bike,27,Medium,Expressway,no,0
+Auto,102,High,Highway,yes,1
+Bike,50,Medium,Highway,no,3
+Bike,55,Medium,Expressway,no,1
+Car,34,Medium,Expressway,no,3
+Heavy Vehicle,4,Medium,Highway,no,1
+Heavy Vehicle,51,Low,Expressway,no,3
+Heavy Vehicle,92,Medium,Residential,yes,3
+Heavy Vehicle,15,High,School,no,3
+Heavy Vehicle,16,High,Highway,no,2
+Car,111,High,Residential,yes,2
+Heavy Vehicle,26,Medium,School,no,2
+Bike,21,High,Expressway,no,3
+Car,58,Medium,Residential,no,2
+Heavy Vehicle,48,Medium,Residential,no,2
+Car,58,Medium,Residential,no,2
+Bike,59,Medium,Residential,no,2
+Auto,106,Medium,Expressway,yes,3
+Heavy Vehicle,7,High,School,no,1
+Car,96,High,Residential,yes,3
+Auto,26,Medium,Residential,no,2
+Car,69,High,Expressway,no,1
+Heavy Vehicle,74,Medium,Residential,yes,2
+Heavy Vehicle,2,Medium,Residential,no,3
+Bike,14,High,Residential,no,0
+Auto,4,Low,Expressway,no,3
+Bike,25,Low,Residential,no,3
+Car,103,Low,Highway,yes,2
+Heavy Vehicle,79,High,Residential,yes,3
+Auto,32,Medium,Expressway,no,0
+Bike,70,Medium,Residential,yes,2
+Bike,114,High,School,yes,3
+Auto,46,High,Expressway,no,0
+Heavy Vehicle,3,High,Residential,no,2
+Auto,51,High,School,yes,2
+Heavy Vehicle,91,Low,Expressway,yes,1
+Bike,2,Low,School,no,3
+Car,31,High,Expressway,no,2
+Heavy Vehicle,10,Medium,Residential,no,2
+Heavy Vehicle,65,Low,Expressway,no,0
+Car,41,Low,School,no,2
+Heavy Vehicle,25,High,Expressway,no,2
+Bike,46,Medium,Highway,no,0
+Car,103,High,Expressway,yes,3
+Auto,1,Medium,School,no,0
+Car,78,Medium,Expressway,no,2
+Car,56,Medium,Highway,no,1
+Heavy Vehicle,47,Low,School,no,3
+Auto,29,High,School,no,1
+Auto,19,High,Highway,no,2
+Bike,93,Medium,Expressway,yes,0
+Auto,61,High,School,yes,2
+Heavy Vehicle,31,Medium,School,no,0
+Auto,68,Low,School,yes,1
+Auto,96,High,School,yes,3
+Heavy Vehicle,27,Low,School,no,2
+Heavy Vehicle,67,Medium,Expressway,no,2
+Auto,12,Medium,Expressway,no,1
+Bike,105,Medium,School,yes,3
+Auto,55,High,Residential,yes,2
+Car,88,Low,Expressway,yes,2
+Car,10,Medium,Highway,no,1
+Car,80,Medium,Residential,no,0
+Heavy Vehicle,15,Medium,Residential,no,0
+Heavy Vehicle,93,Low,Residential,yes,1
+Heavy Vehicle,94,Medium,School,yes,3
+Car,68,Medium,Highway,no,2
+Auto,106,Medium,Highway,yes,0
+Heavy Vehicle,89,High,Expressway,yes,3
+Auto,61,Medium,Highway,yes,0
+Heavy Vehicle,57,Medium,Expressway,no,3
+Heavy Vehicle,111,Low,Highway,yes,1
+Car,68,High,Expressway,no,2
+Bike,117,Medium,School,yes,0
+Bike,92,High,School,yes,1
+Car,102,Low,School,yes,3
+Bike,12,Low,Highway,no,3
+Heavy Vehicle,25,High,Expressway,no,1
+Auto,81,Low,School,yes,3
+Auto,23,Low,Residential,no,2
+Bike,5,High,Highway,no,3
+Bike,28,High,Expressway,no,1
+Bike,51,Low,School,no,3
+Car,112,Medium,Highway,yes,0
+Car,32,Low,School,no,1
+Auto,60,Low,Highway,yes,3
+Auto,35,Low,Expressway,no,2
+Auto,116,Medium,School,yes,1
+Heavy Vehicle,12,Low,School,no,2
+Auto,11,Medium,Expressway,no,1
+Car,36,Medium,School,no,1
+Bike,115,Medium,Residential,yes,1
+Car,22,High,Expressway,no,3
+Bike,7,Medium,School,no,2
+Auto,20,Medium,Residential,no,1
+Car,85,Low,Highway,yes,0
+Bike,82,High,Expressway,yes,0
+Car,91,Low,School,yes,2
+Heavy Vehicle,10,Low,Residential,no,1
+Heavy Vehicle,0,Medium,Highway,no,2
+Auto,41,Medium,Expressway,no,2
+Heavy Vehicle,23,Medium,School,no,3
+Heavy Vehicle,73,Medium,Expressway,yes,1
+Bike,68,Low,Expressway,yes,3
+Bike,74,Low,Highway,yes,0
+Heavy Vehicle,6,Low,Expressway,no,2
+Bike,1,High,Highway,no,2
+Bike,59,High,Highway,no,2
+Heavy Vehicle,27,Low,Expressway,no,3
+Car,31,High,Expressway,no,1
+Auto,5,High,Expressway,no,2
+Heavy Vehicle,103,Medium,Expressway,yes,1
+Bike,103,High,Highway,yes,0
+Bike,117,Low,Expressway,yes,3
+Bike,47,Low,Expressway,no,3
+Bike,27,Medium,Highway,no,0
+Heavy Vehicle,108,High,Residential,yes,0
+Car,78,Medium,Residential,no,1
+Bike,85,Low,Highway,yes,1
+Bike,77,Low,School,yes,1
+Heavy Vehicle,67,Medium,Highway,no,1
+Heavy Vehicle,43,High,Highway,no,2
+Car,89,Low,Residential,yes,0
+Bike,95,High,Expressway,yes,2
+Car,40,Medium,School,no,0
+Heavy Vehicle,18,Low,Highway,no,2
+Auto,42,Low,Residential,no,1
+Auto,85,Low,Expressway,yes,2
+Bike,30,Medium,Residential,no,0
+Car,49,High,School,no,0
+Auto,5,Medium,Highway,no,2
+Bike,83,High,Residential,yes,2
+Bike,71,Medium,Highway,yes,1
+Heavy Vehicle,45,Low,School,no,3
+Auto,60,Low,Expressway,yes,3
+Auto,92,Low,Highway,yes,2
+Heavy Vehicle,47,High,Highway,no,2
+Bike,81,Low,School,yes,2
+Heavy Vehicle,41,Low,Highway,no,2
+Heavy Vehicle,12,High,Residential,no,3
+Bike,64,Medium,School,yes,3
+Auto,61,High,Highway,yes,2
+Heavy Vehicle,44,Medium,Expressway,no,1
+Auto,66,High,Residential,yes,1
+Car,54,Medium,Highway,no,2
+Heavy Vehicle,67,High,School,no,0
+Heavy Vehicle,31,Low,School,no,0
+Car,94,Medium,School,yes,0
+Bike,74,Low,School,yes,0
+Car,57,High,Residential,no,1
+Car,61,Medium,Highway,no,3
+Heavy Vehicle,22,Low,School,no,1
+Car,33,High,School,no,2
+Car,105,Medium,Expressway,yes,3
+Bike,22,High,Highway,no,1
+Heavy Vehicle,110,Medium,Expressway,yes,1
+Car,111,Low,Expressway,yes,1
+Auto,115,Medium,Highway,yes,2
+Auto,86,Low,Expressway,yes,1
+Bike,68,Medium,Residential,yes,0
+Auto,50,High,Highway,no,2
+Bike,108,Low,School,yes,1
+Heavy Vehicle,72,Medium,Residential,yes,3
+Bike,60,Low,Expressway,no,2
+Heavy Vehicle,101,Medium,School,yes,0
+Car,101,High,Residential,yes,2
+Bike,103,Medium,School,yes,3
+Heavy Vehicle,80,Medium,School,yes,3
+Car,74,Low,School,no,2
+Car,68,High,Residential,no,1
+Bike,102,Low,Highway,yes,2
+Heavy Vehicle,3,High,Highway,no,1
+Bike,50,High,School,no,3
+Bike,24,Medium,Highway,no,0
+Heavy Vehicle,1,Low,Highway,no,2
+Bike,84,High,Residential,yes,3
+Heavy Vehicle,85,High,Highway,yes,3
+Heavy Vehicle,0,Low,Residential,no,0
+Car,71,Low,Residential,no,0
+Bike,24,High,School,no,2
+Bike,108,Low,School,yes,3
+Car,112,Low,Expressway,yes,2
+Auto,100,Medium,School,yes,0
+Car,52,High,Residential,no,2
+Heavy Vehicle,32,High,School,no,2
+Auto,84,High,Highway,yes,0
+Heavy Vehicle,93,Low,School,yes,1
+Auto,107,Medium,Expressway,yes,0
+Auto,102,Low,School,yes,1

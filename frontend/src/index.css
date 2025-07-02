@@ -78,3 +78,298 @@
 .animate-blink3 {
   animation: blink3 2s infinite;
 }
+
+@keyframes trafficRed {
+  0%,
+  33% {
+    opacity: 1;
+  }
+  34%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes trafficYellow {
+  0%,
+  33% {
+    opacity: 0.2;
+  }
+  34%,
+  66% {
+    opacity: 1;
+  }
+  67%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes trafficGreen {
+  0%,
+  66% {
+    opacity: 0.2;
+  }
+  67%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Utility classes */
+.animate-traffic-red {
+  animation: trafficRed 3s linear infinite;
+}
+
+.animate-traffic-yellow {
+  animation: trafficYellow 3s linear infinite;
+}
+
+.animate-traffic-green {
+  animation: trafficGreen 3s linear infinite;
+}
+
+/* Glassy Sidebar */
+.glassy-sidebar {
+  /* background-color: rgba(0, 128, 128, 0.85); */
+  backdrop-filter: blur(10px);
+  width: 280px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  color: white;
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* Balls Common Styles */
+.glassy-ball {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.05; /* Reduced opacity */
+  background-color: white;
+  animation: fadeInOut 6s infinite alternate;
+}
+
+/* Slightly Bigger Sizes */
+.ball1,
+.ball5,
+.ball9,
+.ball13 {
+  width: 80px;
+  height: 80px;
+}
+
+.ball2,
+.ball6,
+.ball10,
+.ball14 {
+  width: 90px;
+  height: 90px;
+}
+
+.ball3,
+.ball7,
+.ball11,
+.ball15 {
+  width: 100px;
+  height: 100px;
+}
+
+.ball4,
+.ball8,
+.ball12 {
+  width: 110px;
+  height: 110px;
+}
+
+/* Adjusted starting positions and movements */
+@keyframes moveBall1 {
+  0% {
+    top: 10%;
+    left: 5%;
+  }
+  25% {
+    top: 20%;
+    left: 60%;
+  }
+  50% {
+    top: 30%;
+    left: 85%;
+  }
+  75% {
+    top: 40%;
+    left: 20%;
+  }
+  100% {
+    top: 50%;
+    left: 70%;
+  }
+}
+
+@keyframes moveBall2 {
+  0% {
+    top: 60%;
+    left: 20%;
+  }
+  25% {
+    top: 70%;
+    left: 75%;
+  }
+  50% {
+    top: 80%;
+    left: 15%;
+  }
+  75% {
+    top: 90%;
+    left: 35%;
+  }
+  100% {
+    top: 15%;
+    left: 65%;
+  }
+}
+
+@keyframes moveBall3 {
+  0% {
+    top: 35%;
+    left: 15%;
+  }
+  25% {
+    top: 45%;
+    left: 75%;
+  }
+  50% {
+    top: 55%;
+    left: 50%;
+  }
+  75% {
+    top: 65%;
+    left: 5%;
+  }
+  100% {
+    top: 75%;
+    left: 40%;
+  }
+}
+
+@keyframes moveBall4 {
+  0% {
+    top: 5%;
+    left: 80%;
+  }
+  25% {
+    top: 25%;
+    left: 30%;
+  }
+  50% {
+    top: 45%;
+    left: 10%;
+  }
+  75% {
+    top: 65%;
+    left: 50%;
+  }
+  100% {
+    top: 85%;
+    left: 90%;
+  }
+}
+
+/* Fade In and Out */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0.05;
+  }
+  50% {
+    opacity: 0.02;
+  }
+  100% {
+    opacity: 0.05;
+  }
+}
+
+.onhover-dropdown {
+  position: relative;
+}
+
+.onhover-show-div {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 1000;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  min-width: 200px;
+}
+
+.onhover-dropdown:hover .onhover-show-div {
+  display: block;
+}
+
+@layer utilities {
+  .animate-slide-fade-in {
+    animation: slideFadeIn 0.6s ease-out both;
+  }
+
+  @keyframes slideFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.8); /* Darker background */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5); /* Blue color with opacity */
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.8); /* More opaque on hover */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.5) rgba(17, 24, 39, 0.8);
+}
+
+/* Shine effect triggered by hover */
+@keyframes edgeShine {
+  0% {
+    box-shadow: 0 0 10px 2px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px 8px rgba(59, 130, 246, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 10px 2px rgba(59, 130, 246, 0.2);
+  }
+}
+
+.card-shine:hover {
+  animation: edgeShine 2.5s ease-in-out infinite;
+}

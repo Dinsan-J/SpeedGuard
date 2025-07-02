@@ -1,9 +1,9 @@
 import Fine from "../models/Fine.js";
 import Vehicle from "../models/Vehicle.js";
 
+// Issue Fine (only accessible to logged-in officer)
 export const issueFine = async (req, res) => {
-  const { plateNumber, speed, location, fineAmount, reason, officerId } =
-    req.body;
+  const { plateNumber, speed, location, fineAmount, reason } = req.body;
 
   try {
     const vehicle = await Vehicle.findOne({ plateNumber });
@@ -13,7 +13,7 @@ export const issueFine = async (req, res) => {
 
     const fine = new Fine({
       vehicle: vehicle._id,
-      officer: officerId, // For now pass manually
+      officer: req.user._id, // Auto from logged-in user
       speed,
       location,
       fineAmount,
@@ -27,6 +27,7 @@ export const issueFine = async (req, res) => {
   }
 };
 
+// Get all fines by plate number (for users or officers)
 export const getFinesByPlate = async (req, res) => {
   const { plateNumber } = req.params;
 

@@ -5,10 +5,23 @@ import authRoutes from "./routes/authRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
 import speedLogRoutes from "./routes/speedLogRoutes.js";
 import fineRoutes from "./routes/fineRoutes.js";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 
 dotenv.config();
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
+
+// CORS configuration
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Your frontend URL
+    credentials: true, // Allow credentials (cookies, authorization headers, etc)
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Routes
 app.use("/api/auth", authRoutes);
