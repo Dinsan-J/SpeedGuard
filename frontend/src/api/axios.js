@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "speed-guard.vercel.app", // backend url
+  baseURL: "https://speed-guard.vercel.app/", // backend url
 });
 
 instance.interceptors.request.use((config) => {
