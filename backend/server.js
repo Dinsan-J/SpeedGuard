@@ -14,10 +14,21 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS configuration
+const allowedOrigins = [
+  "https://speedguard-theta.vercel.app", // frontend prod
+  "http://localhost:3000" // frontend dev
+];
+
 app.use(
   cors({
-    origin: "https://speedguard-theta.vercel.app", // Your frontend URL
-    credentials: true, // Allow credentials (cookies, authorization headers, etc)
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
