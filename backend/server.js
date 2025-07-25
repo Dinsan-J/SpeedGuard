@@ -34,6 +34,11 @@ app.use(
   })
 );
 
+// Health check route
+app.get('/', (req, res) => {
+  res.json({ message: 'SpeedGuard backend server is running.' });
+});
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/vehicles", vehicleRoutes);
