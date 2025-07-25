@@ -21,7 +21,7 @@ const Profile = () => {
     setLoading("logout");
     try {
       await axios.post(
-        "http://localhost:5000/api/auth/logout",
+        "https://speed-guard.vercel.app/auth/logout",
         {},
         { withCredentials: true }
       );

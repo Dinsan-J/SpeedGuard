@@ -41,7 +41,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        "https://speed-guard.vercel.app/auth/login",
         {
           email: emailOrName,
           password,
