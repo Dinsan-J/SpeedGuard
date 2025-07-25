@@ -16,7 +16,7 @@ app.use(cookieParser());
 // CORS configuration
 app.use(
   cors({
-    origin: "http://localhost:5173", // Your frontend URL
+    origin: "https://speedguard-theta.vercel.app", // Your frontend URL
     credentials: true, // Allow credentials (cookies, authorization headers, etc)
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
