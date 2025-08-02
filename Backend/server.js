@@ -5,7 +5,15 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const app = express();
-app.use(cors({ origin: true, credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "https://speedguard-nine.vercel.app", // backend
+      "https://your-frontend-domain.vercel.app", // <-- your deployed frontend URL
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 

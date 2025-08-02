@@ -52,9 +52,9 @@ exports.login = async (req, res) => {
     // Set JWT as HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // use true in production with HTTPS
+      secure: true, // must be true for HTTPS
       sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.json({ role: user.role });
