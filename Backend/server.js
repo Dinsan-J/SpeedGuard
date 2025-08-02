@@ -8,9 +8,8 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://speedguard-zeta.vercel.app", // your frontend URL
-      "https://speedguard-nine.vercel.app", // backend (optional)
-      "http://localhost:5173", // local dev (optional)
+      "https://speedguard-zeta.vercel.app", // your deployed frontend
+      "https://speedguard-gz70.onrender.com", // your backend
     ],
     credentials: true,
   })
