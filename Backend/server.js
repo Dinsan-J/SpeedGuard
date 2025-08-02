@@ -9,7 +9,7 @@ app.use(
   cors({
     origin: [
       "https://speedguard-nine.vercel.app", // backend
-      "https://your-frontend-domain.vercel.app", // <-- your deployed frontend URL
+      "https://https://speedguard-zeta.vercel.app/", // <-- your deployed frontend URL
     ],
     credentials: true,
   })
