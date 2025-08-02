@@ -16,4 +16,6 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use("/api/auth", require("../routes/auth"));
 
 // Vercel handler
-module.exports = app.handler.bind(app);
+module.exports = (req, res) => {
+  app(req, res);
+};
