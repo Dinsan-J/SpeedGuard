@@ -34,12 +34,12 @@ const Register = () => {
 
     try {
       const response = await fetch(
-        "https://speedguard-nine.vercel.app/api/auth/register",
+        "https://speedguard-gz70.onrender.com/api/auth/register", // <-- updated to Render backend
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
-          credentials: "include",
+          credentials: "include", // <-- required for cookies/auth
         }
       );
 
