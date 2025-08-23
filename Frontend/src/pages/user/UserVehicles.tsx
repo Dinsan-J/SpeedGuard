@@ -15,6 +15,16 @@ import {
 
 const UserVehicles = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newVehicle, setNewVehicle] = useState({
+    plateNumber: "",
+    make: "",
+    model: "",
+    year: "",
+    color: "",
+    registrationExpiry: "",
+    insuranceExpiry: "",
+  });
 
   const mockUser = {
     id: "1",
@@ -200,7 +210,10 @@ const UserVehicles = () => {
                 Manage your registered vehicles and view their status
               </p>
             </div>
-            <Button className="shadow-glow-primary">
+            <Button
+              className="shadow-glow-primary"
+              onClick={() => setShowAddModal(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Vehicle
             </Button>
@@ -386,6 +399,116 @@ const UserVehicles = () => {
               </Button>
             </CardContent>
           </Card>
+        )}
+
+        {/* Add Vehicle Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+              <h2 className="text-xl font-bold mb-4">Add Vehicle</h2>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  await handleAddVehicle(newVehicle);
+                  setShowAddModal(false);
+                }}
+                className="space-y-3"
+              >
+                <input
+                  type="text"
+                  placeholder="Plate Number"
+                  value={newVehicle.plateNumber}
+                  onChange={(e) =>
+                    setNewVehicle({
+                      ...newVehicle,
+                      plateNumber: e.target.value,
+                    })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Make"
+                  value={newVehicle.make}
+                  onChange={(e) =>
+                    setNewVehicle({ ...newVehicle, make: e.target.value })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Model"
+                  value={newVehicle.model}
+                  onChange={(e) =>
+                    setNewVehicle({ ...newVehicle, model: e.target.value })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Year"
+                  value={newVehicle.year}
+                  onChange={(e) =>
+                    setNewVehicle({ ...newVehicle, year: e.target.value })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Color"
+                  value={newVehicle.color}
+                  onChange={(e) =>
+                    setNewVehicle({ ...newVehicle, color: e.target.value })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                  required
+                />
+                <input
+                  type="date"
+                  placeholder="Registration Expiry"
+                  value={newVehicle.registrationExpiry}
+                  onChange={(e) =>
+                    setNewVehicle({
+                      ...newVehicle,
+                      registrationExpiry: e.target.value,
+                    })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                  required
+                />
+                <input
+                  type="date"
+                  placeholder="Insurance Expiry"
+                  value={newVehicle.insuranceExpiry}
+                  onChange={(e) =>
+                    setNewVehicle({
+                      ...newVehicle,
+                      insuranceExpiry: e.target.value,
+                    })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                  required
+                />
+                <div className="flex gap-2 mt-4">
+                  <Button type="submit" className="flex-1">
+                    Add
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowAddModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
       </div>
     </div>
