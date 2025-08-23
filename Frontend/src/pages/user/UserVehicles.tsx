@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Navbar } from "@/components/Layout/Navbar";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +11,11 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const UserVehicles = () => {
+  const { toast } = useToast();
+  const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newVehicle, setNewVehicle] = useState({
@@ -27,55 +29,10 @@ const UserVehicles = () => {
   });
 
   const mockUser = {
-    id: "1",
+    id: "64f8c2e2a1b2c3d4e5f6a7b8", // <-- Replace with a real MongoDB ObjectId
     name: "John Smith",
     role: "user" as const,
   };
-
-  const mockVehicles = [
-    {
-      id: "1",
-      plateNumber: "ABC-123",
-      make: "Toyota",
-      model: "Camry",
-      year: "2020",
-      color: "Blue",
-      status: "active",
-      registrationExpiry: "2024-12-15",
-      insuranceExpiry: "2024-08-30",
-      violations: 2,
-      lastViolation: "2024-01-15",
-      qrCode: "QR-ABC123-TOYOTA-CAMRY",
-    },
-    {
-      id: "2",
-      plateNumber: "XYZ-789",
-      make: "Honda",
-      model: "Civic",
-      year: "2019",
-      color: "Red",
-      status: "warning",
-      registrationExpiry: "2024-03-20",
-      insuranceExpiry: "2024-06-15",
-      violations: 0,
-      lastViolation: null,
-      qrCode: "QR-XYZ789-HONDA-CIVIC",
-    },
-    {
-      id: "3",
-      plateNumber: "DEF-456",
-      make: "BMW",
-      model: "X5",
-      year: "2021",
-      color: "Black",
-      status: "expired",
-      registrationExpiry: "2023-12-01",
-      insuranceExpiry: "2024-09-10",
-      violations: 1,
-      lastViolation: "2024-01-10",
-      qrCode: "QR-DEF456-BMW-X5",
-    },
-  ];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -137,18 +94,19 @@ const UserVehicles = () => {
   // Example function for adding a vehicle
   const handleAddVehicle = async (vehicleData) => {
     try {
-      const response = await fetch(
-        "https://speedguard-gz70.onrender.com/api/vehicle/add",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ userId, vehicleData }),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/vehicle/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ userId: mockUser.id, vehicleData }), // use mockUser.id
+      });
       const data = await response.json();
       if (data.success) {
-        // Update UI, e.g., fetch vehicles again
+        toast({
+          title: "Vehicle Added",
+          description: "Your vehicle was added successfully.",
+        });
+        // Optionally refresh vehicle list here
       } else {
         toast({
           title: "Error",
@@ -168,17 +126,17 @@ const UserVehicles = () => {
   const handleDeleteVehicle = async (vehicleId) => {
     try {
       const response = await fetch(
-        `https://speedguard-gz70.onrender.com/api/vehicle/delete/${vehicleId}`,
+        `http://localhost:5000/api/vehicle/delete/${vehicleId}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ userId }),
+          body: JSON.stringify({ userId: mockUser.id }), // use mockUser.id
         }
       );
       const data = await response.json();
       if (data.success) {
-        // Update UI, e.g., fetch vehicles again
+        // Optionally refresh vehicle list here
       } else {
         toast({
           title: "Error",
@@ -195,10 +153,34 @@ const UserVehicles = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/vehicle/user/${mockUser.id}`,
+          { credentials: "include" }
+        );
+        const data = await response.json();
+        if (data.success) setVehicles(data.vehicles);
+        else
+          toast({
+            title: "Error",
+            description: data.message,
+            variant: "destructive",
+          });
+      } catch {
+        toast({
+          title: "Error",
+          description: "Network error",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchVehicles();
+  }, [showAddModal]); // refetch when modal closes (after add)
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <Navbar user={mockUser} />
-
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -222,7 +204,7 @@ const UserVehicles = () => {
 
         {/* Vehicles Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {mockVehicles.map((vehicle) => (
+          {vehicles.map((vehicle) => (
             <Card
               key={vehicle.id}
               className="border-accent/20 shadow-elegant hover:shadow-glow-primary transition-all duration-300 group cursor-pointer"
@@ -380,136 +362,159 @@ const UserVehicles = () => {
               </CardContent>
             </Card>
           ))}
-        </div>
 
-        {/* Empty State */}
-        {mockVehicles.length === 0 && (
-          <Card className="border-accent/20 shadow-elegant">
-            <CardContent className="p-12 text-center">
-              <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                No vehicles registered
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Add your first vehicle to start managing it with SpeedGuard
-              </p>
-              <Button className="shadow-glow-primary">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Vehicle
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+          {/* Empty State */}
+          {vehicles.length === 0 && (
+            <Card className="border-accent/20 shadow-elegant">
+              <CardContent className="p-12 text-center">
+                <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">
+                  No vehicles registered
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Add your first vehicle to start managing it with SpeedGuard
+                </p>
+                <Button className="shadow-glow-primary">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Vehicle
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Add Vehicle Modal */}
-        {showAddModal && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-              <h2 className="text-xl font-bold mb-4">Add Vehicle</h2>
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  await handleAddVehicle(newVehicle);
-                  setShowAddModal(false);
-                }}
-                className="space-y-3"
-              >
-                <input
-                  type="text"
-                  placeholder="Plate Number"
-                  value={newVehicle.plateNumber}
-                  onChange={(e) =>
-                    setNewVehicle({
-                      ...newVehicle,
-                      plateNumber: e.target.value,
-                    })
-                  }
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Make"
-                  value={newVehicle.make}
-                  onChange={(e) =>
-                    setNewVehicle({ ...newVehicle, make: e.target.value })
-                  }
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Model"
-                  value={newVehicle.model}
-                  onChange={(e) =>
-                    setNewVehicle({ ...newVehicle, model: e.target.value })
-                  }
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Year"
-                  value={newVehicle.year}
-                  onChange={(e) =>
-                    setNewVehicle({ ...newVehicle, year: e.target.value })
-                  }
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Color"
-                  value={newVehicle.color}
-                  onChange={(e) =>
-                    setNewVehicle({ ...newVehicle, color: e.target.value })
-                  }
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-                <input
-                  type="date"
-                  placeholder="Registration Expiry"
-                  value={newVehicle.registrationExpiry}
-                  onChange={(e) =>
-                    setNewVehicle({
-                      ...newVehicle,
-                      registrationExpiry: e.target.value,
-                    })
-                  }
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-                <input
-                  type="date"
-                  placeholder="Insurance Expiry"
-                  value={newVehicle.insuranceExpiry}
-                  onChange={(e) =>
-                    setNewVehicle({
-                      ...newVehicle,
-                      insuranceExpiry: e.target.value,
-                    })
-                  }
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-                <div className="flex gap-2 mt-4">
-                  <Button type="submit" className="flex-1">
-                    Add
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setShowAddModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
+          {/* Add Vehicle Modal */}
+          {showAddModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+                <h2 className="text-xl font-bold mb-4 text-black">
+                  Add Vehicle
+                </h2>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    await handleAddVehicle(newVehicle);
+                    setShowAddModal(false);
+                  }}
+                  className="space-y-3"
+                >
+                  <label className="block text-black font-medium mb-1">
+                    Plate Number
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Plate Number"
+                    value={newVehicle.plateNumber}
+                    onChange={(e) =>
+                      setNewVehicle({
+                        ...newVehicle,
+                        plateNumber: e.target.value,
+                      })
+                    }
+                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
+                    required
+                  />
+                  <label className="block text-black font-medium mb-1">
+                    Make
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Make"
+                    value={newVehicle.make}
+                    onChange={(e) =>
+                      setNewVehicle({ ...newVehicle, make: e.target.value })
+                    }
+                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
+                    required
+                  />
+                  <label className="block text-black font-medium mb-1">
+                    Model
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Model"
+                    value={newVehicle.model}
+                    onChange={(e) =>
+                      setNewVehicle({ ...newVehicle, model: e.target.value })
+                    }
+                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
+                    required
+                  />
+                  <label className="block text-black font-medium mb-1">
+                    Year
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Year"
+                    value={newVehicle.year}
+                    onChange={(e) =>
+                      setNewVehicle({ ...newVehicle, year: e.target.value })
+                    }
+                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
+                    required
+                  />
+                  <label className="block text-black font-medium mb-1">
+                    Color
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Color"
+                    value={newVehicle.color}
+                    onChange={(e) =>
+                      setNewVehicle({ ...newVehicle, color: e.target.value })
+                    }
+                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
+                    required
+                  />
+                  <label className="block text-black font-medium mb-1">
+                    Registration Expiry
+                  </label>
+                  <input
+                    type="date"
+                    placeholder="Registration Expiry"
+                    value={newVehicle.registrationExpiry}
+                    onChange={(e) =>
+                      setNewVehicle({
+                        ...newVehicle,
+                        registrationExpiry: e.target.value,
+                      })
+                    }
+                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
+                    required
+                  />
+                  <label className="block text-black font-medium mb-1">
+                    Insurance Expiry
+                  </label>
+                  <input
+                    type="date"
+                    placeholder="Insurance Expiry"
+                    value={newVehicle.insuranceExpiry}
+                    onChange={(e) =>
+                      setNewVehicle({
+                        ...newVehicle,
+                        insuranceExpiry: e.target.value,
+                      })
+                    }
+                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
+                    required
+                  />
+                  <div className="flex gap-2 mt-4">
+                    <Button type="submit" className="flex-1">
+                      Add
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setShowAddModal(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

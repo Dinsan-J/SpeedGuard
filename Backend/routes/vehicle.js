@@ -5,13 +5,15 @@ const User = require("../models/User");
 
 // Add vehicle
 router.post("/add", async (req, res) => {
+  console.log("Add vehicle route called", req.body); // <-- Add this line
   try {
     const { userId, vehicleData } = req.body;
-    const vehicle = new Vehicle(vehicleData);
+    const vehicle = new Vehicle({ ...vehicleData, owner: userId }); // <-- Add owner
     await vehicle.save();
     await User.findByIdAndUpdate(userId, { $push: { vehicles: vehicle._id } });
     res.json({ success: true, vehicle });
   } catch (err) {
+    console.log("Add vehicle error:", err);
     res.status(500).json({ success: false, message: "Error adding vehicle" });
   }
 });
@@ -26,6 +28,18 @@ router.delete("/delete/:vehicleId", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, message: "Error deleting vehicle" });
+  }
+});
+
+// Get user vehicles
+router.get("/user/:userId", async (req, res) => {
+  try {
+    const vehicles = await Vehicle.find({ owner: req.params.userId });
+    res.json({ success: true, vehicles });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching vehicles" });
   }
 });
 

@@ -1,4 +1,3 @@
-import { Navbar } from '@/components/Layout/Navbar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -53,7 +52,6 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <Navbar />
       
       <div className="container mx-auto px-4 py-16">
         {/* Hero Section */}

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Navbar } from '@/components/Layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -120,8 +119,6 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <Navbar />
-      
       <div className="container mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
