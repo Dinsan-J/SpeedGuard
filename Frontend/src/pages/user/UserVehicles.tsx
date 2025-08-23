@@ -124,6 +124,67 @@ const UserVehicles = () => {
     return expiryDate < today;
   };
 
+  // Example function for adding a vehicle
+  const handleAddVehicle = async (vehicleData) => {
+    try {
+      const response = await fetch(
+        "https://speedguard-gz70.onrender.com/api/vehicle/add",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ userId, vehicleData }),
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        // Update UI, e.g., fetch vehicles again
+      } else {
+        toast({
+          title: "Error",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Network error",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteVehicle = async (vehicleId) => {
+    try {
+      const response = await fetch(
+        `https://speedguard-gz70.onrender.com/api/vehicle/delete/${vehicleId}`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ userId }),
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        // Update UI, e.g., fetch vehicles again
+      } else {
+        toast({
+          title: "Error",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Network error",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Navbar user={mockUser} />
