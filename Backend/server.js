@@ -5,10 +5,15 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const app = express();
+const allowedOrigins = [
+  "http://localhost:8080",
+  "https://speedguard-l2rhwsneb-dinsan-js-projects.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:8080",
-    credentials: true,
+    origin: allowedOrigins,
+    credentials: true, // if you use cookies or authentication
   })
 );
 app.use(express.json());

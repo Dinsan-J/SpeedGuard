@@ -154,16 +154,6 @@ const OfficerDashboard = () => {
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </Button>
-            {/* Stunning Logout Button */}
-            <Button
-              variant="destructive"
-              size="sm"
-              className="ml-2 px-4 py-2 font-bold bg-gradient-to-r from-primary to-warning text-white shadow-lg hover:scale-105 transition-transform duration-200"
-              onClick={handleLogout}
-            >
-              <ArrowRight className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
           </div>
         </div>
 
