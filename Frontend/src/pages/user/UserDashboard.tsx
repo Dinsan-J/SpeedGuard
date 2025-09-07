@@ -55,7 +55,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchVehicles = async () => {
       const response = await fetch(
-        `http://localhost:5000/api/vehicle/user/${userId}`,
+        `https://speedguard-gz70.onrender.com/api/vehicle/user/${userId}`,
         { credentials: "include" }
       );
       const data = await response.json();
@@ -66,7 +66,9 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const fetchViolations = async () => {
-      const response = await fetch("http://localhost:5000/api/violation");
+      const response = await fetch(
+        "https://speedguard-gz70.onrender.com/api/violation"
+      );
       const data = await response.json();
       if (data.success) setViolations(data.violations);
     };
