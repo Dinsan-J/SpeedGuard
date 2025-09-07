@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const allowedOrigins = [
   "http://localhost:8080",
-  "https://speedguard-l2rhwsneb-dinsan-js-projects.vercel.app",
+  "https://speedguard-zeta.vercel.app",
 ];
 
 app.use(
