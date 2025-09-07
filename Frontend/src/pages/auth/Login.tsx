@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ const Login = () => {
     role: "user" as "officer" | "user",
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,14 +37,29 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // Extract user info from the response
+        const user = data.user || data; // fallback if your API returns user at root
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: user.id,
+            name: user.name,
+            role: user.role,
+          })
+        );
+        localStorage.setItem("token", data.token);
+
         toast({
           title: "Login Successful",
-          description: `Welcome back, ${formData.email}!`,
+          description: `Welcome back, ${user.name || formData.email}!`,
         });
-        window.location.href =
-          formData.role === "officer"
-            ? "/officer/dashboard"
-            : "/user/dashboard";
+
+        // Redirect based on role
+        if (user.role === "officer") {
+          navigate("/officer/dashboard");
+        } else {
+          navigate("/user/dashboard");
+        }
       } else {
         toast({
           title: "Login Failed",

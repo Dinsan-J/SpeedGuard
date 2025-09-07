@@ -1,4 +1,3 @@
-import { Navbar } from '@/components/Layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatsCounter } from '@/components/ui/stats-counter';
 import { Progress } from '@/components/ui/progress';
@@ -30,12 +29,6 @@ import {
 } from 'lucide-react';
 
 const OfficerAnalytics = () => {
-  const mockUser = {
-    id: '1',
-    name: 'Officer Johnson',
-    role: 'officer' as const
-  };
-
   // Mock data for charts
   const dailyViolations = [
     { day: 'Mon', violations: 12, revenue: 1800 },
@@ -84,7 +77,6 @@ const OfficerAnalytics = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <Navbar user={mockUser} />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

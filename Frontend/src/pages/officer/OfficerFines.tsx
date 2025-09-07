@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Navbar } from '@/components/Layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,12 +9,6 @@ import { Search, Plus, Download, Eye, Edit, FileText, DollarSign } from 'lucide-
 const OfficerFines = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-
-  const mockUser = {
-    id: '1',
-    name: 'Officer Johnson',
-    role: 'officer' as const
-  };
 
   const mockFines = [
     {
@@ -97,8 +90,6 @@ const OfficerFines = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <Navbar user={mockUser} />
-      
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">

@@ -21,6 +21,7 @@ import UserViolations from "./pages/user/UserViolations";
 import UserPayments from "./pages/user/UserPayments";
 import UserLayout from "@/components/Layout/UserLayout";
 import MainLayout from "@/components/Layout/MainLayout";
+import OfficerLayout from "@/components/Layout/OfficerLayout";
 
 const queryClient = new QueryClient();
 
@@ -38,14 +39,16 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+          </Route>
 
-            {/* Officer Routes */}
-            <Route path="/officer/dashboard" element={<OfficerDashboard />} />
-            <Route path="/officer/vehicles" element={<OfficerVehicles />} />
-            <Route path="/officer/fines" element={<OfficerFines />} />
-            <Route path="/officer/analytics" element={<OfficerAnalytics />} />
-            <Route path="/officer/qr-search" element={<OfficerQRSearch />} />
-            <Route path="/officer/issue-fine" element={<OfficerIssueFine />} />
+          {/* Officer routes with OfficerLayout */}
+          <Route path="/officer" element={<OfficerLayout />}>
+            <Route path="dashboard" element={<OfficerDashboard />} />
+            <Route path="vehicles" element={<OfficerVehicles />} />
+            <Route path="fines" element={<OfficerFines />} />
+            <Route path="analytics" element={<OfficerAnalytics />} />
+            <Route path="qr-search" element={<OfficerQRSearch />} />
+            <Route path="issue-fine" element={<OfficerIssueFine />} />
           </Route>
 
           {/* User routes with UserLayout */}
@@ -64,4 +67,3 @@ const App = () => (
 );
 
 export default App;
-

@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Menu, X, User, LogOut } from "lucide-react";
+import Image from "next/image"; // For Next.js, or use <img> for plain React
 
 interface NavbarProps {
   user?: {
@@ -42,8 +43,10 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
   ];
 
   const getNavLinks = () => {
-    if (!user) return publicLinks;
-    return user.role === "officer" ? officerLinks : userLinks;
+    if (!user || !user.role) return publicLinks;
+    if (user.role === "officer") return officerLinks;
+    if (user.role === "user") return userLinks;
+    return publicLinks;
   };
 
   return (
