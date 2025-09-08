@@ -21,6 +21,8 @@ import {
   LogOut, // Add LogOut icon
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface Vehicle {
   _id: string;
@@ -50,6 +52,11 @@ const UserDashboard = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   // Remove dummy violations, use MongoDB data
   const [violations, setViolations] = useState<Violation[]>([]);
+  const [mapOpen, setMapOpen] = useState(false);
+  const [mapLocation, setMapLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const userId = "64f8c2e2a1b2c3d4e5f6a7b8"; // Use your real user id
 
   useEffect(() => {
@@ -300,9 +307,9 @@ const UserDashboard = () => {
 
               <div className="space-y-4">
                 {violations.map((violation) => {
-                  const limit = 70; // Show 70 km/h as requested
+                  const limit = 70;
                   const excess = violation.speed - limit;
-                  const fine = 150; // Dummy fine amount, replace with ML later
+                  const fine = 150;
 
                   return (
                     <div
@@ -312,7 +319,17 @@ const UserDashboard = () => {
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4">
                           <div className="p-2 bg-accent/30 rounded-lg">
-                            <Camera className="h-5 w-5 text-muted-foreground" />
+                            {/* Replace Camera with MapPin and make it clickable */}
+                            <button
+                              onClick={() => {
+                                setMapLocation(violation.location);
+                                setMapOpen(true);
+                              }}
+                              className="focus:outline-none"
+                              title="View Location"
+                            >
+                              <MapPin className="h-5 w-5 text-primary" />
+                            </button>
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
@@ -377,6 +394,41 @@ const UserDashboard = () => {
             </Card>
           </div>
         </div>
+
+        {/* Map Modal */}
+        {mapOpen && mapLocation && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={() => setMapOpen(false)} // <-- Add this
+          >
+            <div
+              className="bg-white rounded-lg shadow-lg p-4 relative w-[90vw] max-w-xl h-[60vh] flex flex-col"
+              onClick={(e) => e.stopPropagation()} // <-- Prevent closing when clicking inside modal
+            >
+              <button
+                className="absolute top-2 right-2 text-xl"
+                onClick={() => setMapOpen(false)}
+              >
+                ×
+              </button>
+              <div className="flex-1">
+                <MapContainer
+                  center={[mapLocation.lat, mapLocation.lng]}
+                  zoom={16}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  />
+                  <Marker position={[mapLocation.lat, mapLocation.lng]}>
+                    <Popup>Violation Location</Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Notifications */}
         {stats.overdueFines > 0 && (

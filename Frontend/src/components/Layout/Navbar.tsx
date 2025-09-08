@@ -64,15 +64,20 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
             }
             className="flex items-center space-x-2 group"
           >
-            <div className="p-2 bg-gradient-hero rounded-lg shadow-glow-primary">
-              <Shield className="h-8 w-8 text-white" />
+            <div className="p-1 rounded-lg ">
+              {/* Replace Shield icon with logo image */}
+              <img
+                src="/logook2.png" // Update this path to your actual logo file
+                alt="SpeedGuard Logo"
+                className="h-10 w-10 object-contain"
+              />
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
                 SpeedGuard
               </span>
-              <span className="text-xs text-muted-foreground -mt-1">
-                Traffic Management
+              <span className="text-xs text-muted-foreground -mt-[2px]">
+                Ride Safe, Pay Smart
               </span>
             </div>
           </Link>
