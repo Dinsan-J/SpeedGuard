@@ -4,6 +4,7 @@ const router = express.Router();
 const Violation = require("../models/Violation");
 
 // POST data from ESP32
+//ok
 router.post("/", async (req, res) => {
   try {
     const { vehicleId, location, speed, timestamp } = req.body;
