@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Speedometer } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Gauge } from "lucide-react"; // ✅ instead of Speedometer
 
 const LiveSpeedometer = () => {
-  const [speed, setSpeed] = useState<number>(0);
+  const [speed, setSpeed] = useState(0);
 
   useEffect(() => {
     const fetchSpeed = async () => {
@@ -21,23 +21,16 @@ const LiveSpeedometer = () => {
     };
 
     fetchSpeed();
-    const interval = setInterval(fetchSpeed, 2000); // update every 2 sec
+    const interval = setInterval(fetchSpeed, 2000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <Card className="p-6 bg-gradient-card border-border/50 hover:border-green-500 transition-all duration-300">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">Live Speed</p>
-          <p className="text-3xl font-bold text-green-600">{speed} km/h</p>
-        </div>
-        <div className="p-3 bg-green-100 rounded-lg">
-          <Speedometer className="h-6 w-6 text-green-600" />
-        </div>
-      </div>
-      <div className="mt-4">
-        <p className="text-xs text-muted-foreground">Updated in real time</p>
+      <h2 className="text-sm text-muted-foreground mb-2">Live Speed</h2>
+      <div className="flex items-center justify-center gap-3">
+        <Gauge className="h-10 w-10 text-green-600" /> {/* ✅ fixed */}
+        <span className="text-2xl font-bold text-green-700">{speed} km/h</span>
       </div>
     </Card>
   );
