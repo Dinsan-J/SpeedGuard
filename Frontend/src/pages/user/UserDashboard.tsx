@@ -23,6 +23,7 @@ import {
 import { Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import LiveSpeedometer from "./LiveSpeedometer";
 
 interface Vehicle {
   _id: string;
@@ -210,26 +211,7 @@ const UserDashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-card border-border/50 hover:border-secondary/50 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Unpaid Amount</p>
-                <p className="text-3xl font-bold text-secondary">
-                  ${stats.unpaidFines}
-                </p>
-              </div>
-              <div className="p-3 bg-secondary/10 rounded-lg">
-                <DollarSign className="h-6 w-6 text-secondary" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <Link to="/user/payments">
-                <Button size="sm" variant="outline" className="text-xs">
-                  Pay Now
-                </Button>
-              </Link>
-            </div>
-          </Card>
+          <LiveSpeedometer />
         </div>
 
         {/* My Vehicles & Recent Violations */}
