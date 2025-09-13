@@ -271,6 +271,7 @@ const UserDashboard = () => {
           </div>
 
           {/* Recent Violations */}
+          {/* Recent Violations */}
           <div className="lg:col-span-2">
             <Card className="p-6 bg-gradient-card border-border/50">
               <div className="flex items-center justify-between mb-6">
@@ -288,90 +289,90 @@ const UserDashboard = () => {
               </div>
 
               <div className="space-y-4">
-                {violations.map((violation) => {
-                  const limit = 70;
-                  const excess = violation.speed - limit;
-                  const fine = 150;
+                {violations
+                  .filter((violation) => violation.speed > 70) // ✅ only show speed > 70
+                  .map((violation) => {
+                    const limit = 70;
+                    const excess = violation.speed - limit;
+                    const fine = 150;
 
-                  return (
-                    <div
-                      key={violation._id}
-                      className="p-4 rounded-lg border transition-all duration-300 border-warning/50 bg-warning/5"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-4">
-                          <div className="p-2 bg-accent/30 rounded-lg">
-                            {/* Replace Camera with MapPin and make it clickable */}
-                            <button
-                              onClick={() => {
-                                setMapLocation(violation.location);
-                                setMapOpen(true);
-                              }}
-                              className="focus:outline-none"
-                              title="View Location"
+                    return (
+                      <div
+                        key={violation._id}
+                        className="p-4 rounded-lg border transition-all duration-300 border-warning/50 bg-warning/5"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-4">
+                            <div className="p-2 bg-accent/30 rounded-lg">
+                              <button
+                                onClick={() => {
+                                  setMapLocation(violation.location);
+                                  setMapOpen(true);
+                                }}
+                                className="focus:outline-none"
+                                title="View Location"
+                              >
+                                <MapPin className="h-5 w-5 text-primary" />
+                              </button>
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <span className="font-semibold">
+                                  Speed Violation
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                                <div className="flex items-center">
+                                  <Calendar className="h-3 w-3 mr-1" />
+                                  {new Date(
+                                    violation.timestamp
+                                  ).toLocaleDateString()}{" "}
+                                  at{" "}
+                                  {new Date(
+                                    violation.timestamp
+                                  ).toLocaleTimeString()}
+                                </div>
+                                <div className="flex items-center">
+                                  <MapPin className="h-3 w-3 mr-1" />
+                                  {violation.location.lat},{" "}
+                                  {violation.location.lng}
+                                </div>
+                              </div>
+                              <div className="mt-2 flex items-center space-x-4 text-sm">
+                                <span>
+                                  Speed:{" "}
+                                  <strong className="text-primary">
+                                    {violation.speed} km/h
+                                  </strong>
+                                </span>
+                                <span>
+                                  Limit: <strong>{limit} km/h</strong>
+                                </span>
+                                <span>
+                                  Excess:{" "}
+                                  <strong className="text-warning">
+                                    +{excess} km/h
+                                  </strong>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-primary mb-1">
+                              ${fine}
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
                             >
-                              <MapPin className="h-5 w-5 text-primary" />
-                            </button>
+                              <CreditCard className="h-3 w-3 mr-1" /> Pay Now
+                            </Button>
                           </div>
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <span className="font-semibold">
-                                Speed Violation
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                              <div className="flex items-center">
-                                <Calendar className="h-3 w-3 mr-1" />
-                                {new Date(
-                                  violation.timestamp
-                                ).toLocaleDateString()}{" "}
-                                at{" "}
-                                {new Date(
-                                  violation.timestamp
-                                ).toLocaleTimeString()}
-                              </div>
-                              <div className="flex items-center">
-                                <MapPin className="h-3 w-3 mr-1" />
-                                {violation.location.lat},{" "}
-                                {violation.location.lng}
-                              </div>
-                            </div>
-                            <div className="mt-2 flex items-center space-x-4 text-sm">
-                              <span>
-                                Speed:{" "}
-                                <strong className="text-primary">
-                                  {violation.speed} km/h
-                                </strong>
-                              </span>
-                              <span>
-                                Limit: <strong>{limit} km/h</strong>
-                              </span>
-                              <span>
-                                Excess:{" "}
-                                <strong className="text-warning">
-                                  +{excess} km/h
-                                </strong>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-primary mb-1">
-                            ${fine}
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            <CreditCard className="h-3 w-3 mr-1" />
-                            Pay Now
-                          </Button>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             </Card>
           </div>
