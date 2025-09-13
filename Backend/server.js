@@ -1,13 +1,19 @@
-// server.js
-require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const http = require("http"); // <-- Needed for socket.io
+const { Server } = require("socket.io");
 
 const app = express();
+const server = http.createServer(app); // wrap express with http
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:8080", "https://speedguard-zeta.vercel.app"],
+    credentials: true,
+  },
+});
 
-// Middleware
 app.use(
   cors({
     origin: ["http://localhost:8080", "https://speedguard-zeta.vercel.app"],
@@ -27,10 +33,16 @@ mongoose
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/vehicle", require("./routes/vehicle"));
 app.use("/api/violation", require("./routes/violation"));
+app.use("/data", require("./routes/violationData")); // ESP32 POST
 
-// 🔹 ESP32 POST route
-app.use("/data", require("./routes/violationData")); // <--- must exist!
+// 🔹 Socket.IO for live speed
+io.on("connection", (socket) => {
+  console.log("🔵 Client connected for live speed");
+});
+
+// Make io accessible in routes
+app.set("socketio", io);
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
