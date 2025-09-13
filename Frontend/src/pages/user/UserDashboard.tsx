@@ -24,6 +24,8 @@ import { Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import LiveSpeedometer from "./LiveSpeedometer";
+import QRCode from "react-qr-code";
+import VehicleCard from "@/pages/user/VehicleCard"; // Import VehicleCard component
 
 interface Vehicle {
   _id: string;
@@ -223,10 +225,12 @@ const UserDashboard = () => {
         {/* My Vehicles & Recent Violations */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* My Vehicles */}
+          {/* My Vehicle */}
+          {/* My Vehicle */}
           <div>
             <Card className="p-6 bg-gradient-card border-border/50">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold">My Vehicles</h2>
+                <h2 className="text-xl font-bold">My Vehicle</h2>
                 <Link to="/user/vehicles">
                   <Button variant="outline" size="sm">
                     View All
@@ -234,45 +238,13 @@ const UserDashboard = () => {
                 </Link>
               </div>
 
-              <div className="space-y-4">
-                {vehicles.map((vehicle) => (
-                  <div
-                    key={vehicle._id}
-                    className="p-4 bg-accent/20 rounded-lg border border-border/50"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="p-3 bg-info/10 rounded-lg">
-                        <Car className="h-6 w-6 text-info" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-bold text-lg">
-                          {vehicle.plateNumber}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {vehicle.year} {vehicle.make} {vehicle.model}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {vehicle.color}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 p-3 bg-accent/30 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <QrCode className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-mono">
-                            {vehicle.qrCode}
-                          </span>
-                        </div>
-                        <Button variant="ghost" size="sm" className="text-xs">
-                          Show QR
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {vehicles.length > 0 ? (
+                <VehicleCard vehicle={vehicles[0]} />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No vehicle assigned.
+                </p>
+              )}
             </Card>
           </div>
 
