@@ -84,12 +84,18 @@ const UserDashboard = () => {
   }, []);
 
   const stats = {
-    totalViolations: violations.length,
-    pendingFines: violations.filter((v) => v.status === "pending").length,
-    overdueFines: violations.filter((v) => v.status === "overdue").length,
-    totalFines: violations.reduce((sum, v) => sum + v.fine, 0),
+    totalViolations: violations.filter((v) => v.speed > 70).length, // ✅ only speed > 70
+    pendingFines: violations.filter(
+      (v) => v.speed > 70 && v.status === "pending"
+    ).length,
+    overdueFines: violations.filter(
+      (v) => v.speed > 70 && v.status === "overdue"
+    ).length,
+    totalFines: violations
+      .filter((v) => v.speed > 70)
+      .reduce((sum, v) => sum + v.fine, 0),
     unpaidFines: violations
-      .filter((v) => v.status !== "paid")
+      .filter((v) => v.speed > 70 && v.status !== "paid")
       .reduce((sum, v) => sum + v.fine, 0),
   };
 
