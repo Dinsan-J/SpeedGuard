@@ -216,9 +216,7 @@ const OfficerQRSearch = () => {
                         <p>
                           Location: {v.location.lat}, {v.location.lng}
                         </p>
-                        <p>
-                          Date: {new Date(v.timestamp).toLocaleString()}
-                        </p>
+                        <p>Date: {new Date(v.timestamp).toLocaleString()}</p>
                         {v.fine && <p>Fine: ${v.fine}</p>}
                       </div>
                     </div>

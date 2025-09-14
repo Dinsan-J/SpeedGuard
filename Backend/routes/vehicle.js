@@ -91,7 +91,9 @@ router.get("/plate/:plateNumber", async (req, res) => {
 // Get vehicle by ID + violations
 router.get("/:vehicleId", async (req, res) => {
   try {
-    const vehicle = await Vehicle.findById(req.params.vehicleId).populate("violations");
+    const vehicle = await Vehicle.findById(req.params.vehicleId).populate(
+      "violations"
+    );
     if (!vehicle) {
       return res.json({ success: false, message: "Vehicle not found" });
     }
