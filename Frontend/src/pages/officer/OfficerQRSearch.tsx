@@ -14,6 +14,12 @@ import {
   CheckCircle,
 } from "lucide-react";
 import QrScanner from "qr-scanner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const OfficerQRSearch = () => {
   const [qrInput, setQrInput] = useState("");
