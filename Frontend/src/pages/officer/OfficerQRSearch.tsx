@@ -20,9 +20,9 @@ import {
   CheckCircle,
 } from "lucide-react";
 import QrScanner from "qr-scanner";
+import axios from "axios";
 
 const OfficerQRSearch = () => {
-  const [qrInput, setQrInput] = useState("");
   const [vehicleData, setVehicleData] = useState<any>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -34,47 +34,19 @@ const OfficerQRSearch = () => {
     try {
       setCameraError("");
       setIsScanning(true);
+
       if (!videoRef.current) throw new Error("Camera not ready");
 
       qrScannerRef.current = new QrScanner(
         videoRef.current,
         async (result) => {
           try {
-            let plateNumber = "";
-
-            // Try parsing QR as JSON
-            try {
-              const decoded = JSON.parse(result.data);
-              plateNumber = decoded.plateNumber || decoded.plate || "";
-            } catch {
-              // Not JSON, treat as plain plate
-              plateNumber = result.data;
-            }
-
-            if (!plateNumber) {
-              setCameraError("Invalid QR code");
-              return;
-            }
-
-            setQrInput(plateNumber);
-
-            // Fetch vehicle info from backend
-            const res = await fetch(
-              `http://localhost:5000/api/vehicle/plate/${plateNumber}`
-            );
-            const data = await res.json();
-
-            if (data.success) {
-              setVehicleData(data.vehicle);
-            } else {
-              setVehicleData({ plateNumber });
-              setCameraError("Vehicle not found");
-            }
+            const decodedQR = result.data; // Assuming QR contains the plateNumber
+            await fetchVehicleData(decodedQR);
           } catch (err) {
-            setCameraError("Backend error");
-          } finally {
-            stopCamera();
+            setCameraError("Invalid QR code or backend error");
           }
+          stopCamera();
         },
         { preferredCamera: "environment" }
       );
@@ -99,7 +71,21 @@ const OfficerQRSearch = () => {
 
   const handleScan = () => {
     setIsCameraOpen(true);
-    setTimeout(startCamera, 300); // wait for dialog open
+    setTimeout(startCamera, 300);
+  };
+
+  const fetchVehicleData = async (plateNumber: string) => {
+    try {
+      const res = await axios.get(`/api/vehicles/plate/${plateNumber}`);
+      if (res.data.success) {
+        setVehicleData(res.data.vehicle);
+      } else {
+        setCameraError(res.data.message || "Vehicle not found");
+      }
+    } catch (err) {
+      console.error(err);
+      setCameraError("Backend error while fetching vehicle data");
+    }
   };
 
   useEffect(() => {
@@ -152,7 +138,7 @@ const OfficerQRSearch = () => {
               <h3 className="text-2xl font-bold">Vehicle Information</h3>
               <Badge
                 className={`px-3 py-1 ${
-                  vehicleData.status === "Active"
+                  vehicleData.status === "active"
                     ? "bg-secondary/10 text-secondary"
                     : "bg-warning/10 text-warning"
                 }`}
@@ -184,7 +170,7 @@ const OfficerQRSearch = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Owner</p>
                     <p className="font-semibold">
-                      {vehicleData.owner || "Unknown"}
+                      {vehicleData.owner?.name || "Unknown"}
                     </p>
                   </div>
                 </div>
@@ -218,50 +204,46 @@ const OfficerQRSearch = () => {
                     key={index}
                     className="p-4 rounded-lg border border-border bg-accent/20"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div
-                          className={`p-2 rounded-lg ${
-                            v.status === "Paid"
-                              ? "bg-secondary/20"
-                              : "bg-warning/20"
-                          }`}
-                        >
-                          {v.status === "Paid" ? (
-                            <CheckCircle className="h-5 w-5 text-secondary" />
-                          ) : (
-                            <AlertTriangle className="h-5 w-5 text-warning" />
-                          )}
+                    <div className="flex items-center space-x-4">
+                      <div
+                        className={`p-2 rounded-lg ${
+                          v.status === "Paid"
+                            ? "bg-secondary/20"
+                            : "bg-warning/20"
+                        }`}
+                      >
+                        {v.status === "Paid" ? (
+                          <CheckCircle className="h-5 w-5 text-secondary" />
+                        ) : (
+                          <AlertTriangle className="h-5 w-5 text-warning" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-semibold">
+                            {v.type || "Violation"}
+                          </span>
+                          <Badge
+                            variant={
+                              v.status === "Paid" ? "secondary" : "destructive"
+                            }
+                          >
+                            {v.status}
+                          </Badge>
                         </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-semibold">
-                              {v.type || "Violation"}
-                            </span>
-                            <Badge
-                              variant={
-                                v.status === "Paid"
-                                  ? "secondary"
-                                  : "destructive"
-                              }
-                            >
-                              {v.status}
-                            </Badge>
-                          </div>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            {v.speed && <p>Speed: {v.speed} km/h</p>}
-                            {v.location && (
-                              <p>
-                                Location: {v.location.lat}, {v.location.lng}
-                              </p>
-                            )}
-                            {v.timestamp && (
-                              <p>
-                                Date: {new Date(v.timestamp).toLocaleString()}
-                              </p>
-                            )}
-                            {v.fine && <p>Fine: ${v.fine}</p>}
-                          </div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {v.speed && <p>Speed: {v.speed} km/h</p>}
+                          {v.location && (
+                            <p>
+                              Location: {v.location.lat}, {v.location.lng}
+                            </p>
+                          )}
+                          {v.timestamp && (
+                            <p>
+                              Date: {new Date(v.timestamp).toLocaleString()}
+                            </p>
+                          )}
+                          {v.fine && <p>Fine: ${v.fine}</p>}
                         </div>
                       </div>
                     </div>
