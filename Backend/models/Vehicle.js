@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const vehicleSchema = new mongoose.Schema({
-  plateNumber: { type: String, required: true },
+  plateNumber: { type: String, required: true, unique: true },
   make: String,
   model: String,
   year: String,
@@ -9,9 +9,9 @@ const vehicleSchema = new mongoose.Schema({
   status: { type: String, default: "active" },
   registrationExpiry: Date,
   insuranceExpiry: Date,
-  owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  violations: [{ type: mongoose.Schema.Types.ObjectId, ref: "Violation" }], // <-- change here
+  violations: [{ type: mongoose.Schema.Types.ObjectId, ref: "Violation" }], // <- updated
   lastViolation: Date,
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 });
 
 module.exports = mongoose.model("Vehicle", vehicleSchema);
