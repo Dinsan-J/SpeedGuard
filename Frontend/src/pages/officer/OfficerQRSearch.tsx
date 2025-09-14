@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Card, Button, Badge } from "@/components/ui";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   QrCode,
   Camera,
