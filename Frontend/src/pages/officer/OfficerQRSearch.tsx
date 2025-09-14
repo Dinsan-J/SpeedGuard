@@ -42,7 +42,7 @@ const OfficerQRSearch = () => {
         (result) => {
           try {
             const decoded = JSON.parse(result.data); // parse QR JSON
-            setVehicleData(decoded); // use the data from QR directly
+            setVehicleData(decoded); // use the data from QR directlyyy
           } catch (err) {
             setCameraError("Invalid QR code");
           }
