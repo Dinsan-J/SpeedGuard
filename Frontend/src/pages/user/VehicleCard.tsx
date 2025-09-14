@@ -25,14 +25,18 @@ interface Vehicle {
 const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
   const [showQR, setShowQR] = useState(false);
   const [qrValue, setQrValue] = useState(vehicle.qrCode || "");
-  const [violations, setViolations] = useState<Violation[]>(vehicle.violations || []);
+  const [violations, setViolations] = useState<Violation[]>(
+    vehicle.violations || []
+  );
 
   // Fetch violations for this vehicle when QR is shown
   useEffect(() => {
     if (showQR && vehicle._id) {
-      fetch(`https://speedguard-gz70.onrender.com/api/violation/vehicle/${vehicle._id}`)
-        .then(res => res.json())
-        .then(data => {
+      fetch(
+        `https://speedguard-gz70.onrender.com/api/violation/vehicle/${vehicle._id}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
           if (data.success) {
             setViolations(data.violations);
             const qrData = JSON.stringify({
