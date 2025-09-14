@@ -3,13 +3,21 @@ import { Car, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import QRCode from "react-qr-code";
 
+interface Violation {
+  location: { lat: number; lng: number };
+  speed: number;
+  timestamp: string;
+  fine: number;
+  status: string;
+}
+
 interface Vehicle {
   plateNumber: string;
   make: string;
   model: string;
   year: string;
   color: string;
-  speed?: number; // last recorded speed
+  violations: Violation[]; // include violations array
   qrCode?: string;
 }
 
@@ -19,10 +27,14 @@ const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
 
   useEffect(() => {
     if (!vehicle.qrCode) {
-      // Generate QR code data as JSON including plate and speed
+      // Generate QR code data as JSON including plate and all violations
       const qrData = JSON.stringify({
         plateNumber: vehicle.plateNumber,
-        speed: vehicle.speed || 0,
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year,
+        color: vehicle.color,
+        violations: vehicle.violations || [],
         timestamp: Date.now(),
       });
       setQrValue(qrData);
@@ -41,9 +53,9 @@ const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
             {vehicle.year} {vehicle.make} {vehicle.model}
           </div>
           <div className="text-xs text-muted-foreground">{vehicle.color}</div>
-          {vehicle.speed !== undefined && (
+          {vehicle.violations.length > 0 && (
             <div className="text-xs text-muted-foreground mt-1">
-              Speed: {vehicle.speed} km/h
+              Violations: {vehicle.violations.length}
             </div>
           )}
         </div>
