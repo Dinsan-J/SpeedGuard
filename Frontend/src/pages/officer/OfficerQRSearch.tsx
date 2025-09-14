@@ -39,12 +39,12 @@ const OfficerQRSearch = () => {
 
       qrScannerRef.current = new QrScanner(
         videoRef.current,
-        (result) => {
+        async (result) => {
           try {
-            const decoded = JSON.parse(result.data); // parse QR JSON
-            setVehicleData(decoded); // use the data from QR directlyyy
+            const decodedQR = result.data; // Assuming QR contains the plateNumber
+            await fetchVehicleData(decodedQR);
           } catch (err) {
-            setCameraError("Invalid QR code");
+            setCameraError("Invalid QR code or backend error");
           }
           stopCamera();
         },
