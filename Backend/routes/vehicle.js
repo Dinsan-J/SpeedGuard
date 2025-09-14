@@ -77,12 +77,14 @@ router.post("/violation/:plateNumber", async (req, res) => {
 router.get("/plate/:plateNumber", async (req, res) => {
   try {
     const vehicle = await Vehicle.findOne({
-      plateNumber: new RegExp(`^${req.params.plateNumber}$`, "i"),
-    }).populate("violations"); // <-- this line is important!
+      plateNumber: req.params.plateNumber,
+    });
     if (!vehicle) {
       return res.json({ success: false, message: "Vehicle not found" });
     }
-    res.json({ success: true, vehicle });
+    // Fetch violations for this vehicle
+    const violations = await Violation.find({ vehicleId: vehicle.plateNumber });
+    res.json({ success: true, vehicle: { ...vehicle.toObject(), violations } });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
   }

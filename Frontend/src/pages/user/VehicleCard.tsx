@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import QRCode from "react-qr-code";
 
 interface Vehicle {
-  _id: string;
   plateNumber: string;
   make: string;
   model: string;
@@ -17,8 +16,8 @@ interface Vehicle {
 const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
   const [showQR, setShowQR] = useState(false);
 
-  // QR code only contains vehicle _id
-  const qrValue = JSON.stringify({ vehicleId: vehicle._id });
+  // QR code only contains plateNumber as vehicleId
+  const qrValue = JSON.stringify({ vehicleId: vehicle.plateNumber });
 
   return (
     <div className="p-4 bg-accent/20 rounded-lg border border-border/50">
@@ -38,7 +37,7 @@ const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <QrCode className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-mono">{vehicle._id}</span>
+            <span className="text-sm font-mono">{vehicle.plateNumber}</span>
           </div>
           <Button
             variant="ghost"
