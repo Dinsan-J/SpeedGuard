@@ -1,8 +1,11 @@
+const express = require("express");
+const router = express.Router();
+const Violation = require("../models/Violation");
+
 // Get recent violations
 router.get("/", async (req, res) => {
   try {
-    const violations = await Violation.find({ speed: { $gt: 70 } }) // only fetch above 70
-      .sort({ timestamp: -1 }); // remove .limit(10) to return all
+    const violations = await Violation.find().sort({ timestamp: -1 }).limit(10);
     res.json({ success: true, violations });
   } catch (err) {
     res
@@ -10,3 +13,5 @@ router.get("/", async (req, res) => {
       .json({ success: false, message: "Error fetching violations" });
   }
 });
+
+module.exports = router;
