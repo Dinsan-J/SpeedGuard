@@ -24,7 +24,7 @@ import QrScanner from "qr-scanner";
 
 const OfficerQRSearch = () => {
   const [qrInput, setQrInput] = useState("");
-  const [vehicleData, setVehicleData] = useState<any>(null); // store decoded QR data
+  const [vehicleData, setVehicleData] = useState<any>(null); // store decoded QR + backend data
   const [isScanning, setIsScanning] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
@@ -40,13 +40,23 @@ const OfficerQRSearch = () => {
 
       qrScannerRef.current = new QrScanner(
         videoRef.current,
-        (result) => {
+        async (result) => {
           try {
-            const decoded = JSON.parse(result.data); // parse QR JSON
-            setVehicleData(decoded);
+            const decoded = JSON.parse(result.data); // decode QR JSON
             setQrInput(decoded.plateNumber || "");
+
+            // fetch vehicle info from backend using plate number
+            const res = await fetch(
+              `http://localhost:5000/api/vehicle/plate/${decoded.plateNumber}`
+            );
+            const data = await res.json();
+            if (data.success) {
+              setVehicleData(data.vehicle);
+            } else {
+              setVehicleData(decoded); // fallback to QR only
+            }
           } catch (err) {
-            setCameraError("Invalid QR code");
+            setCameraError("Invalid QR code or backend error");
           }
           stopCamera();
         },
@@ -73,7 +83,7 @@ const OfficerQRSearch = () => {
 
   const handleScan = () => {
     setIsCameraOpen(true);
-    setTimeout(startCamera, 300); // wait for dialog open
+    setTimeout(startCamera, 300);
   };
 
   useEffect(() => {
@@ -158,7 +168,7 @@ const OfficerQRSearch = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Owner</p>
                     <p className="font-semibold">
-                      {vehicleData.owner || "Unknown"}
+                      {vehicleData.owner?.name || "Unknown"}
                     </p>
                   </div>
                 </div>
