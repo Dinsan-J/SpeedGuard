@@ -76,18 +76,17 @@ router.post("/violation/:plateNumber", async (req, res) => {
 // Get vehicle by plate + violations
 router.get("/plate/:plateNumber", async (req, res) => {
   try {
-    // Find vehicle by plate number (case-insensitive)
     const vehicle = await Vehicle.findOne({
-      plateNumber: new RegExp(`^${req.params.plateNumber}$`, "i"),
+      plateNumber: req.params.plateNumber,
     });
     if (!vehicle) {
       return res.json({ success: false, message: "Vehicle not found" });
     }
-    // Find violations for this vehicle (vehicleId should match plateNumber)
+    // Fetch violations for this vehicle
     const violations = await Violation.find({ vehicleId: vehicle.plateNumber });
     res.json({ success: true, vehicle: { ...vehicle.toObject(), violations } });
   } catch (err) {
-    console.error(err); // <-- Add this for debugging!
+    console.error(err); // <--- Add this to see errors in your backend logs!
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
