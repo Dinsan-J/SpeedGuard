@@ -16,7 +16,6 @@ import {
   Car,
   User,
   Calendar,
-  MapPin,
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
@@ -24,7 +23,7 @@ import QrScanner from "qr-scanner";
 
 const OfficerQRSearch = () => {
   const [qrInput, setQrInput] = useState("");
-  const [vehicleData, setVehicleData] = useState<any>(null); // store decoded QR + backend data
+  const [vehicleData, setVehicleData] = useState<any>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
@@ -35,30 +34,47 @@ const OfficerQRSearch = () => {
     try {
       setCameraError("");
       setIsScanning(true);
-
       if (!videoRef.current) throw new Error("Camera not ready");
 
       qrScannerRef.current = new QrScanner(
         videoRef.current,
         async (result) => {
           try {
-            const decoded = JSON.parse(result.data); // decode QR JSON
-            setQrInput(decoded.plateNumber || "");
+            let plateNumber = "";
 
-            // fetch vehicle info from backend using plate number
+            // Try parsing QR as JSON
+            try {
+              const decoded = JSON.parse(result.data);
+              plateNumber = decoded.plateNumber || decoded.plate || "";
+            } catch {
+              // Not JSON, treat as plain plate
+              plateNumber = result.data;
+            }
+
+            if (!plateNumber) {
+              setCameraError("Invalid QR code");
+              return;
+            }
+
+            setQrInput(plateNumber);
+
+            // Fetch vehicle info from backend
             const res = await fetch(
-              `http://localhost:5000/api/vehicle/plate/${decoded.plateNumber}`
+              `http://localhost:5000/api/vehicle/plate/${plateNumber}`
             );
             const data = await res.json();
+
             if (data.success) {
               setVehicleData(data.vehicle);
             } else {
-              setVehicleData(decoded); // fallback to QR only
+              setVehicleData({ plateNumber });
+              setCameraError("Vehicle not found");
             }
           } catch (err) {
-            setCameraError("Invalid QR code or backend error");
+            setCameraError("Backend error");
+          } finally {
+            stopCamera();
           }
-          stopCamera();
         },
         { preferredCamera: "environment" }
       );
@@ -83,7 +99,7 @@ const OfficerQRSearch = () => {
 
   const handleScan = () => {
     setIsCameraOpen(true);
-    setTimeout(startCamera, 300);
+    setTimeout(startCamera, 300); // wait for dialog open
   };
 
   useEffect(() => {
@@ -168,7 +184,7 @@ const OfficerQRSearch = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Owner</p>
                     <p className="font-semibold">
-                      {vehicleData.owner?.name || "Unknown"}
+                      {vehicleData.owner || "Unknown"}
                     </p>
                   </div>
                 </div>
