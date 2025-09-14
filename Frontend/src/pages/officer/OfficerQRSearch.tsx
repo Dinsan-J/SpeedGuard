@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar } from "lucide-react";
-import { BrowserMultiFormatReader } from "@zxing/browser";
+import { QrCode, MapPin, Calendar } from "lucide-react";
+import {
+  BrowserMultiFormatReader,
+  NotFoundException,
+  Result,
+  VideoInputDevice,
+} from "@zxing/browser";
 
 interface Violation {
   location: { lat: number; lng: number };
@@ -17,63 +22,82 @@ interface Vehicle {
   model: string;
   year: string;
   color: string;
-  owner?: string;
   violations: Violation[];
 }
 
 const OfficerQRSearch = () => {
+  const [scanResult, setScanResult] = useState<string>("");
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
   const [error, setError] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
     const codeReader = new BrowserMultiFormatReader();
-    let selectedDeviceId: string | undefined;
 
-    // Get video input devices
-    codeReader
-      .listVideoInputDevices()
-      .then((videoInputDevices) => {
-        if (videoInputDevices.length > 0) {
-          selectedDeviceId = videoInputDevices[0].deviceId;
-          // Start scanning from first available camera
-          codeReader.decodeFromVideoDevice(
-            selectedDeviceId,
-            videoRef.current!,
-            (result, err) => {
-              if (result) {
-                try {
-                  const parsed: Vehicle = JSON.parse(result.getText());
-                  setVehicleData(parsed);
-                  setError("");
-                } catch (e) {
-                  console.error(e);
-                  setError("Invalid QR code data");
-                  setVehicleData(null);
-                }
-              }
-              // Ignore "no QR code in frame" errors
-            }
-          );
-        } else {
+    const startScanner = async () => {
+      try {
+        const videoInputDevices: VideoInputDevice[] =
+          await BrowserMultiFormatReader.listVideoInputDevices();
+
+        if (videoInputDevices.length === 0) {
           setError("No camera found");
+          return;
         }
-      })
-      .catch((err) => setError("Error accessing camera: " + err));
 
-    return () => {
-      // Stop scanning when component unmounts
-      codeReader.reset();
+        const selectedDeviceId = videoInputDevices[0].deviceId;
+
+        codeReader.decodeFromVideoDevice(
+          selectedDeviceId,
+          videoRef.current!,
+          (result: Result | undefined, err: any) => {
+            if (result) {
+              try {
+                const parsed: Vehicle = JSON.parse(result.getText());
+                setVehicleData(parsed);
+                setScanResult(result.getText());
+                setError("");
+                setScanning(false);
+                codeReader.reset();
+              } catch (err) {
+                setError("Invalid QR code data");
+                setVehicleData(null);
+              }
+            }
+            if (err && !(err instanceof NotFoundException)) {
+              console.error(err);
+            }
+          }
+        );
+
+        setScanning(true);
+      } catch (err) {
+        console.error(err);
+        setError("Error starting QR scanner");
+      }
     };
+
+    startScanner();
+
+    // Cleanup on unmount
+    return () => codeReader.reset();
   }, []);
 
   return (
     <div className="min-h-screen p-6 bg-background">
       <h1 className="text-3xl font-bold mb-6">Scan Vehicle QR</h1>
 
-      {/* QR Scanner Video */}
+      {/* QR Scanner */}
       <div className="mb-6">
-        <video ref={videoRef} style={{ width: "100%", maxWidth: "400px" }} />
+        <video
+          ref={videoRef}
+          className="w-full max-w-md rounded-lg border border-border/50"
+        />
+        {!scanning && (
+          <p className="text-sm text-muted-foreground">
+            Initializing camera...
+          </p>
+        )}
         {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
 
@@ -88,16 +112,10 @@ const OfficerQRSearch = () => {
               <span>{vehicleData.model}</span>
             </div>
           </div>
-          {vehicleData.owner && (
-            <div className="text-sm text-muted-foreground mb-2">
-              Owner: {vehicleData.owner}
-            </div>
-          )}
-          <div className="text-sm text-muted-foreground mb-4">
-            Color: {vehicleData.color}
+          <div className="text-sm text-muted-foreground mb-2">
+            {vehicleData.color}
           </div>
 
-          {/* Violations History */}
           <h3 className="font-semibold mb-2">Violations History</h3>
           {vehicleData.violations.length > 0 ? (
             <div className="space-y-4">
