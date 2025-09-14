@@ -44,12 +44,16 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
-// ✅ Get vehicle by plate number
+// Add this route at the bottom or with other GET routes
 router.get("/plate/:plateNumber", async (req, res) => {
   try {
-    const vehicle = await Vehicle.findOne({
-      plateNumber: req.params.plateNumber,
-    }).populate("violations"); // make sure violations is referenced in Vehicle schema
+    const { plateNumber } = req.params;
+
+    // Find vehicle by plateNumber and populate violations
+    const vehicle = await Vehicle.findOne({ plateNumber }).populate({
+      path: "violations", // Make sure this is the field name in Vehicle model
+      options: { sort: { timestamp: -1 } }, // latest first
+    });
 
     if (!vehicle) {
       return res.json({ success: false, message: "Vehicle not found" });
@@ -57,7 +61,10 @@ router.get("/plate/:plateNumber", async (req, res) => {
 
     res.json({ success: true, vehicle });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error("Error fetching vehicle by plate:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: err.message });
   }
 });
 
