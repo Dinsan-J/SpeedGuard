@@ -12,22 +12,43 @@ interface Violation {
 }
 
 interface Vehicle {
+  _id?: string;
   plateNumber: string;
   make: string;
   model: string;
   year: string;
   color: string;
-  violations: Violation[]; // include violations array
+  violations?: Violation[];
   qrCode?: string;
 }
 
 const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
   const [showQR, setShowQR] = useState(false);
   const [qrValue, setQrValue] = useState(vehicle.qrCode || "");
+  const [violations, setViolations] = useState<Violation[]>(vehicle.violations || []);
 
+  // Fetch violations for this vehicle when QR is shown
   useEffect(() => {
-    if (!vehicle.qrCode) {
-      // Generate QR code data as JSON including plate and all violations
+    if (showQR && vehicle._id) {
+      fetch(`https://speedguard-gz70.onrender.com/api/violation/vehicle/${vehicle._id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setViolations(data.violations);
+            const qrData = JSON.stringify({
+              plateNumber: vehicle.plateNumber,
+              make: vehicle.make,
+              model: vehicle.model,
+              year: vehicle.year,
+              color: vehicle.color,
+              violations: data.violations,
+              timestamp: Date.now(),
+            });
+            setQrValue(qrData);
+          }
+        });
+    } else if (!vehicle.qrCode) {
+      // fallback: generate QR with static violations if not fetching
       const qrData = JSON.stringify({
         plateNumber: vehicle.plateNumber,
         make: vehicle.make,
@@ -39,7 +60,7 @@ const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
       });
       setQrValue(qrData);
     }
-  }, [vehicle]);
+  }, [showQR, vehicle]);
 
   return (
     <div className="p-4 bg-accent/20 rounded-lg border border-border/50">
@@ -53,9 +74,9 @@ const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
             {vehicle.year} {vehicle.make} {vehicle.model}
           </div>
           <div className="text-xs text-muted-foreground">{vehicle.color}</div>
-          {vehicle.violations.length > 0 && (
+          {violations.length > 0 && (
             <div className="text-xs text-muted-foreground mt-1">
-              Violations: {vehicle.violations.length}
+              Violations: {violations.length}
             </div>
           )}
         </div>
