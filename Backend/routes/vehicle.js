@@ -76,7 +76,9 @@ router.post("/violation/:plateNumber", async (req, res) => {
 // Get vehicle by plate + violations
 router.get("/plate/:plateNumber", async (req, res) => {
   try {
-    const vehicle = await Vehicle.findOne({ plateNumber: req.params.plateNumber });
+    const vehicle = await Vehicle.findOne({
+      plateNumber: req.params.plateNumber,
+    });
     if (!vehicle) {
       return res.json({ success: false, message: "Vehicle not found" });
     }
