@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Car, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import QRCode from "react-qr-code";
+
+interface Violation {
+  location: { lat: number; lng: number };
+  speed: number;
+  timestamp: string;
+  fine: number;
+  status: string;
+}
 
 interface Vehicle {
   _id?: string;
@@ -10,16 +18,27 @@ interface Vehicle {
   model: string;
   year: string;
   color: string;
-  violations?: any[];
+  violations?: Violation[];
+  qrCode?: string;
 }
 
 const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
   const [showQR, setShowQR] = useState(false);
+  const [qrValue, setQrValue] = useState(vehicle.qrCode || "");
 
-  // QR contains ONLY plateNumber
-  const qrValue = JSON.stringify({
-    plateNumber: vehicle.plateNumber,
-  });
+  useEffect(() => {
+    // Always use plateNumber for QR
+    const qrData = JSON.stringify({
+      plateNumber: vehicle.plateNumber,
+      make: vehicle.make,
+      model: vehicle.model,
+      year: vehicle.year,
+      color: vehicle.color,
+      violations: vehicle.violations || [],
+      timestamp: Date.now(),
+    });
+    setQrValue(qrData);
+  }, [vehicle]);
 
   return (
     <div className="p-4 bg-accent/20 rounded-lg border border-border/50">
@@ -40,12 +59,13 @@ const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
           )}
         </div>
       </div>
-
       <div className="mt-4 p-3 bg-accent/30 rounded-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <QrCode className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-mono">QR Code</span>
+            <span className="text-sm font-mono">
+              {vehicle.qrCode || "QR Data"}
+            </span>
           </div>
           <Button
             variant="ghost"
@@ -56,7 +76,6 @@ const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
             {showQR ? "Hide QR" : "Show QR"}
           </Button>
         </div>
-
         {showQR && (
           <div className="mt-4 flex justify-center p-4 bg-white rounded-lg border border-border/50">
             <QRCode value={qrValue} size={150} />

@@ -16,11 +16,11 @@ import {
   Car,
   User,
   Calendar,
+  MapPin,
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
 import QrScanner from "qr-scanner";
-import axios from "axios";
 
 const OfficerQRSearch = () => {
   const [qrInput, setQrInput] = useState("");
@@ -34,6 +34,9 @@ const OfficerQRSearch = () => {
   // Start camera
   const startCamera = async () => {
     try {
+      setCameraError("");
+      setIsScanning(true);
+
       if (!videoRef.current) throw new Error("Camera not ready");
 
       qrScannerRef.current = new QrScanner(
@@ -46,21 +49,20 @@ const OfficerQRSearch = () => {
 
             setQrInput(decoded.plateNumber);
 
-            // Fetch vehicle info from backend
-            const response = await axios.get(
-              `/vehicle/plate/${decoded.plateNumber}`
+            // Fetch vehicle info from backend using plateNumber
+            const response = await fetch(
+              `https://speedguard-gz70.onrender.com/api/vehicle/plate/${decoded.plateNumber}`
             );
-
-            if (response.data.success) {
-              setVehicleData(response.data.vehicle);
-              setCameraError("");
+            const data = await response.json();
+            if (data.success) {
+              setVehicleData(data.vehicle);
             } else {
+              setCameraError("Vehicle not found");
               setVehicleData(null);
-              setCameraError(response.data.message || "Vehicle not found");
             }
-          } catch (err: any) {
+          } catch (err) {
+            setCameraError("Invalid QR code or backend error");
             setVehicleData(null);
-            setCameraError(err.message || "Invalid QR code");
           }
           stopCamera();
         },
