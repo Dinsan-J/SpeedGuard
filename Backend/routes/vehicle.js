@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Vehicle = require("../models/Vehicle");
 const User = require("../models/User");
+const Violation = require("../models/Violation");
 
-// Add vehicle
+// ------------------- Add Vehicle -------------------
 router.post("/add", async (req, res) => {
   console.log("Add vehicle route called", req.body);
   try {
@@ -13,12 +14,12 @@ router.post("/add", async (req, res) => {
     await User.findByIdAndUpdate(userId, { $push: { vehicles: vehicle._id } });
     res.json({ success: true, vehicle });
   } catch (err) {
-    console.log("Add vehicle error:", err);
+    console.error("Add vehicle error:", err);
     res.status(500).json({ success: false, message: "Error adding vehicle" });
   }
 });
 
-// Delete vehicle
+// ------------------- Delete Vehicle -------------------
 router.delete("/delete/:vehicleId", async (req, res) => {
   try {
     const { userId } = req.body;
@@ -32,27 +33,27 @@ router.delete("/delete/:vehicleId", async (req, res) => {
   }
 });
 
-// Get user vehicles
+// ------------------- Get User Vehicles -------------------
 router.get("/user/:userId", async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ owner: req.params.userId });
     res.json({ success: true, vehicles });
   } catch (err) {
+    console.error("Fetch vehicles error:", err);
     res
       .status(500)
       .json({ success: false, message: "Error fetching vehicles" });
   }
 });
 
-// Add this route at the bottom or with other GET routes
+// ------------------- Get Vehicle by Plate -------------------
 router.get("/plate/:plateNumber", async (req, res) => {
   try {
     const { plateNumber } = req.params;
 
-    // Find vehicle by plateNumber and populate violations
     const vehicle = await Vehicle.findOne({ plateNumber }).populate({
-      path: "violations", // Make sure this is the field name in Vehicle model
-      options: { sort: { timestamp: -1 } }, // latest first
+      path: "violations",
+      options: { sort: { timestamp: -1 } }, // latest violations first
     });
 
     if (!vehicle) {
@@ -65,6 +66,27 @@ router.get("/plate/:plateNumber", async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Server error", error: err.message });
+  }
+});
+
+// ------------------- Add Violation -------------------
+router.post("/violation/:vehicleId", async (req, res) => {
+  try {
+    const { vehicleId } = req.params;
+    const violationData = req.body;
+
+    const violation = new Violation({ ...violationData, vehicleId });
+    await violation.save();
+
+    await Vehicle.findByIdAndUpdate(vehicleId, {
+      $push: { violations: violation._id },
+      lastViolation: violation.timestamp,
+    });
+
+    res.json({ success: true, violation });
+  } catch (err) {
+    console.error("Add violation error:", err);
+    res.status(500).json({ success: false, message: "Error adding violation" });
   }
 });
 

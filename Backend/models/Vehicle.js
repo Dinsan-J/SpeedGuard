@@ -9,9 +9,9 @@ const vehicleSchema = new mongoose.Schema({
   status: { type: String, default: "active" },
   registrationExpiry: Date,
   insuranceExpiry: Date,
-  violations: { type: Number, default: 0 },
-  lastViolation: Date,
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  violations: [{ type: mongoose.Schema.Types.ObjectId, ref: "Violation" }], // <-- change here
+  lastViolation: Date,
 });
 
 module.exports = mongoose.model("Vehicle", vehicleSchema);
