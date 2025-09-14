@@ -20,7 +20,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import QrScanner from "qr-scanner";
-import axios from "axios";
 
 const OfficerQRSearch = () => {
   const [vehicleData, setVehicleData] = useState<any>(null);
@@ -71,20 +70,6 @@ const OfficerQRSearch = () => {
   const handleScan = () => {
     setIsCameraOpen(true);
     setTimeout(startCamera, 300);
-  };
-
-  const fetchVehicleData = async (plateNumber: string) => {
-    try {
-      const res = await axios.get(`/api/vehicles/plate/${plateNumber}`);
-      if (res.data.success) {
-        setVehicleData(res.data.vehicle);
-      } else {
-        setCameraError(res.data.message || "Vehicle not found");
-      }
-    } catch (err) {
-      console.error(err);
-      setCameraError("Backend error while fetching vehicle data");
-    }
   };
 
   useEffect(() => {
