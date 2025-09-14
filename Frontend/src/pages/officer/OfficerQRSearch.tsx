@@ -3,6 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   QrCode,
   Camera,
   ScanLine,
@@ -14,12 +20,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import QrScanner from "qr-scanner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const OfficerQRSearch = () => {
   const [qrInput, setQrInput] = useState("");
@@ -30,7 +30,6 @@ const OfficerQRSearch = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
 
-  // Start camera
   const startCamera = async () => {
     try {
       setCameraError("");
@@ -42,7 +41,6 @@ const OfficerQRSearch = () => {
         videoRef.current,
         async (result) => {
           try {
-            // QR code should contain JSON with plateNumber
             const decoded = JSON.parse(result.data);
             if (!decoded.vehicleId) throw new Error("Invalid QR code");
 
@@ -108,7 +106,6 @@ const OfficerQRSearch = () => {
               Scan QR code to get vehicle info
             </p>
           </div>
-
           <div className="text-center">
             <Button
               onClick={handleScan}
@@ -141,15 +138,14 @@ const OfficerQRSearch = () => {
               <h3 className="text-2xl font-bold">Vehicle Information</h3>
               <Badge
                 className={`px-3 py-1 ${
-                  vehicleData.status === "active"
+                  vehicleData.status === "Active"
                     ? "bg-secondary/10 text-secondary"
                     : "bg-warning/10 text-warning"
                 }`}
               >
-                {vehicleData.status}
+                {vehicleData.status || "Active"}
               </Badge>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
@@ -157,13 +153,14 @@ const OfficerQRSearch = () => {
                     <Car className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Plate</p>
+                    <p className="text-sm text-muted-foreground">
+                      License Plate
+                    </p>
                     <p className="text-xl font-bold">
                       {vehicleData.plateNumber}
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-secondary/10 rounded-lg">
                     <User className="h-5 w-5 text-secondary" />
@@ -171,12 +168,11 @@ const OfficerQRSearch = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Owner</p>
                     <p className="font-semibold">
-                      {vehicleData.owner?.name || "Unknown"}
+                      {vehicleData.owner || "Unknown"}
                     </p>
                   </div>
                 </div>
               </div>
-
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Vehicle Model</p>
@@ -195,13 +191,11 @@ const OfficerQRSearch = () => {
                 </div>
               </div>
             </div>
-
             {/* Violations */}
             <h3 className="text-2xl font-bold mb-4">Violation History</h3>
             <div className="space-y-4">
               {vehicleData.violations &&
-              vehicleData.violations.filter((v: any) => v.speed > 70).length >
-                0 ? (
+              vehicleData.violations.filter((v: any) => v.speed > 70).length > 0 ? (
                 vehicleData.violations
                   .filter((v: any) => v.speed > 70)
                   .map((v: any, index: number) => (
@@ -210,12 +204,10 @@ const OfficerQRSearch = () => {
                       className="p-4 rounded-lg border border-border bg-accent/20"
                     >
                       <div className="flex items-center space-x-2">
-                        <span className="font-semibold">Speed Violation</span>
-                        <Badge
-                          variant={
-                            v.status === "Paid" ? "secondary" : "destructive"
-                          }
-                        >
+                        <span className="font-semibold">
+                          Speed Violation
+                        </span>
+                        <Badge variant={v.status === "Paid" ? "secondary" : "destructive"}>
                           {v.status}
                         </Badge>
                       </div>
@@ -224,7 +216,9 @@ const OfficerQRSearch = () => {
                         <p>
                           Location: {v.location.lat}, {v.location.lng}
                         </p>
-                        <p>Date: {new Date(v.timestamp).toLocaleString()}</p>
+                        <p>
+                          Date: {new Date(v.timestamp).toLocaleString()}
+                        </p>
                         {v.fine && <p>Fine: ${v.fine}</p>}
                       </div>
                     </div>
@@ -241,7 +235,9 @@ const OfficerQRSearch = () => {
         {/* Camera Modal */}
         <Dialog
           open={isCameraOpen}
-          onOpenChange={(open) => !open && stopCamera()}
+          onOpenChange={(open) => {
+            if (!open) stopCamera();
+          }}
         >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
