@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { QrCode, MapPin, Calendar } from "lucide-react";
 import {
   BrowserMultiFormatReader,
-  NotFoundException,
   Result,
   VideoInputDevice,
 } from "@zxing/browser";
@@ -29,59 +28,64 @@ const OfficerQRSearch = () => {
   const [scanResult, setScanResult] = useState<string>("");
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
   const [error, setError] = useState<string>("");
+  const [scanning, setScanning] = useState<boolean>(false);
+
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [scanning, setScanning] = useState(false);
+  const codeReader = useRef(new BrowserMultiFormatReader()).current;
 
   useEffect(() => {
-    const codeReader = new BrowserMultiFormatReader();
+    return () => {
+      codeReader.reset(); // cleanup on unmount
+    };
+  }, [codeReader]);
 
-    const startScanner = async () => {
-      try {
-        const videoInputDevices: VideoInputDevice[] =
-          await BrowserMultiFormatReader.listVideoInputDevices();
+  const startScan = async () => {
+    setScanning(true);
+    setError("");
+    try {
+      const devices: VideoInputDevice[] =
+        await BrowserMultiFormatReader.listVideoInputDevices();
+      const selectedDeviceId = devices[0]?.deviceId;
+      if (!selectedDeviceId) {
+        setError("No camera device found");
+        setScanning(false);
+        return;
+      }
 
-        if (videoInputDevices.length === 0) {
-          setError("No camera found");
-          return;
-        }
-
-        const selectedDeviceId = videoInputDevices[0].deviceId;
-
-        codeReader.decodeFromVideoDevice(
-          selectedDeviceId,
-          videoRef.current!,
-          (result: Result | undefined, err: any) => {
-            if (result) {
-              try {
-                const parsed: Vehicle = JSON.parse(result.getText());
-                setVehicleData(parsed);
-                setScanResult(result.getText());
-                setError("");
-                setScanning(false);
-                codeReader.reset();
-              } catch (err) {
-                setError("Invalid QR code data");
-                setVehicleData(null);
-              }
-            }
-            if (err && !(err instanceof NotFoundException)) {
-              console.error(err);
+      codeReader.decodeFromVideoDevice(
+        selectedDeviceId,
+        videoRef.current!,
+        (result: Result | undefined, err: any) => {
+          if (result) {
+            try {
+              const parsed: Vehicle = JSON.parse(result.getText());
+              setVehicleData(parsed);
+              setScanResult(result.getText());
+              setError("");
+              setScanning(false);
+              codeReader.reset();
+            } catch (err) {
+              setError("Invalid QR code data");
+              setVehicleData(null);
             }
           }
-        );
+          // ignore "not found" errors; only log other errors
+          if (err && err.name !== "NotFoundException") {
+            console.error(err);
+          }
+        }
+      );
+    } catch (err: any) {
+      console.error(err);
+      setError("Error initializing QR scanner");
+      setScanning(false);
+    }
+  };
 
-        setScanning(true);
-      } catch (err) {
-        console.error(err);
-        setError("Error starting QR scanner");
-      }
-    };
-
-    startScanner();
-
-    // Cleanup on unmount
-    return () => codeReader.reset();
-  }, []);
+  const stopScan = () => {
+    codeReader.reset();
+    setScanning(false);
+  };
 
   return (
     <div className="min-h-screen p-6 bg-background">
@@ -89,15 +93,17 @@ const OfficerQRSearch = () => {
 
       {/* QR Scanner */}
       <div className="mb-6">
+        {!scanning ? (
+          <Button onClick={startScan}>Start Scan</Button>
+        ) : (
+          <Button variant="destructive" onClick={stopScan}>
+            Stop Scan
+          </Button>
+        )}
         <video
           ref={videoRef}
-          className="w-full max-w-md rounded-lg border border-border/50"
+          className="mt-4 w-full max-w-md border rounded-lg"
         />
-        {!scanning && (
-          <p className="text-sm text-muted-foreground">
-            Initializing camera...
-          </p>
-        )}
         {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
 
