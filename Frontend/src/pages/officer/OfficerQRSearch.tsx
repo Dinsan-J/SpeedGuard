@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { QrCode, MapPin, Calendar } from "lucide-react";
 import {
   BrowserMultiFormatReader,
-  Result,
   VideoInputDevice,
+  Result,
 } from "@zxing/browser";
 
 interface Violation {
@@ -28,16 +28,10 @@ const OfficerQRSearch = () => {
   const [scanResult, setScanResult] = useState<string>("");
   const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
   const [error, setError] = useState<string>("");
-  const [scanning, setScanning] = useState<boolean>(false);
-
+  const [scanning, setScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const codeReader = useRef(new BrowserMultiFormatReader()).current;
 
-  useEffect(() => {
-    return () => {
-      codeReader.reset(); // cleanup on unmount
-    };
-  }, [codeReader]);
+  const codeReader = new BrowserMultiFormatReader();
 
   const startScan = async () => {
     setScanning(true);
@@ -45,17 +39,22 @@ const OfficerQRSearch = () => {
     try {
       const devices: VideoInputDevice[] =
         await BrowserMultiFormatReader.listVideoInputDevices();
-      const selectedDeviceId = devices[0]?.deviceId;
-      if (!selectedDeviceId) {
+      if (!devices || devices.length === 0) {
         setError("No camera device found");
         setScanning(false);
         return;
       }
 
+      // Prefer back camera if available
+      const backCamera = devices.find((device) =>
+        /back|rear|environment/gi.test(device.label)
+      );
+      const selectedDeviceId = backCamera?.deviceId || devices[0].deviceId;
+
       codeReader.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current!,
-        (result: Result | undefined, err: any) => {
+        (result: Result | undefined, err) => {
           if (result) {
             try {
               const parsed: Vehicle = JSON.parse(result.getText());
@@ -64,18 +63,18 @@ const OfficerQRSearch = () => {
               setError("");
               setScanning(false);
               codeReader.reset();
-            } catch (err) {
+            } catch {
               setError("Invalid QR code data");
               setVehicleData(null);
             }
           }
-          // ignore "not found" errors; only log other errors
+
           if (err && err.name !== "NotFoundException") {
             console.error(err);
           }
         }
       );
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       setError("Error initializing QR scanner");
       setScanning(false);
@@ -91,20 +90,26 @@ const OfficerQRSearch = () => {
     <div className="min-h-screen p-6 bg-background">
       <h1 className="text-3xl font-bold mb-6">Scan Vehicle QR</h1>
 
-      {/* QR Scanner */}
       <div className="mb-6">
-        {!scanning ? (
-          <Button onClick={startScan}>Start Scan</Button>
-        ) : (
-          <Button variant="destructive" onClick={stopScan}>
+        {!scanning && (
+          <Button onClick={startScan} variant="default">
+            Start Scan
+          </Button>
+        )}
+        {scanning && (
+          <Button onClick={stopScan} variant="destructive">
             Stop Scan
           </Button>
         )}
+        {error && <p className="text-red-500 mt-2">{error}</p>}
+      </div>
+
+      <div className="mb-6">
         <video
           ref={videoRef}
-          className="mt-4 w-full max-w-md border rounded-lg"
+          style={{ width: "100%", maxWidth: "400px" }}
+          className="rounded-lg border border-border/50"
         />
-        {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
 
       {/* Vehicle Info */}
