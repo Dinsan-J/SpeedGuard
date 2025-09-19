@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Camera,
   LogOut, // Add LogOut icon
+  Download, // Add Download icon
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import "leaflet-defaulticon-compatibility";
@@ -347,7 +348,7 @@ const UserDashboard = () => {
                                 <span className="bg-warning/10 px-2 py-1 rounded">
                                   Excess:{" "}
                                   <strong className="text-warning">
-                                    +{excess} km/h
+                                    +{excess.toFixed(2)} km/h
                                   </strong>
                                 </span>
                               </div>
