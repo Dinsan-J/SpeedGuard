@@ -94,9 +94,9 @@ const OfficerQRSearch = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-3">
       <div className="max-w-4xl mx-auto space-y-8">
-        <Card className="p-8 bg-gradient-card border-border/50">
+        <Card className="p-4 bg-gradient-card border-border/50">
           <div className="text-center mb-8">
             <div className="mx-auto w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <QrCode className="h-10 w-10 text-primary" />
@@ -133,7 +133,7 @@ const OfficerQRSearch = () => {
 
         {/* Vehicle Info */}
         {vehicleData && (
-          <Card className="p-6 bg-gradient-card border-border/50">
+          <Card className="p-3 bg-gradient-card border-border/50">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-2xl font-bold">Vehicle Information</h3>
               <Badge
@@ -202,7 +202,7 @@ const OfficerQRSearch = () => {
                   .map((v: any, index: number) => (
                     <div
                       key={index}
-                      className="p-4 rounded-lg border border-border bg-accent/20"
+                      className="p-2 rounded-lg border border-border bg-accent/20"
                     >
                       <div className="flex items-center space-x-2">
                         <span className="font-semibold">Speed Violation</span>
