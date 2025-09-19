@@ -232,10 +232,14 @@ const OfficerQRSearch = () => {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
-                              <span className="font-semibold">Speed Violation</span>
+                              <span className="font-semibold">
+                                Speed Violation
+                              </span>
                               <Badge
                                 variant={
-                                  v.status === "Paid" ? "secondary" : "destructive"
+                                  v.status === "Paid"
+                                    ? "secondary"
+                                    : "destructive"
                                 }
                               >
                                 {v.status}
@@ -244,7 +248,9 @@ const OfficerQRSearch = () => {
                             <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground">
                               <div className="flex items-center">
                                 <Calendar className="h-3 w-3 mr-1" />
-                                {new Date(v.timestamp).toLocaleDateString()} at{" "}
+                                {new Date(
+                                  v.timestamp
+                                ).toLocaleDateString()} at{" "}
                                 {new Date(v.timestamp).toLocaleTimeString()}
                               </div>
                               <div className="flex items-center">
