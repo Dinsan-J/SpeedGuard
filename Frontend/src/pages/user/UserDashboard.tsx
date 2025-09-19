@@ -251,7 +251,7 @@ const UserDashboard = () => {
           </div>
           {/* Recent Violations */}
           {/* Recent Violations */}
-          /* Recent Violations - Responsive Section */
+
           <div className="lg:col-span-2">
             <Card className="p-3 bg-gradient-card border-border/50">
               <div className="flex items-center justify-between mb-6">
