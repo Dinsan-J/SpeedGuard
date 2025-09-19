@@ -281,13 +281,7 @@ const OfficerQRSearch = () => {
                           <div className="text-2xl font-bold text-primary mb-1">
                             ${fine}
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            Pay Now
-                          </Button>
+                          {/* Pay Now button removed */}
                         </div>
                       </div>
                     );
