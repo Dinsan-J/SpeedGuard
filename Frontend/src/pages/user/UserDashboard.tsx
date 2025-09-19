@@ -131,7 +131,7 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-3">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -247,11 +247,11 @@ const UserDashboard = () => {
               )}
             </Card>
           </div>
-
           {/* Recent Violations */}
           {/* Recent Violations */}
+          /* Recent Violations - Responsive Section */
           <div className="lg:col-span-2">
-            <Card className="p-6 bg-gradient-card border-border/50">
+            <Card className="p-3 bg-gradient-card border-border/50">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-xl font-bold">Recent Violations</h2>
@@ -279,9 +279,12 @@ const UserDashboard = () => {
                         key={violation._id}
                         className="p-4 rounded-lg border transition-all duration-300 border-warning/50 bg-warning/5"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start space-x-4">
-                            <div className="p-2 bg-accent/30 rounded-lg">
+                        {/* Mobile and Desktop Layout */}
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
+                          {/* Main Content */}
+                          <div className="flex items-start space-x-3 lg:space-x-4 flex-1">
+                            {/* Map Pin Icon */}
+                            <div className="p-2 bg-accent/30 rounded-lg flex-shrink-0">
                               <button
                                 onClick={() => {
                                   setMapLocation(violation.location);
@@ -290,43 +293,56 @@ const UserDashboard = () => {
                                 className="focus:outline-none"
                                 title="View Location"
                               >
-                                <MapPin className="h-5 w-5 text-primary" />
+                                <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                               </button>
                             </div>
-                            <div className="flex-1">
+
+                            {/* Violation Details */}
+                            <div className="flex-1 min-w-0">
                               <div className="flex items-center space-x-2 mb-2">
-                                <span className="font-semibold">
+                                <span className="font-semibold text-sm lg:text-base">
                                   Speed Violation
                                 </span>
                               </div>
-                              <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+
+                              {/* Date and Location - Responsive Grid */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-4 text-xs lg:text-sm text-muted-foreground mb-3">
                                 <div className="flex items-center">
-                                  <Calendar className="h-3 w-3 mr-1" />
-                                  {new Date(
-                                    violation.timestamp
-                                  ).toLocaleDateString()}{" "}
-                                  at{" "}
-                                  {new Date(
-                                    violation.timestamp
-                                  ).toLocaleTimeString()}
+                                  <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
+                                  <span className="truncate">
+                                    {new Date(
+                                      violation.timestamp
+                                    ).toLocaleDateString()}{" "}
+                                    at{" "}
+                                    {new Date(
+                                      violation.timestamp
+                                    ).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </span>
                                 </div>
                                 <div className="flex items-center">
-                                  <MapPin className="h-3 w-3 mr-1" />
-                                  {violation.location.lat},{" "}
-                                  {violation.location.lng}
+                                  <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                                  <span className="truncate">
+                                    {violation.location.lat.toFixed(4)},{" "}
+                                    {violation.location.lng.toFixed(4)}
+                                  </span>
                                 </div>
                               </div>
-                              <div className="mt-2 flex items-center space-x-4 text-sm">
-                                <span>
+
+                              {/* Speed Details - Responsive Layout */}
+                              <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm">
+                                <span className="bg-primary/10 px-2 py-1 rounded">
                                   Speed:{" "}
                                   <strong className="text-primary">
                                     {violation.speed} km/h
                                   </strong>
                                 </span>
-                                <span>
+                                <span className="bg-muted/50 px-2 py-1 rounded">
                                   Limit: <strong>{limit} km/h</strong>
                                 </span>
-                                <span>
+                                <span className="bg-warning/10 px-2 py-1 rounded">
                                   Excess:{" "}
                                   <strong className="text-warning">
                                     +{excess} km/h
@@ -335,16 +351,20 @@ const UserDashboard = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-primary mb-1">
+
+                          {/* Fine Amount and Pay Button - Responsive */}
+                          <div className="flex items-center justify-between lg:flex-col lg:items-end lg:text-right lg:ml-4 flex-shrink-0">
+                            <div className="text-xl lg:text-2xl font-bold text-primary mb-0 lg:mb-1">
                               ${fine}
                             </div>
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-xs"
+                              className="text-xs whitespace-nowrap"
                             >
-                              <CreditCard className="h-3 w-3 mr-1" /> Pay Now
+                              <CreditCard className="h-3 w-3 mr-1" />
+                              <span className="hidden sm:inline">Pay Now</span>
+                              <span className="sm:hidden">Pay</span>
                             </Button>
                           </div>
                         </div>
