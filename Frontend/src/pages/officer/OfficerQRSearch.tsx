@@ -33,7 +33,10 @@ const OfficerQRSearch = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
   const [mapOpen, setMapOpen] = useState(false);
-  const [mapLocation, setMapLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapLocation, setMapLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   const startCamera = async () => {
     try {
@@ -304,7 +307,7 @@ const OfficerQRSearch = () => {
           >
             <div
               className="bg-white rounded-lg shadow-lg p-4 relative w-[90vw] max-w-xl h-[60vh] flex flex-col"
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <button
                 className="absolute top-2 right-2 text-xl"
