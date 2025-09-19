@@ -1,3 +1,5 @@
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +20,7 @@ import {
   Calendar,
   AlertTriangle,
   CheckCircle,
+  MapPin,
 } from "lucide-react";
 import QrScanner from "qr-scanner";
 
@@ -29,6 +32,8 @@ const OfficerQRSearch = () => {
   const [cameraError, setCameraError] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
+  const [mapOpen, setMapOpen] = useState(false);
+  const [mapLocation, setMapLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   const startCamera = async () => {
     try {
@@ -213,6 +218,17 @@ const OfficerQRSearch = () => {
                         >
                           {v.status}
                         </Badge>
+                        <button
+                          onClick={() => {
+                            setMapLocation(v.location);
+                            setMapOpen(true);
+                          }}
+                          className="ml-2 p-1 rounded hover:bg-accent transition"
+                          title="View Location"
+                          type="button"
+                        >
+                          <MapPin className="h-5 w-5 text-primary" />
+                        </button>
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">
                         <p>Speed: {v.speed} km/h</p>
@@ -279,6 +295,41 @@ const OfficerQRSearch = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Map Modal */}
+        {mapOpen && mapLocation && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={() => setMapOpen(false)}
+          >
+            <div
+              className="bg-white rounded-lg shadow-lg p-4 relative w-[90vw] max-w-xl h-[60vh] flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                className="absolute top-2 right-2 text-xl"
+                onClick={() => setMapOpen(false)}
+              >
+                ×
+              </button>
+              <div className="flex-1">
+                <MapContainer
+                  center={[mapLocation.lat, mapLocation.lng]}
+                  zoom={16}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  />
+                  <Marker position={[mapLocation.lat, mapLocation.lng]}>
+                    <Popup>Violation Location</Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
