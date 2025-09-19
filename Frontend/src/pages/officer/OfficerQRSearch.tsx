@@ -207,95 +207,46 @@ const OfficerQRSearch = () => {
                 0 ? (
                 vehicleData.violations
                   .filter((v: any) => v.speed > 70)
-                  .map((v: any, index: number) => {
-                    const limit = 70;
-                    const excess = v.speed - limit;
-                    const fine = v.fine || 150;
-                    return (
-                      <div
-                        key={index}
-                        className="p-4 rounded-lg border transition-all duration-300 border-warning/50 bg-warning/5 flex flex-col justify-between"
-                      >
-                        <div className="flex items-start space-x-4">
-                          <div className="p-2 bg-accent/30 rounded-lg">
-                            <button
-                              onClick={() => {
-                                setMapLocation(v.location);
-                                setMapOpen(true);
-                              }}
-                              className="focus:outline-none"
-                              title="View Location"
-                              type="button"
-                            >
-                              <MapPin className="h-5 w-5 text-primary" />
-                            </button>
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <span className="font-semibold">
-                                Speed Violation
-                              </span>
-                              <Badge
-                                variant={
-                                  v.status === "Paid"
-                                    ? "secondary"
-                                    : "destructive"
-                                }
-                              >
-                                {v.status}
-                              </Badge>
-                            </div>
-                            <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground">
-                              <div className="flex items-center">
-                                <Calendar className="h-3 w-3 mr-1" />
-                                {new Date(
-                                  v.timestamp
-                                ).toLocaleDateString()} at{" "}
-                                {new Date(v.timestamp).toLocaleTimeString()}
-                              </div>
-                              <div className="flex items-center">
-                                <MapPin className="h-3 w-3 mr-1" />
-                                {v.location.lat}, {v.location.lng}
-                              </div>
-                            </div>
-                            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-                              <span>
-                                Speed:{" "}
-                                <strong className="text-primary">
-                                  {v.speed} km/h
-                                </strong>
-                              </span>
-                              <span>
-                                Limit: <strong>{limit} km/h</strong>
-                              </span>
-                              <span>
-                                Excess:{" "}
-                                <strong className="text-warning">
-                                  +{excess.toFixed(2)} km/h
-                                </strong>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right mt-4">
-                          <div className="text-2xl font-bold text-primary mb-1">
-                            ${fine}
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            <CreditCard className="h-3 w-3 mr-1" /> Pay Now
-                          </Button>
-                        </div>
+                  .map((v: any, index: number) => (
+                    <div
+                      key={index}
+                      className="p-2 rounded-lg border border-border bg-accent/20"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <span className="font-semibold">Speed Violation</span>
+                        <Badge
+                          variant={
+                            v.status === "Paid" ? "secondary" : "destructive"
+                          }
+                        >
+                          {v.status}
+                        </Badge>
+                        <button
+                          onClick={() => {
+                            setMapLocation(v.location);
+                            setMapOpen(true);
+                          }}
+                          className="ml-2 p-1 rounded hover:bg-accent transition"
+                          title="View Location"
+                          type="button"
+                        >
+                          <MapPin className="h-5 w-5 text-primary" />
+                        </button>
                       </div>
-                    );
-                  })
+                      <div className="text-sm text-muted-foreground mt-1">
+                        <p>Speed: {v.speed} km/h</p>
+                        <p>
+                          Location: {v.location.lat}, {v.location.lng}
+                        </p>
+                        <p>Date: {new Date(v.timestamp).toLocaleString()}</p>
+                        {v.fine && <p>Fine: ${v.fine}</p>}
+                      </div>
+                    </div>
+                  ))
               ) : (
-                <div className="col-span-full text-center text-muted-foreground">
-                  No violations found.
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  No violations found
+                </p>
               )}
             </div>
           </Card>
