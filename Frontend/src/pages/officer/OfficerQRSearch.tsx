@@ -203,7 +203,8 @@ const OfficerQRSearch = () => {
             <h3 className="text-2xl font-bold mb-4">Violation History</h3>
             <div className="space-y-4">
               {vehicleData.violations &&
-              vehicleData.violations.filter((v: any) => v.speed > 70).length > 0 ? (
+              vehicleData.violations.filter((v: any) => v.speed > 70).length >
+                0 ? (
                 vehicleData.violations
                   .filter((v: any) => v.speed > 70)
                   .map((v: any, index: number) => {
@@ -236,7 +237,9 @@ const OfficerQRSearch = () => {
                               </span>
                               <Badge
                                 variant={
-                                  v.status === "Paid" ? "secondary" : "destructive"
+                                  v.status === "Paid"
+                                    ? "secondary"
+                                    : "destructive"
                                 }
                               >
                                 {v.status}
@@ -245,7 +248,9 @@ const OfficerQRSearch = () => {
                             <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground">
                               <div className="flex items-center">
                                 <Calendar className="h-3 w-3 mr-1" />
-                                {new Date(v.timestamp).toLocaleDateString()} at{" "}
+                                {new Date(
+                                  v.timestamp
+                                ).toLocaleDateString()} at{" "}
                                 {new Date(v.timestamp).toLocaleTimeString()}
                               </div>
                               <div className="flex items-center">
