@@ -134,7 +134,7 @@ const OfficerQRSearch = () => {
         {/* Vehicle Info */}
         {vehicleData && (
           <Card className="p-6 bg-gradient-card border-border/50">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-3">
               <h3 className="text-2xl font-bold">Vehicle Information</h3>
               <Badge
                 className={`px-3 py-1 ${
@@ -146,7 +146,7 @@ const OfficerQRSearch = () => {
                 {vehicleData.status || "Active"}
               </Badge>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-3">
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
