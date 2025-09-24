@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const http = require("http"); // <-- Needed for socket.io
 const { Server } = require("socket.io");
+const mlRoutes = require("./routes/mlRoutes");
 
 const app = express();
 const server = http.createServer(app); // wrap express with http
@@ -34,6 +35,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/vehicle", require("./routes/vehicle"));
 app.use("/api/violation", require("./routes/violation"));
 app.use("/data", require("./routes/violationData")); // ESP32 POST
+app.use("/api", mlRoutes);
 
 // 🔹 Socket.IO for live speed
 io.on("connection", (socket) => {
