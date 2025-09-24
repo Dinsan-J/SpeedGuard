@@ -15,7 +15,6 @@
     "nodemon": "^3.1.10"
   },
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "pip install -r backend/ml/requirements.txt"
+    "start": "node server.js"
   }
 }
