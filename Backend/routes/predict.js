@@ -29,12 +29,10 @@ router.post("/predict-fine", (req, res) => {
         const parsed = JSON.parse(result);
         res.json(parsed);
       } catch (err) {
-        res
-          .status(500)
-          .json({
-            error: "Invalid JSON from Python script",
-            details: err.message,
-          });
+        res.status(500).json({
+          error: "Invalid JSON from Python script",
+          details: err.message,
+        });
       }
     } else {
       res

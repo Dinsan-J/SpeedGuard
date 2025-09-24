@@ -4,7 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const http = require("http"); // <-- Needed for socket.io
 const { Server } = require("socket.io");
-const mlRoutes = require("./routes/mlRoutes");
+const mlRoutes = require("./routes/predict");
 
 const app = express();
 const server = http.createServer(app); // wrap express with http
