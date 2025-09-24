@@ -2,6 +2,7 @@
 # model_training.py
 # Train a RandomForestRegressor on sample_data.csv and save a scikit-learn pipeline as fine_model.pkl
 
+import os
 import pandas as pd
 import joblib
 from sklearn.model_selection import train_test_split
@@ -14,7 +15,8 @@ from sklearn.metrics import mean_absolute_error
 
 def main():
     # Load dataset
-    df = pd.read_csv('sample_data.csv')
+    df_path = os.path.join(os.path.dirname(__file__), 'sample_data.csv')
+    df = pd.read_csv(df_path)
     df = df.dropna()
 
     # Features and target
@@ -47,9 +49,10 @@ def main():
     mae = mean_absolute_error(y_test, preds)
     print(f"Training done. MAE on test set: {mae:.2f}")
 
-    # Save trained pipeline
-    joblib.dump(pipeline, 'fine_model.pkl')
-    print("Saved trained pipeline to fine_model.pkl")
+    # Save trained pipeline inside ml folder
+    model_path = os.path.join(os.path.dirname(__file__), 'fine_model.pkl')
+    joblib.dump(pipeline, model_path)
+    print(f"Saved trained pipeline to {model_path}")
 
 
 if __name__ == '__main__':

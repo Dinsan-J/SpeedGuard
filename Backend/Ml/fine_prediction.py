@@ -1,27 +1,31 @@
 #!/usr/bin/env python3
+# fine_prediction.py
+# Load fine_model.pkl and predict fine amount from JSON input
+
+import os
 import sys
 import json
 import joblib
 import pandas as pd
-from typing import Dict
 
-MODEL_PATH = 'fine_model.pkl'
+# Path to the trained model (in the same folder as this script)
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "fine_model.pkl")
 
-# Load model once (so predictions are fast)
+# Load model
 try:
-    MODEL = joblib.load(MODEL_PATH)
+    model = joblib.load(MODEL_PATH)
 except Exception as e:
-    MODEL = None  # handled later with a clear error
+    print(json.dumps({"error": f"Model not loaded from {MODEL_PATH}. Run model_training.py first. {e}"}))
+    sys.exit(1)
 
-def predict_from_payload(payload: Dict) -> int:
-    if MODEL is None:
-        raise RuntimeError(f"Model not loaded from {MODEL_PATH}. Run model_training.py first.")
-
-    required = ['SpeedOverLimit', 'LocationType', 'TimeOfDay', 'PastViolations']
-    for k in required:
+def predict_from_payload(payload: dict) -> int:
+    # Required keys
+    keys = ['SpeedOverLimit', 'LocationType', 'TimeOfDay', 'PastViolations']
+    for k in keys:
         if k not in payload:
             raise ValueError(f"Missing required key: {k}")
 
+    # Build DataFrame (order/names must match training)
     df = pd.DataFrame([{
         'SpeedOverLimit': float(payload['SpeedOverLimit']),
         'LocationType': str(payload['LocationType']),
@@ -29,27 +33,32 @@ def predict_from_payload(payload: Dict) -> int:
         'PastViolations': int(payload['PastViolations'])
     }])
 
-    pred = MODEL.predict(df)[0]
+    pred = model.predict(df)[0]
     return int(round(pred))
 
-def load_payload() -> Dict:
+def main():
+    # Read JSON from argument or stdin
     if len(sys.argv) > 1:
         raw = sys.argv[1]
     else:
         raw = sys.stdin.read().strip()
-    if not raw:
-        raise ValueError("Provide a JSON payload as an argument or via stdin")
-    return json.loads(raw)
 
-def main():
+    if not raw:
+        print(json.dumps({"error": "Provide a JSON payload as an argument or via stdin"}))
+        sys.exit(2)
+
     try:
-        payload = load_payload()
-        predicted = predict_from_payload(payload)
-        print(json.dumps({'predicted_fine': predicted}))
-    except Exception as e:
-        # Print error to stderr as JSON (so callers can parse it)
-        print(json.dumps({'error': str(e)}), file=sys.stderr)
+        payload = json.loads(raw)
+    except json.JSONDecodeError as e:
+        print(json.dumps({"error": f"Invalid JSON input: {e}"}))
         sys.exit(1)
 
-if __name__ == '__main__':
+    try:
+        predicted = predict_from_payload(payload)
+        print(json.dumps({"predicted_fine": predicted}))
+    except Exception as e:
+        print(json.dumps({"error": str(e)}))
+        sys.exit(1)
+
+if __name__ == "__main__":
     main()
