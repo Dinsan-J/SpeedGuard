@@ -481,12 +481,12 @@ const OfficerIssueFine = () => {
             <Card className="p-6 bg-gradient-card border-border/50">
               <h3 className="text-lg font-semibold mb-4">Fine Guidelines</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>• Speeding: Base $150 + excess penalties</p>
-                <p>• Red Light: $200 flat rate</p>
-                <p>• Reckless Driving: $300 minimum</p>
-                <p>• Parking: $75 standard rate</p>
-                <p>• Mobile Phone: $100 flat rate</p>
-                <p>• Seatbelt: $50 flat rate</p>
+                <p>• Speeding: Base Rs. 15,000 + excess penalties</p>
+                <p>• Red Light: Rs. 20,000 flat rate</p>
+                <p>• Reckless Driving: Rs. 30,000 minimum</p>
+                <p>• Parking: Rs. 7,500 standard rate</p>
+                <p>• Mobile Phone: Rs. 10,000 flat rate</p>
+                <p>• Seatbelt: Rs. 5,000 flat rate</p>
               </div>
             </Card>
           </div>

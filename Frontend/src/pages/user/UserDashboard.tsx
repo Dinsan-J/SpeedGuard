@@ -139,18 +139,14 @@ const UserDashboard = () => {
 
   const stats = {
     totalViolations: violations.filter((v) => v.speed > 70).length, // ✅ only speed > 70
-    pendingFines: violations.filter(
-      (v) => v.speed > 70 && v.status === "pending"
-    ).length,
-    overdueFines: violations.filter(
-      (v) => v.speed > 70 && v.status === "overdue"
-    ).length,
+    pendingFines: violations.filter((v) => v.speed > 70).length,
+    overdueFines: 0,
     totalFines: violations
       .filter((v) => v.speed > 70)
-      .reduce((sum, v) => sum + (v.predictedFine || v.fine || 150), 0),
+      .reduce((sum, v) => sum + (v.predictedFine || 15000), 0),
     unpaidFines: violations
-      .filter((v) => v.speed > 70 && v.status !== "paid")
-      .reduce((sum, v) => sum + (v.predictedFine || v.fine || 150), 0),
+      .filter((v) => v.speed > 70)
+      .reduce((sum, v) => sum + (v.predictedFine || 15000), 0),
   };
 
   const getStatusIcon = (status: string) => {
