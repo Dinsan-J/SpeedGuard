@@ -42,12 +42,12 @@ const OfficerIssueFine = () => {
   const [mlPrediction, setMlPrediction] = useState<number | null>(null);
 
   const violationTypes = [
-    { value: 'speeding', label: 'Speeding', baseAmount: 150 },
-    { value: 'red-light', label: 'Red Light Violation', baseAmount: 200 },
-    { value: 'parking', label: 'Illegal Parking', baseAmount: 75 },
-    { value: 'reckless', label: 'Reckless Driving', baseAmount: 300 },
-    { value: 'phone', label: 'Mobile Phone Use', baseAmount: 100 },
-    { value: 'seatbelt', label: 'Seatbelt Violation', baseAmount: 50 }
+    { value: 'speeding', label: 'Speeding', baseAmount: 15000 },
+    { value: 'red-light', label: 'Red Light Violation', baseAmount: 20000 },
+    { value: 'parking', label: 'Illegal Parking', baseAmount: 7500 },
+    { value: 'reckless', label: 'Reckless Driving', baseAmount: 30000 },
+    { value: 'phone', label: 'Mobile Phone Use', baseAmount: 10000 },
+    { value: 'seatbelt', label: 'Seatbelt Violation', baseAmount: 5000 }
   ];
 
   const calculateFine = (type: string, speed?: string, limit?: string) => {
@@ -58,9 +58,9 @@ const OfficerIssueFine = () => {
     
     if (type === 'speeding' && speed && limit) {
       const excess = parseInt(speed) - parseInt(limit);
-      if (excess > 30) amount += 200;
-      else if (excess > 20) amount += 150;
-      else if (excess > 10) amount += 100;
+      if (excess > 30) amount += 20000;
+      else if (excess > 20) amount += 15000;
+      else if (excess > 10) amount += 10000;
     }
 
     return amount;
@@ -118,8 +118,10 @@ const OfficerIssueFine = () => {
       }
 
       const data = await response.json();
-      setMlPrediction(data.predicted_fine);
-      setFormData(prev => ({ ...prev, amount: data.predicted_fine.toString() }));
+      // Convert USD to LKR (1 USD = 300 LKR approximately)
+      const fineInLKR = Math.round(data.predicted_fine * 300);
+      setMlPrediction(fineInLKR);
+      setFormData(prev => ({ ...prev, amount: fineInLKR.toString() }));
     } catch (error) {
       console.error('ML Prediction error:', error);
       alert('Failed to predict fine amount. Using manual calculation.');
@@ -149,7 +151,7 @@ const OfficerIssueFine = () => {
             <div className="bg-accent/20 rounded-lg p-4 mb-6">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Fine Amount:</span>
-                <span className="text-2xl font-bold text-primary">${formData.amount}</span>
+                <span className="text-2xl font-bold text-primary">Rs. {parseInt(formData.amount).toLocaleString()}</span>
               </div>
             </div>
 
@@ -228,7 +230,7 @@ const OfficerIssueFine = () => {
                       <SelectContent>
                         {violationTypes.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
-                            {type.label} (Base: ${type.baseAmount})
+                            {type.label} (Base: Rs. {type.baseAmount.toLocaleString()})
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -344,7 +346,7 @@ const OfficerIssueFine = () => {
                         {mlPrediction !== null && (
                           <div className="bg-secondary/10 rounded-lg p-3 text-center">
                             <p className="text-xs text-muted-foreground mb-1">AI Predicted Fine</p>
-                            <p className="text-2xl font-bold text-secondary">${mlPrediction}</p>
+                            <p className="text-2xl font-bold text-secondary">Rs. {mlPrediction.toLocaleString()}</p>
                           </div>
                         )}
                       </div>
@@ -384,7 +386,7 @@ const OfficerIssueFine = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="amount">Amount ($) *</Label>
+                    <Label htmlFor="amount">Amount (Rs.) *</Label>
                     <Input
                       id="amount"
                       type="number"
@@ -441,7 +443,7 @@ const OfficerIssueFine = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Total Amount</span>
-                  <span className="font-semibold">$7,350</span>
+                  <span className="font-semibold">Rs. 735,000</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Most Common</span>
@@ -455,9 +457,9 @@ const OfficerIssueFine = () => {
               <h3 className="text-lg font-semibold mb-4">Recent Fines</h3>
               <div className="space-y-3">
                 {[
-                  { plate: 'XYZ-789', type: 'Speeding', amount: '$175', time: '10 min ago' },
-                  { plate: 'DEF-456', type: 'Red Light', amount: '$200', time: '25 min ago' },
-                  { plate: 'GHI-123', type: 'Parking', amount: '$75', time: '1 hr ago' }
+                  { plate: 'XYZ-789', type: 'Speeding', amount: 'Rs. 17,500', time: '10 min ago' },
+                  { plate: 'DEF-456', type: 'Red Light', amount: 'Rs. 20,000', time: '25 min ago' },
+                  { plate: 'GHI-123', type: 'Parking', amount: 'Rs. 7,500', time: '1 hr ago' }
                 ].map((fine, index) => (
                   <div key={index} className="p-3 bg-accent/20 rounded-lg">
                     <div className="flex justify-between items-start">

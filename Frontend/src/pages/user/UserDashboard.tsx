@@ -59,6 +59,7 @@ const UserDashboard = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   // Remove dummy violations, use MongoDB data
   const [violations, setViolations] = useState<Violation[]>([]);
+  const [isLoadingViolations, setIsLoadingViolations] = useState(true);
   const [mapOpen, setMapOpen] = useState(false);
   const [mapLocation, setMapLocation] = useState<{
     lat: number;
@@ -80,12 +81,21 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const fetchViolations = async () => {
+      setIsLoadingViolations(true);
       const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
       const response = await fetch(`${API_URL}/api/violation`);
       const data = await response.json();
       
       if (data.success) {
-        // Fetch ML predictions for each violation
+        // First set violations without predictions for immediate display
+        const violationsWithBasicFines = data.violations.map((v: Violation) => ({
+          ...v,
+          predictedFine: 15000 // Default Sri Lankan Rupees
+        }));
+        setViolations(violationsWithBasicFines);
+        setIsLoadingViolations(false);
+        
+        // Then fetch ML predictions in background and update
         const violationsWithPredictions = await Promise.all(
           data.violations.map(async (violation: Violation) => {
             try {
@@ -103,22 +113,25 @@ const UserDashboard = () => {
               
               if (predResponse.ok) {
                 const predData = await predResponse.json();
-                console.log('ML Prediction for violation', violation._id, ':', predData.predicted_fine);
-                return { ...violation, predictedFine: predData.predicted_fine };
+                // Convert USD to LKR (approximate rate: 1 USD = 300 LKR)
+                const fineInLKR = Math.round(predData.predicted_fine * 300);
+                return { ...violation, predictedFine: fineInLKR };
               } else {
                 console.error('ML API returned error:', predResponse.status);
               }
             } catch (error) {
               console.error('Failed to predict fine for violation:', violation._id, error);
             }
-            // Fallback: calculate basic fine based on speed excess
+            // Fallback: calculate basic fine based on speed excess in LKR
             const speedExcess = violation.speed - 70;
-            const fallbackFine = 150 + Math.floor(speedExcess / 10) * 50;
+            const fallbackFine = 15000 + Math.floor(speedExcess / 10) * 5000;
             return { ...violation, predictedFine: fallbackFine };
           })
         );
         
         setViolations(violationsWithPredictions);
+      } else {
+        setIsLoadingViolations(false);
       }
     };
     fetchViolations();
@@ -212,7 +225,7 @@ const UserDashboard = () => {
                   Total Violations
                 </p>
                 <p className="text-3xl font-bold text-info">
-                  {stats.totalViolations}
+                  {isLoadingViolations ? "..." : stats.totalViolations}
                 </p>
               </div>
               <div className="p-3 bg-info/10 rounded-lg">
@@ -394,7 +407,7 @@ const UserDashboard = () => {
                           {/* Fine Amount and Pay Button - Responsive */}
                           <div className="flex items-center justify-between lg:flex-col lg:items-end lg:text-right lg:ml-4 flex-shrink-0">
                             <div className="text-xl lg:text-2xl font-bold text-primary mb-0 lg:mb-1">
-                              ${fine}
+                              Rs. {fine.toLocaleString()}
                             </div>
                             <Button
                               size="sm"
