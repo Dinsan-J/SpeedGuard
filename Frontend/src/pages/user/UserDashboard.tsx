@@ -65,6 +65,7 @@ interface Violation {
 const UserDashboard = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const [showQRVehicleId, setShowQRVehicleId] = useState<string | null>(null);
   // Remove dummy violations, use MongoDB data
   const [violations, setViolations] = useState<Violation[]>([]);
   const [isLoadingViolations, setIsLoadingViolations] = useState(true);
@@ -334,14 +335,16 @@ const UserDashboard = () => {
                   vehicles.map((vehicle) => (
                     <div
                       key={vehicle._id}
-                      onClick={() => setSelectedVehicleId(vehicle._id)}
-                      className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+                      className={`p-4 rounded-lg border transition-all duration-200 ${
                         selectedVehicleId === vehicle._id
                           ? "border-primary bg-primary/10 shadow-lg"
                           : "border-border/50 bg-accent/20 hover:border-primary/50"
                       }`}
                     >
-                      <div className="flex items-center space-x-3">
+                      <div 
+                        className="flex items-center space-x-3 cursor-pointer"
+                        onClick={() => setSelectedVehicleId(vehicle._id)}
+                      >
                         <div className={`p-2 rounded-lg ${
                           selectedVehicleId === vehicle._id ? "bg-primary/20" : "bg-info/10"
                         }`}>
@@ -369,6 +372,38 @@ const UserDashboard = () => {
                         </div>
                         {selectedVehicleId === vehicle._id && (
                           <CheckCircle className="h-5 w-5 text-primary" />
+                        )}
+                      </div>
+
+                      {/* QR Code Section */}
+                      <div className="mt-3 pt-3 border-t border-border/30">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowQRVehicleId(showQRVehicleId === vehicle._id ? null : vehicle._id);
+                          }}
+                        >
+                          <QrCode className="h-3 w-3 mr-2" />
+                          {showQRVehicleId === vehicle._id ? "Hide QR Code" : "Show QR Code"}
+                        </Button>
+
+                        {showQRVehicleId === vehicle._id && (
+                          <div className="mt-3 p-3 bg-white rounded-lg flex flex-col items-center animate-fade-in">
+                            <QRCode
+                              value={vehicle.plateNumber}
+                              size={120}
+                              level="M"
+                            />
+                            <p className="text-xs text-center text-muted-foreground mt-2">
+                              {vehicle.plateNumber}
+                            </p>
+                            <p className="text-xs text-center text-muted-foreground">
+                              Show to officers when requested
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
