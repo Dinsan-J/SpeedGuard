@@ -104,51 +104,15 @@ const UserDashboard = () => {
         const data = await response.json();
         
         if (data.success) {
-          // Show violations immediately without predictions
-          setViolations(data.violations);
-          setIsLoadingViolations(false);
-          
-          // Fetch ML predictions in background (limit to first 10 for speed)
-          const violationsToPredict = data.violations.slice(0, 10);
-          
-          const predictions = await Promise.allSettled(
-            violationsToPredict.map(async (violation: Violation) => {
-              const predResponse = await fetch(`${API_URL}/api/predict-violation-fine`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  speed: violation.speed,
-                  speedLimit: 70,
-                  locationType: 'Urban',
-                  timeOfDay: 'Day',
-                  pastViolations: 0
-                })
-              });
-              
-              if (predResponse.ok) {
-                const predData = await predResponse.json();
-                const fineAmount = Math.round(predData.predicted_fine);
-                return { id: violation._id, fine: fineAmount };
-              }
-              throw new Error('Prediction failed');
-            })
-          );
-          
-          // Update violations with predictions
-          setViolations(prev => prev.map(v => {
-            const prediction = predictions.find(p => 
-              p.status === 'fulfilled' && p.value.id === v._id
-            );
-            if (prediction && prediction.status === 'fulfilled') {
-              console.log('ML prediction for', v._id, ':', prediction.value.fine);
-              return { ...v, predictedFine: prediction.value.fine };
-            }
-            // Fallback calculation for violations without ML prediction
+          // Calculate fines using simple formula (no ML prediction needed)
+          const violationsWithFines = data.violations.map((v: Violation) => {
             const speedExcess = v.speed - 70;
-            const fallbackFine = 1500 + Math.floor(speedExcess / 5) * 300;
-            console.log('Using fallback for', v._id, ':', fallbackFine);
-            return { ...v, predictedFine: fallbackFine };
-          }));
+            const calculatedFine = 1500 + Math.floor(speedExcess / 5) * 300;
+            return { ...v, predictedFine: calculatedFine };
+          });
+          
+          setViolations(violationsWithFines);
+          setIsLoadingViolations(false);
         } else {
           setIsLoadingViolations(false);
         }
