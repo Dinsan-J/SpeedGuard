@@ -90,7 +90,7 @@ const UserDashboard = () => {
         // First set violations without predictions for immediate display
         const violationsWithBasicFines = data.violations.map((v: Violation) => ({
           ...v,
-          predictedFine: 15000 // Default Sri Lankan Rupees
+          predictedFine: 2000 // Default Sri Lankan Rupees base fine
         }));
         setViolations(violationsWithBasicFines);
         setIsLoadingViolations(false);
@@ -113,8 +113,10 @@ const UserDashboard = () => {
               
               if (predResponse.ok) {
                 const predData = await predResponse.json();
-                // Convert USD to LKR (approximate rate: 1 USD = 300 LKR)
-                const fineInLKR = Math.round(predData.predicted_fine * 300);
+                // Convert USD to LKR (1 USD ≈ 13.33 LKR for this model)
+                // This gives us a base of ~2000 LKR for typical violations
+                const fineInLKR = Math.round(predData.predicted_fine * 13.33);
+                console.log('ML Prediction for violation', violation._id, ':', fineInLKR);
                 return { ...violation, predictedFine: fineInLKR };
               } else {
                 console.error('ML API returned error:', predResponse.status);
@@ -124,7 +126,7 @@ const UserDashboard = () => {
             }
             // Fallback: calculate basic fine based on speed excess in LKR
             const speedExcess = violation.speed - 70;
-            const fallbackFine = 15000 + Math.floor(speedExcess / 10) * 5000;
+            const fallbackFine = 2000 + Math.floor(speedExcess / 5) * 500;
             return { ...violation, predictedFine: fallbackFine };
           })
         );
@@ -143,10 +145,10 @@ const UserDashboard = () => {
     overdueFines: 0,
     totalFines: violations
       .filter((v) => v.speed > 70)
-      .reduce((sum, v) => sum + (v.predictedFine || 15000), 0),
+      .reduce((sum, v) => sum + (v.predictedFine || 2000), 0),
     unpaidFines: violations
       .filter((v) => v.speed > 70)
-      .reduce((sum, v) => sum + (v.predictedFine || 15000), 0),
+      .reduce((sum, v) => sum + (v.predictedFine || 2000), 0),
   };
 
   const getStatusIcon = (status: string) => {

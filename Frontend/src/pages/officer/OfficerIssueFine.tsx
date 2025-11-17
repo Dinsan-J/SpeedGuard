@@ -42,12 +42,12 @@ const OfficerIssueFine = () => {
   const [mlPrediction, setMlPrediction] = useState<number | null>(null);
 
   const violationTypes = [
-    { value: 'speeding', label: 'Speeding', baseAmount: 15000 },
-    { value: 'red-light', label: 'Red Light Violation', baseAmount: 20000 },
-    { value: 'parking', label: 'Illegal Parking', baseAmount: 7500 },
-    { value: 'reckless', label: 'Reckless Driving', baseAmount: 30000 },
-    { value: 'phone', label: 'Mobile Phone Use', baseAmount: 10000 },
-    { value: 'seatbelt', label: 'Seatbelt Violation', baseAmount: 5000 }
+    { value: 'speeding', label: 'Speeding', baseAmount: 2000 },
+    { value: 'red-light', label: 'Red Light Violation', baseAmount: 2700 },
+    { value: 'parking', label: 'Illegal Parking', baseAmount: 1000 },
+    { value: 'reckless', label: 'Reckless Driving', baseAmount: 4000 },
+    { value: 'phone', label: 'Mobile Phone Use', baseAmount: 1300 },
+    { value: 'seatbelt', label: 'Seatbelt Violation', baseAmount: 700 }
   ];
 
   const calculateFine = (type: string, speed?: string, limit?: string) => {
@@ -58,9 +58,9 @@ const OfficerIssueFine = () => {
     
     if (type === 'speeding' && speed && limit) {
       const excess = parseInt(speed) - parseInt(limit);
-      if (excess > 30) amount += 20000;
-      else if (excess > 20) amount += 15000;
-      else if (excess > 10) amount += 10000;
+      if (excess > 30) amount += 2700;
+      else if (excess > 20) amount += 2000;
+      else if (excess > 10) amount += 1300;
     }
 
     return amount;
@@ -118,8 +118,8 @@ const OfficerIssueFine = () => {
       }
 
       const data = await response.json();
-      // Convert USD to LKR (1 USD = 300 LKR approximately)
-      const fineInLKR = Math.round(data.predicted_fine * 300);
+      // Convert USD to LKR (1 USD ≈ 13.33 LKR for this model)
+      const fineInLKR = Math.round(data.predicted_fine * 13.33);
       setMlPrediction(fineInLKR);
       setFormData(prev => ({ ...prev, amount: fineInLKR.toString() }));
     } catch (error) {
@@ -443,7 +443,7 @@ const OfficerIssueFine = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Total Amount</span>
-                  <span className="font-semibold">Rs. 735,000</span>
+                  <span className="font-semibold">Rs. 98,000</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Most Common</span>
@@ -457,9 +457,9 @@ const OfficerIssueFine = () => {
               <h3 className="text-lg font-semibold mb-4">Recent Fines</h3>
               <div className="space-y-3">
                 {[
-                  { plate: 'XYZ-789', type: 'Speeding', amount: 'Rs. 17,500', time: '10 min ago' },
-                  { plate: 'DEF-456', type: 'Red Light', amount: 'Rs. 20,000', time: '25 min ago' },
-                  { plate: 'GHI-123', type: 'Parking', amount: 'Rs. 7,500', time: '1 hr ago' }
+                  { plate: 'XYZ-789', type: 'Speeding', amount: 'Rs. 2,300', time: '10 min ago' },
+                  { plate: 'DEF-456', type: 'Red Light', amount: 'Rs. 2,700', time: '25 min ago' },
+                  { plate: 'GHI-123', type: 'Parking', amount: 'Rs. 1,000', time: '1 hr ago' }
                 ].map((fine, index) => (
                   <div key={index} className="p-3 bg-accent/20 rounded-lg">
                     <div className="flex justify-between items-start">
@@ -481,12 +481,12 @@ const OfficerIssueFine = () => {
             <Card className="p-6 bg-gradient-card border-border/50">
               <h3 className="text-lg font-semibold mb-4">Fine Guidelines</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>• Speeding: Base Rs. 15,000 + excess penalties</p>
-                <p>• Red Light: Rs. 20,000 flat rate</p>
-                <p>• Reckless Driving: Rs. 30,000 minimum</p>
-                <p>• Parking: Rs. 7,500 standard rate</p>
-                <p>• Mobile Phone: Rs. 10,000 flat rate</p>
-                <p>• Seatbelt: Rs. 5,000 flat rate</p>
+                <p>• Speeding: Base Rs. 2,000 + excess penalties</p>
+                <p>• Red Light: Rs. 2,700 flat rate</p>
+                <p>• Reckless Driving: Rs. 4,000 minimum</p>
+                <p>• Parking: Rs. 1,000 standard rate</p>
+                <p>• Mobile Phone: Rs. 1,300 flat rate</p>
+                <p>• Seatbelt: Rs. 700 flat rate</p>
               </div>
             </Card>
           </div>
