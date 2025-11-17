@@ -96,9 +96,21 @@ router.get("/plate/:plateNumber", async (req, res) => {
     }
     // Fetch violations for this vehicle
     const violations = await Violation.find({ vehicleId: vehicle.plateNumber });
-    res.json({ success: true, vehicle: { ...vehicle.toObject(), violations } });
+    
+    // Calculate fine for each violation
+    const violationsWithFines = violations.map(v => {
+      const speedLimit = 70;
+      const speedExcess = v.speed - speedLimit;
+      const calculatedFine = 1500 + Math.floor(speedExcess / 5) * 300;
+      return {
+        ...v.toObject(),
+        fine: calculatedFine
+      };
+    });
+    
+    res.json({ success: true, vehicle: { ...vehicle.toObject(), violations: violationsWithFines } });
   } catch (err) {
-    console.error(err); // <--- Add this to see errors in your backend logs!
+    console.error(err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });

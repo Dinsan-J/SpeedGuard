@@ -210,7 +210,7 @@ const OfficerQRSearch = () => {
                   .map((v: any, index: number) => {
                     const limit = 70;
                     const excess = v.speed - limit;
-                    const fine = v.fine || 150;
+                    const fine = v.fine || (1500 + Math.floor(excess / 5) * 300);
                     return (
                       <div
                         key={index}
@@ -279,7 +279,7 @@ const OfficerQRSearch = () => {
                         </div>
                         <div className="text-right mt-4">
                           <div className="text-2xl font-bold text-primary mb-1">
-                            ${fine}
+                            Rs. {fine.toLocaleString()}
                           </div>
                           {/* Pay Now button removed */}
                         </div>
