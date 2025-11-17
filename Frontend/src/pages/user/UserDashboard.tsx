@@ -83,14 +83,21 @@ const UserDashboard = () => {
     const fetchViolations = async () => {
       setIsLoadingViolations(true);
       const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
-      const response = await fetch(`${API_URL}/api/violation`);
-      const data = await response.json();
       
-      if (data.success) {
-        // Fetch ML predictions for all violations before displaying
-        const violationsWithPredictions = await Promise.all(
-          data.violations.map(async (violation: Violation) => {
-            try {
+      try {
+        const response = await fetch(`${API_URL}/api/violation`);
+        const data = await response.json();
+        
+        if (data.success) {
+          // Show violations immediately without predictions
+          setViolations(data.violations);
+          setIsLoadingViolations(false);
+          
+          // Fetch ML predictions in background (limit to first 10 for speed)
+          const violationsToPredict = data.violations.slice(0, 10);
+          
+          const predictions = await Promise.allSettled(
+            violationsToPredict.map(async (violation: Violation) => {
               const predResponse = await fetch(`${API_URL}/api/predict-violation-fine`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -105,26 +112,31 @@ const UserDashboard = () => {
               
               if (predResponse.ok) {
                 const predData = await predResponse.json();
-                // ML model already returns values in appropriate range (200-6000)
                 const fineAmount = Math.round(predData.predicted_fine);
-                console.log('ML Prediction for violation', violation._id, ':', fineAmount);
-                return { ...violation, predictedFine: fineAmount };
-              } else {
-                console.error('ML API returned error:', predResponse.status);
-                return null;
+                return { id: violation._id, fine: fineAmount };
               }
-            } catch (error) {
-              console.error('Failed to predict fine for violation:', violation._id, error);
-              return null;
+              throw new Error('Prediction failed');
+            })
+          );
+          
+          // Update violations with predictions
+          setViolations(prev => prev.map(v => {
+            const prediction = predictions.find(p => 
+              p.status === 'fulfilled' && p.value.id === v._id
+            );
+            if (prediction && prediction.status === 'fulfilled') {
+              return { ...v, predictedFine: prediction.value.fine };
             }
-          })
-        );
-        
-        // Filter out failed predictions and set violations
-        const validViolations = violationsWithPredictions.filter(v => v !== null) as Violation[];
-        setViolations(validViolations);
-        setIsLoadingViolations(false);
-      } else {
+            // Fallback calculation for violations without ML prediction
+            const speedExcess = v.speed - 70;
+            const fallbackFine = 1500 + Math.floor(speedExcess / 5) * 300;
+            return { ...v, predictedFine: fallbackFine };
+          }));
+        } else {
+          setIsLoadingViolations(false);
+        }
+      } catch (error) {
+        console.error('Failed to fetch violations:', error);
         setIsLoadingViolations(false);
       }
     };
@@ -330,7 +342,7 @@ const UserDashboard = () => {
                 {isLoadingViolations ? (
                   <div className="text-center py-8">
                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    <p className="text-sm text-muted-foreground mt-2">Loading ML predictions...</p>
+                    <p className="text-sm text-muted-foreground mt-2">Loading violations...</p>
                   </div>
                 ) : violations.length === 0 ? (
                   <div className="text-center py-8">
