@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
@@ -100,8 +100,12 @@ const Login = () => {
               to="/"
               className="inline-flex items-center space-x-2 mb-6 group"
             >
-              <div className="p-3 bg-gradient-hero rounded-xl shadow-glow-primary group-hover:shadow-glow-primary/80 transition-all duration-300">
-                <Shield className="h-8 w-8 text-white" />
+              <div className="p-1">
+                <img
+                  src="/logook2.png"
+                  alt="SpeedGuard Logo"
+                  className="h-10 w-10 object-contain"
+                />
               </div>
               <span className="text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent">
                 SpeedGuard

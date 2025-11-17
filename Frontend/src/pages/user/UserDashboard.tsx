@@ -214,9 +214,15 @@ const UserDashboard = () => {
                 <p className="text-sm text-muted-foreground">
                   Total Violations
                 </p>
-                <p className="text-3xl font-bold text-info">
-                  {isLoadingViolations ? "..." : stats.totalViolations}
-                </p>
+                {isLoadingViolations ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-info"></div>
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold text-info">
+                    {stats.totalViolations}
+                  </p>
+                )}
               </div>
               <div className="p-3 bg-info/10 rounded-lg">
                 <AlertTriangle className="h-6 w-6 text-info" />
@@ -231,9 +237,15 @@ const UserDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending Fines</p>
-                <p className="text-3xl font-bold text-warning">
-                  {stats.pendingFines}
-                </p>
+                {isLoadingViolations ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-warning"></div>
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold text-warning">
+                    {stats.pendingFines}
+                  </p>
+                )}
               </div>
               <div className="p-3 bg-warning/10 rounded-lg">
                 <Clock className="h-6 w-6 text-warning" />
@@ -248,9 +260,15 @@ const UserDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Overdue Fines</p>
-                <p className="text-3xl font-bold text-primary">
-                  {stats.overdueFines}
-                </p>
+                {isLoadingViolations ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold text-primary">
+                    {stats.overdueFines}
+                  </p>
+                )}
               </div>
               <div className="p-3 bg-primary/10 rounded-lg">
                 <XCircle className="h-6 w-6 text-primary" />
