@@ -87,15 +87,7 @@ const UserDashboard = () => {
       const data = await response.json();
       
       if (data.success) {
-        // First set violations without predictions for immediate display
-        const violationsWithBasicFines = data.violations.map((v: Violation) => ({
-          ...v,
-          predictedFine: 2000 // Default Sri Lankan Rupees base fine
-        }));
-        setViolations(violationsWithBasicFines);
-        setIsLoadingViolations(false);
-        
-        // Then fetch ML predictions in background and update
+        // Fetch ML predictions for all violations before displaying
         const violationsWithPredictions = await Promise.all(
           data.violations.map(async (violation: Violation) => {
             try {
@@ -113,25 +105,25 @@ const UserDashboard = () => {
               
               if (predResponse.ok) {
                 const predData = await predResponse.json();
-                // Convert USD to LKR (1 USD ≈ 13.33 LKR for this model)
-                // This gives us a base of ~2000 LKR for typical violations
-                const fineInLKR = Math.round(predData.predicted_fine * 13.33);
-                console.log('ML Prediction for violation', violation._id, ':', fineInLKR);
-                return { ...violation, predictedFine: fineInLKR };
+                // ML model already returns values in appropriate range (200-6000)
+                const fineAmount = Math.round(predData.predicted_fine);
+                console.log('ML Prediction for violation', violation._id, ':', fineAmount);
+                return { ...violation, predictedFine: fineAmount };
               } else {
                 console.error('ML API returned error:', predResponse.status);
+                return null;
               }
             } catch (error) {
               console.error('Failed to predict fine for violation:', violation._id, error);
+              return null;
             }
-            // Fallback: calculate basic fine based on speed excess in LKR
-            const speedExcess = violation.speed - 70;
-            const fallbackFine = 2000 + Math.floor(speedExcess / 5) * 500;
-            return { ...violation, predictedFine: fallbackFine };
           })
         );
         
-        setViolations(violationsWithPredictions);
+        // Filter out failed predictions and set violations
+        const validViolations = violationsWithPredictions.filter(v => v !== null) as Violation[];
+        setViolations(validViolations);
+        setIsLoadingViolations(false);
       } else {
         setIsLoadingViolations(false);
       }
@@ -145,10 +137,10 @@ const UserDashboard = () => {
     overdueFines: 0,
     totalFines: violations
       .filter((v) => v.speed > 70)
-      .reduce((sum, v) => sum + (v.predictedFine || 2000), 0),
+      .reduce((sum, v) => sum + (v.predictedFine || 0), 0),
     unpaidFines: violations
       .filter((v) => v.speed > 70)
-      .reduce((sum, v) => sum + (v.predictedFine || 2000), 0),
+      .reduce((sum, v) => sum + (v.predictedFine || 0), 0),
   };
 
   const getStatusIcon = (status: string) => {
@@ -317,7 +309,17 @@ const UserDashboard = () => {
               </div>
 
               <div className="space-y-4">
-                {violations
+                {isLoadingViolations ? (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p className="text-sm text-muted-foreground mt-2">Loading ML predictions...</p>
+                  </div>
+                ) : violations.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No violations found</p>
+                  </div>
+                ) : (
+                  violations
                   .filter((violation) => violation.speed > 70) // ✅ only show speed > 70
                   .map((violation) => {
                     const limit = 70;
@@ -420,7 +422,8 @@ const UserDashboard = () => {
                         </div>
                       </div>
                     );
-                  })}
+                  })
+                )}
               </div>
             </Card>
           </div>
