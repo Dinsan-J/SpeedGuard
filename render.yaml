@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: speedguard-backend
+    env: node
+    rootDir: Backend
+    buildCommand: pip install --upgrade pip && pip install -r ml/requirements.txt && yarn
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: PYTHON_VERSION
+        value: 3.13.4
