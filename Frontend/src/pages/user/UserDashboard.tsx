@@ -125,11 +125,13 @@ const UserDashboard = () => {
               p.status === 'fulfilled' && p.value.id === v._id
             );
             if (prediction && prediction.status === 'fulfilled') {
+              console.log('ML prediction for', v._id, ':', prediction.value.fine);
               return { ...v, predictedFine: prediction.value.fine };
             }
             // Fallback calculation for violations without ML prediction
             const speedExcess = v.speed - 70;
             const fallbackFine = 1500 + Math.floor(speedExcess / 5) * 300;
+            console.log('Using fallback for', v._id, ':', fallbackFine);
             return { ...v, predictedFine: fallbackFine };
           }));
         } else {
@@ -354,7 +356,8 @@ const UserDashboard = () => {
                   .map((violation) => {
                     const limit = 70;
                     const excess = violation.speed - limit;
-                    const fine = violation.predictedFine || 150;
+                    // Use ML prediction if available, otherwise calculate fallback
+                    const fine = violation.predictedFine || (1500 + Math.floor(excess / 5) * 300);
 
                     return (
                       <div
