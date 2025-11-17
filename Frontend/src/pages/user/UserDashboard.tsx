@@ -52,6 +52,7 @@ interface Violation {
   location: { lat: number; lng: number };
   speed: number;
   timestamp: string;
+  predictedFine?: number;
 }
 
 const UserDashboard = () => {
@@ -79,11 +80,40 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const fetchViolations = async () => {
-      const response = await fetch(
-        "https://speedguard-gz70.onrender.com/api/violation"
-      );
+      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
+      const response = await fetch(`${API_URL}/api/violation`);
       const data = await response.json();
-      if (data.success) setViolations(data.violations);
+      
+      if (data.success) {
+        // Fetch ML predictions for each violation
+        const violationsWithPredictions = await Promise.all(
+          data.violations.map(async (violation: Violation) => {
+            try {
+              const predResponse = await fetch(`${API_URL}/api/predict-violation-fine`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  speed: violation.speed,
+                  speedLimit: 70,
+                  locationType: 'Urban',
+                  timeOfDay: 'Day',
+                  pastViolations: 0
+                })
+              });
+              
+              if (predResponse.ok) {
+                const predData = await predResponse.json();
+                return { ...violation, predictedFine: predData.predicted_fine };
+              }
+            } catch (error) {
+              console.error('Failed to predict fine for violation:', violation._id);
+            }
+            return { ...violation, predictedFine: 150 }; // fallback
+          })
+        );
+        
+        setViolations(violationsWithPredictions);
+      }
     };
     fetchViolations();
   }, []);
@@ -98,10 +128,10 @@ const UserDashboard = () => {
     ).length,
     totalFines: violations
       .filter((v) => v.speed > 70)
-      .reduce((sum, v) => sum + v.fine, 0),
+      .reduce((sum, v) => sum + (v.predictedFine || v.fine || 150), 0),
     unpaidFines: violations
       .filter((v) => v.speed > 70 && v.status !== "paid")
-      .reduce((sum, v) => sum + v.fine, 0),
+      .reduce((sum, v) => sum + (v.predictedFine || v.fine || 150), 0),
   };
 
   const getStatusIcon = (status: string) => {
@@ -275,7 +305,7 @@ const UserDashboard = () => {
                   .map((violation) => {
                     const limit = 70;
                     const excess = violation.speed - limit;
-                    const fine = 150;
+                    const fine = violation.predictedFine || 150;
 
                     return (
                       <div
