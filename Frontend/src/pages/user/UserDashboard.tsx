@@ -43,6 +43,13 @@ interface Vehicle {
   violations: number;
   lastViolation?: string;
   qrCode?: string;
+  iotDeviceId?: string;
+  currentSpeed?: number;
+  currentLocation?: {
+    lat: number;
+    lng: number;
+  };
+  lastUpdated?: string;
 }
 
 // Update Violation interface for MongoDB
@@ -57,6 +64,7 @@ interface Violation {
 
 const UserDashboard = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   // Remove dummy violations, use MongoDB data
   const [violations, setViolations] = useState<Violation[]>([]);
   const [isLoadingViolations, setIsLoadingViolations] = useState(true);
@@ -74,7 +82,13 @@ const UserDashboard = () => {
         { credentials: "include" }
       );
       const data = await response.json();
-      if (data.success) setVehicles(data.vehicles);
+      if (data.success) {
+        setVehicles(data.vehicles);
+        // Auto-select first vehicle if none selected
+        if (data.vehicles.length > 0 && !selectedVehicleId) {
+          setSelectedVehicleId(data.vehicles[0]._id);
+        }
+      }
     };
     fetchVehicles();
   }, []);
@@ -145,16 +159,20 @@ const UserDashboard = () => {
     fetchViolations();
   }, []);
 
+  // Filter violations for selected vehicle
+  const selectedVehicle = vehicles.find(v => v._id === selectedVehicleId);
+  const filteredViolations = violations.filter((v) => {
+    return v.speed > 70 && 
+           selectedVehicle && 
+           v.vehicleId === selectedVehicle.plateNumber;
+  });
+
   const stats = {
-    totalViolations: violations.filter((v) => v.speed > 70).length, // ✅ only speed > 70
-    pendingFines: violations.filter((v) => v.speed > 70).length,
+    totalViolations: filteredViolations.length,
+    pendingFines: filteredViolations.length,
     overdueFines: 0,
-    totalFines: violations
-      .filter((v) => v.speed > 70)
-      .reduce((sum, v) => sum + (v.predictedFine || 0), 0),
-    unpaidFines: violations
-      .filter((v) => v.speed > 70)
-      .reduce((sum, v) => sum + (v.predictedFine || 0), 0),
+    totalFines: filteredViolations.reduce((sum, v) => sum + (v.predictedFine || 0), 0),
+    unpaidFines: filteredViolations.reduce((sum, v) => sum + (v.predictedFine || 0), 0),
   };
 
   const getStatusIcon = (status: string) => {
@@ -299,26 +317,77 @@ const UserDashboard = () => {
         {/* My Vehicles & Recent Violations */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* My Vehicles */}
-          {/* My Vehicle */}
-          {/* My Vehicle */}
           <div>
             <Card className="p-6 bg-gradient-card border-border/50">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold">My Vehicle</h2>
+                <h2 className="text-xl font-bold">My Vehicles</h2>
                 <Link to="/user/vehicles">
                   <Button variant="outline" size="sm">
-                    View All
+                    <Car className="h-4 w-4 mr-2" />
+                    Add Vehicle
                   </Button>
                 </Link>
               </div>
 
-              {vehicles.length > 0 ? (
-                <VehicleCard vehicle={vehicles[0]} />
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No vehicle assigned.
-                </p>
-              )}
+              <div className="space-y-3">
+                {vehicles.length > 0 ? (
+                  vehicles.map((vehicle) => (
+                    <div
+                      key={vehicle._id}
+                      onClick={() => setSelectedVehicleId(vehicle._id)}
+                      className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+                        selectedVehicleId === vehicle._id
+                          ? "border-primary bg-primary/10 shadow-lg"
+                          : "border-border/50 bg-accent/20 hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg ${
+                          selectedVehicleId === vehicle._id ? "bg-primary/20" : "bg-info/10"
+                        }`}>
+                          <Car className={`h-5 w-5 ${
+                            selectedVehicleId === vehicle._id ? "text-primary" : "text-info"
+                          }`} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <div className="font-bold">{vehicle.plateNumber}</div>
+                            {vehicle.iotDeviceId && (
+                              <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/30">
+                                IoT Connected
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {vehicle.year} {vehicle.make} {vehicle.model}
+                          </div>
+                          {vehicle.iotDeviceId && (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Device: {vehicle.iotDeviceId}
+                            </div>
+                          )}
+                        </div>
+                        {selectedVehicleId === vehicle._id && (
+                          <CheckCircle className="h-5 w-5 text-primary" />
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Car className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground mb-3">
+                      No vehicles added yet
+                    </p>
+                    <Link to="/user/vehicles">
+                      <Button size="sm" className="shadow-glow-primary">
+                        <Car className="h-4 w-4 mr-2" />
+                        Add Your First Vehicle
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
             </Card>
           </div>
           {/* Recent Violations */}
@@ -346,13 +415,25 @@ const UserDashboard = () => {
                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     <p className="text-sm text-muted-foreground mt-2">Loading violations...</p>
                   </div>
+                ) : !selectedVehicleId ? (
+                  <div className="text-center py-8">
+                    <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">Select a vehicle to view violations</p>
+                  </div>
                 ) : violations.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">No violations found</p>
+                    <CheckCircle className="h-12 w-12 text-success mx-auto mb-3" />
+                    <p className="text-muted-foreground">No violations found for this vehicle</p>
                   </div>
                 ) : (
                   violations
-                  .filter((violation) => violation.speed > 70) // ✅ only show speed > 70
+                  .filter((violation) => {
+                    // Filter by selected vehicle and speed > 70
+                    const selectedVehicle = vehicles.find(v => v._id === selectedVehicleId);
+                    return violation.speed > 70 && 
+                           selectedVehicle && 
+                           violation.vehicleId === selectedVehicle.plateNumber;
+                  })
                   .map((violation) => {
                     const limit = 70;
                     const excess = violation.speed - limit;

@@ -26,6 +26,7 @@ const UserVehicles = () => {
     color: "",
     registrationExpiry: "",
     insuranceExpiry: "",
+    iotDeviceId: "", // IoT device identifier
   });
 
   const mockUser = {
@@ -244,6 +245,24 @@ const UserVehicles = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* IoT Device Info */}
+                {vehicle.iotDeviceId && (
+                  <div className="mt-3 p-3 bg-success/10 border border-success/20 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-2 w-2 bg-success rounded-full animate-pulse"></div>
+                      <span className="text-sm font-medium text-success">IoT Device Connected</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Device ID: {vehicle.iotDeviceId}
+                    </p>
+                    {vehicle.currentSpeed !== undefined && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Current Speed: {vehicle.currentSpeed} km/h
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Expiry Information */}
                 <div className="space-y-2">
@@ -497,6 +516,24 @@ const UserVehicles = () => {
                     className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
                     required
                   />
+                  <label className="block text-black font-medium mb-1 mt-3">
+                    IoT Device ID (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., IOT-DEVICE-12345"
+                    value={newVehicle.iotDeviceId}
+                    onChange={(e) =>
+                      setNewVehicle({
+                        ...newVehicle,
+                        iotDeviceId: e.target.value,
+                      })
+                    }
+                    className="w-full border rounded px-3 py-2 text-black placeholder:text-gray-400"
+                  />
+                  <p className="text-xs text-gray-600 mt-1">
+                    Enter your IoT device ID to enable real-time speed tracking
+                  </p>
                   <div className="flex gap-2 mt-4">
                     <Button type="submit" className="flex-1">
                       Add

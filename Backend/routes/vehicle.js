@@ -8,6 +8,18 @@ const Violation = require("../models/Violation");
 router.post("/add", async (req, res) => {
   try {
     const { userId, vehicleData } = req.body;
+    
+    // Check if IoT device ID is already in use
+    if (vehicleData.iotDeviceId) {
+      const existingVehicle = await Vehicle.findOne({ iotDeviceId: vehicleData.iotDeviceId });
+      if (existingVehicle) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "This IoT device is already assigned to another vehicle" 
+        });
+      }
+    }
+    
     const vehicle = new Vehicle({ ...vehicleData, owner: userId });
     await vehicle.save();
     await User.findByIdAndUpdate(userId, { $push: { vehicles: vehicle._id } });
