@@ -103,12 +103,18 @@ const UserDashboard = () => {
               
               if (predResponse.ok) {
                 const predData = await predResponse.json();
+                console.log('ML Prediction for violation', violation._id, ':', predData.predicted_fine);
                 return { ...violation, predictedFine: predData.predicted_fine };
+              } else {
+                console.error('ML API returned error:', predResponse.status);
               }
             } catch (error) {
-              console.error('Failed to predict fine for violation:', violation._id);
+              console.error('Failed to predict fine for violation:', violation._id, error);
             }
-            return { ...violation, predictedFine: 150 }; // fallback
+            // Fallback: calculate basic fine based on speed excess
+            const speedExcess = violation.speed - 70;
+            const fallbackFine = 150 + Math.floor(speedExcess / 10) * 50;
+            return { ...violation, predictedFine: fallbackFine };
           })
         );
         
