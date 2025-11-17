@@ -9,7 +9,7 @@ router.post("/predict-fine", (req, res) => {
 
   // Correct Python executable and absolute path to script
 
-  const pyPath = path.join(__dirname, "../Ml/fine_prediction.py");
+  const pyPath = path.join(__dirname, "../ml/fine_prediction.py");
   const py = spawn("python", [pyPath, inputData]);
 
   let result = "";

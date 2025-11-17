@@ -16,7 +16,9 @@ import {
   Clock,
   FileText,
   CheckCircle,
-  User
+  User,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -29,10 +31,15 @@ const OfficerIssueFine = () => {
     speedLimit: '',
     description: '',
     amount: '',
-    evidence: ''
+    evidence: '',
+    locationType: 'Urban',
+    timeOfDay: 'Day',
+    pastViolations: '0'
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isPredicting, setIsPredicting] = useState(false);
+  const [mlPrediction, setMlPrediction] = useState<number | null>(null);
 
   const violationTypes = [
     { value: 'speeding', label: 'Speeding', baseAmount: 150 },
@@ -76,6 +83,49 @@ const OfficerIssueFine = () => {
       }
       return newData;
     });
+  };
+
+  const handlePredictFine = async () => {
+    if (!formData.speed || !formData.speedLimit) {
+      alert('Please enter speed and speed limit first');
+      return;
+    }
+
+    setIsPredicting(true);
+    setMlPrediction(null);
+
+    try {
+      const speedOverLimit = parseInt(formData.speed) - parseInt(formData.speedLimit);
+      
+      const payload = {
+        SpeedOverLimit: speedOverLimit,
+        LocationType: formData.locationType,
+        TimeOfDay: formData.timeOfDay,
+        PastViolations: parseInt(formData.pastViolations)
+      };
+
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_URL}/api/predict-fine`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Prediction failed');
+      }
+
+      const data = await response.json();
+      setMlPrediction(data.predicted_fine);
+      setFormData(prev => ({ ...prev, amount: data.predicted_fine.toString() }));
+    } catch (error) {
+      console.error('ML Prediction error:', error);
+      alert('Failed to predict fine amount. Using manual calculation.');
+    } finally {
+      setIsPredicting(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -186,32 +236,119 @@ const OfficerIssueFine = () => {
                   </div>
 
                   {formData.violationType === 'speeding' && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="speed">Recorded Speed (km/h) *</Label>
-                        <Input
-                          id="speed"
-                          type="number"
-                          placeholder="75"
-                          value={formData.speed}
-                          onChange={(e) => handleSpeedChange('speed', e.target.value)}
-                          required
-                          className="mt-1"
-                        />
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="speed">Recorded Speed (km/h) *</Label>
+                          <Input
+                            id="speed"
+                            type="number"
+                            placeholder="75"
+                            value={formData.speed}
+                            onChange={(e) => handleSpeedChange('speed', e.target.value)}
+                            required
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="speedLimit">Speed Limit (km/h) *</Label>
+                          <Input
+                            id="speedLimit"
+                            type="number"
+                            placeholder="50"
+                            value={formData.speedLimit}
+                            onChange={(e) => handleSpeedChange('speedLimit', e.target.value)}
+                            required
+                            className="mt-1"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <Label htmlFor="speedLimit">Speed Limit (km/h) *</Label>
-                        <Input
-                          id="speedLimit"
-                          type="number"
-                          placeholder="50"
-                          value={formData.speedLimit}
-                          onChange={(e) => handleSpeedChange('speedLimit', e.target.value)}
-                          required
-                          className="mt-1"
-                        />
+
+                      {/* ML Prediction Fields */}
+                      <div className="bg-accent/20 rounded-lg p-4 space-y-4">
+                        <div className="flex items-center space-x-2">
+                          <Sparkles className="h-4 w-4 text-secondary" />
+                          <h4 className="font-semibold text-sm">AI Fine Prediction</h4>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="locationType" className="text-xs">Location Type</Label>
+                            <Select 
+                              value={formData.locationType}
+                              onValueChange={(value) => setFormData(prev => ({ ...prev, locationType: value }))}
+                            >
+                              <SelectTrigger className="mt-1 h-9">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Urban">Urban</SelectItem>
+                                <SelectItem value="Highway">Highway</SelectItem>
+                                <SelectItem value="School Zone">School Zone</SelectItem>
+                                <SelectItem value="Residential">Residential</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="timeOfDay" className="text-xs">Time of Day</Label>
+                            <Select 
+                              value={formData.timeOfDay}
+                              onValueChange={(value) => setFormData(prev => ({ ...prev, timeOfDay: value }))}
+                            >
+                              <SelectTrigger className="mt-1 h-9">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Day">Day</SelectItem>
+                                <SelectItem value="Night">Night</SelectItem>
+                                <SelectItem value="Rush Hour">Rush Hour</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="pastViolations" className="text-xs">Past Violations</Label>
+                            <Input
+                              id="pastViolations"
+                              type="number"
+                              min="0"
+                              value={formData.pastViolations}
+                              onChange={(e) => setFormData(prev => ({ ...prev, pastViolations: e.target.value }))}
+                              className="mt-1 h-9"
+                            />
+                          </div>
+                        </div>
+
+                        <Button 
+                          type="button"
+                          onClick={handlePredictFine}
+                          disabled={isPredicting || !formData.speed || !formData.speedLimit}
+                          className="w-full"
+                          variant="secondary"
+                          size="sm"
+                        >
+                          {isPredicting ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Predicting...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Predict Fine with AI
+                            </>
+                          )}
+                        </Button>
+
+                        {mlPrediction !== null && (
+                          <div className="bg-secondary/10 rounded-lg p-3 text-center">
+                            <p className="text-xs text-muted-foreground mb-1">AI Predicted Fine</p>
+                            <p className="text-2xl font-bold text-secondary">${mlPrediction}</p>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    </>
                   )}
 
                   <div>
