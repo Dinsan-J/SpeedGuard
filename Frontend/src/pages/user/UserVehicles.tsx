@@ -378,7 +378,10 @@ const UserVehicles = () => {
                 <p className="text-muted-foreground mb-4">
                   Add your first vehicle to start managing it with SpeedGuard
                 </p>
-                <Button className="shadow-glow-primary">
+                <Button 
+                  className="shadow-glow-primary"
+                  onClick={() => setShowAddModal(true)}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Vehicle
                 </Button>
@@ -387,155 +390,11 @@ const UserVehicles = () => {
           )}
 
           {/* Add Vehicle Modal */}
-          {showAddModal && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-                <h2 className="text-xl font-bold mb-4 text-black">
-                  Add Vehicle
-                </h2>
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    await handleAddVehicle(newVehicle);
-                    setShowAddModal(false);
-                  }}
-                  className="space-y-3"
-                >
-                  <label className="block text-black font-medium mb-1">
-                    Plate Number
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Plate Number"
-                    value={newVehicle.plateNumber}
-                    onChange={(e) =>
-                      setNewVehicle({
-                        ...newVehicle,
-                        plateNumber: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Make
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Make"
-                    value={newVehicle.make}
-                    onChange={(e) =>
-                      setNewVehicle({ ...newVehicle, make: e.target.value })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Model
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Model"
-                    value={newVehicle.model}
-                    onChange={(e) =>
-                      setNewVehicle({ ...newVehicle, model: e.target.value })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Year
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Year"
-                    value={newVehicle.year}
-                    onChange={(e) =>
-                      setNewVehicle({ ...newVehicle, year: e.target.value })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Color
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Color"
-                    value={newVehicle.color}
-                    onChange={(e) =>
-                      setNewVehicle({ ...newVehicle, color: e.target.value })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Registration Expiry
-                  </label>
-                  <input
-                    type="date"
-                    placeholder="Registration Expiry"
-                    value={newVehicle.registrationExpiry}
-                    onChange={(e) =>
-                      setNewVehicle({
-                        ...newVehicle,
-                        registrationExpiry: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Insurance Expiry
-                  </label>
-                  <input
-                    type="date"
-                    placeholder="Insurance Expiry"
-                    value={newVehicle.insuranceExpiry}
-                    onChange={(e) =>
-                      setNewVehicle({
-                        ...newVehicle,
-                        insuranceExpiry: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1 mt-3">
-                    IoT Device ID (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., IOT-DEVICE-12345"
-                    value={newVehicle.iotDeviceId}
-                    onChange={(e) =>
-                      setNewVehicle({
-                        ...newVehicle,
-                        iotDeviceId: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-gray-400"
-                  />
-                  <p className="text-xs text-gray-600 mt-1">
-                    Enter your IoT device ID to enable real-time speed tracking
-                  </p>
-                  <div className="flex gap-2 mt-4">
-                    <Button type="submit" className="flex-1">
-                      Add
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => setShowAddModal(false)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
+          <AddVehicleModal
+            isOpen={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onSuccess={fetchVehicles}
+          />
         </div>
       </div>
     </div>
