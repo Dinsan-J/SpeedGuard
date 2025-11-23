@@ -3,7 +3,16 @@ const jwt = require("jsonwebtoken");
 // Middleware to verify JWT token and extract user info
 exports.verifyToken = (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    // Check cookie first, then Authorization header
+    let token = req.cookies.token;
+    
+    if (!token && req.headers.authorization) {
+      // Check for Bearer token in Authorization header
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
     
     if (!token) {
       return res.status(401).json({ 

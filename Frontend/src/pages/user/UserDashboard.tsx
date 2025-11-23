@@ -77,9 +77,15 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
+        const token = localStorage.getItem("token");
         const response = await fetch(
           `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
-          { credentials: "include" }
+          { 
+            credentials: "include",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          }
         );
         const data = await response.json();
         if (data.success) {

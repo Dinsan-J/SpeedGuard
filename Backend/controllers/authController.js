@@ -52,12 +52,16 @@ exports.login = async (req, res) => {
     // Set JWT as HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // must be true for HTTPS
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production", // true in production
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", // 'none' for cross-site in production
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    res.json({ role: user.role });
+    res.json({ 
+      role: user.role,
+      userId: user._id, // Send userId in response
+      token: token // Also send token for localStorage fallback
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }

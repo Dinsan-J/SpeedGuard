@@ -91,11 +91,15 @@ const UserVehicles = () => {
   // Add vehicle using authenticated user
   const handleAddVehicle = async (vehicleData) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("https://speedguard-gz70.onrender.com/api/vehicle/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         credentials: "include",
-        body: JSON.stringify(vehicleData), // No need to send userId - comes from token
+        body: JSON.stringify(vehicleData),
       });
       const data = await response.json();
       if (data.success) {
@@ -104,7 +108,6 @@ const UserVehicles = () => {
           description: "Your vehicle was added successfully.",
         });
         setShowAddModal(false);
-        // Refresh vehicle list
       } else {
         toast({
           title: "Error",
@@ -123,11 +126,15 @@ const UserVehicles = () => {
 
   const handleDeleteVehicle = async (vehicleId) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
         `https://speedguard-gz70.onrender.com/api/vehicle/delete/${vehicleId}`,
         {
           method: "DELETE",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
           credentials: "include",
         }
       );
@@ -137,7 +144,6 @@ const UserVehicles = () => {
           title: "Vehicle Deleted",
           description: "Vehicle removed successfully.",
         });
-        // Refresh vehicle list
       } else {
         toast({
           title: "Error",
@@ -157,9 +163,15 @@ const UserVehicles = () => {
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
+        const token = localStorage.getItem("token");
         const response = await fetch(
           `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
-          { credentials: "include" }
+          { 
+            credentials: "include",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          }
         );
         const data = await response.json();
         if (data.success) setVehicles(data.vehicles);
