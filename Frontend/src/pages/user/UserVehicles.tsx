@@ -164,6 +164,15 @@ const UserVehicles = () => {
     const fetchVehicles = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          toast({
+            title: "Authentication Required",
+            description: "Please login to view your vehicles",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         const response = await fetch(
           `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
           { 
@@ -173,6 +182,16 @@ const UserVehicles = () => {
             }
           }
         );
+        
+        if (response.status === 401) {
+          toast({
+            title: "Session Expired",
+            description: "Please login again",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         const data = await response.json();
         if (data.success) setVehicles(data.vehicles);
         else

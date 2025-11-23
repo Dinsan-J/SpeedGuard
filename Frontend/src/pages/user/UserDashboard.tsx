@@ -78,6 +78,11 @@ const UserDashboard = () => {
     const fetchVehicles = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found - user needs to login");
+          return;
+        }
+        
         const response = await fetch(
           `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
           { 
@@ -87,6 +92,13 @@ const UserDashboard = () => {
             }
           }
         );
+        
+        if (response.status === 401) {
+          console.error("Unauthorized - token invalid or expired");
+          // Optionally redirect to login
+          return;
+        }
+        
         const data = await response.json();
         if (data.success) {
           setVehicles(data.vehicles);

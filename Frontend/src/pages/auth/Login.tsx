@@ -37,25 +37,29 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Extract user info from the response
-        const user = data.user || data; // fallback if your API returns user at root
+        // Save token and user info
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
+        if (data.userId) {
+          localStorage.setItem("userId", data.userId);
+        }
+        
         localStorage.setItem(
           "user",
           JSON.stringify({
-            id: user.id,
-            name: user.name,
-            role: user.role,
+            id: data.userId,
+            role: data.role,
           })
         );
-        localStorage.setItem("token", data.token);
 
         toast({
           title: "Login Successful",
-          description: `Welcome back, ${user.name || formData.email}!`,
+          description: `Welcome back!`,
         });
 
         // Redirect based on role
-        if (user.role === "officer") {
+        if (data.role === "officer") {
           navigate("/officer/dashboard");
         } else {
           navigate("/user/dashboard");
