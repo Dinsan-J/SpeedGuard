@@ -11,6 +11,11 @@ router.post("/add", verifyToken, async (req, res) => {
     const userId = req.user.id; // Get from authenticated user
     const vehicleData = req.body;
     
+    // Remove empty iotDeviceId to avoid duplicate key error
+    if (!vehicleData.iotDeviceId || vehicleData.iotDeviceId.trim() === "") {
+      delete vehicleData.iotDeviceId;
+    }
+    
     // Check if IoT device ID is already in use
     if (vehicleData.iotDeviceId) {
       const existingVehicle = await Vehicle.findOne({ iotDeviceId: vehicleData.iotDeviceId });
