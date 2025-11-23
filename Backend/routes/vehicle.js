@@ -24,11 +24,18 @@ router.post("/add", verifyToken, async (req, res) => {
     
     const vehicle = new Vehicle({ ...vehicleData, owner: userId });
     await vehicle.save();
-    await User.findByIdAndUpdate(userId, { $push: { vehicles: vehicle._id } });
+    
+    // Update user's vehicles array (initialize if doesn't exist)
+    await User.findByIdAndUpdate(
+      userId, 
+      { $addToSet: { vehicles: vehicle._id } }, // $addToSet prevents duplicates and creates array if needed
+      { upsert: false }
+    );
+    
     res.json({ success: true, vehicle });
   } catch (err) {
-    console.log("Add vehicle error:", err);
-    res.status(500).json({ success: false, message: "Error adding vehicle" });
+    console.error("Add vehicle error:", err);
+    res.status(500).json({ success: false, message: err.message || "Error adding vehicle" });
   }
 });
 
