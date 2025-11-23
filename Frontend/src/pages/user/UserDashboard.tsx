@@ -66,7 +66,6 @@ const UserDashboard = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [showQRVehicleId, setShowQRVehicleId] = useState<string | null>(null);
-  // Remove dummy violations, use MongoDB data
   const [violations, setViolations] = useState<Violation[]>([]);
   const [isLoadingViolations, setIsLoadingViolations] = useState(true);
   const [mapOpen, setMapOpen] = useState(false);
@@ -74,21 +73,24 @@ const UserDashboard = () => {
     lat: number;
     lng: number;
   } | null>(null);
-  const userId = "64f8c2e2a1b2c3d4e5f6a7b8"; // Use your real user id
 
   useEffect(() => {
     const fetchVehicles = async () => {
-      const response = await fetch(
-        `https://speedguard-gz70.onrender.com/api/vehicle/user/${userId}`,
-        { credentials: "include" }
-      );
-      const data = await response.json();
-      if (data.success) {
-        setVehicles(data.vehicles);
-        // Auto-select first vehicle if none selected
-        if (data.vehicles.length > 0 && !selectedVehicleId) {
-          setSelectedVehicleId(data.vehicles[0]._id);
+      try {
+        const response = await fetch(
+          `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
+          { credentials: "include" }
+        );
+        const data = await response.json();
+        if (data.success) {
+          setVehicles(data.vehicles);
+          // Auto-select first vehicle if none selected
+          if (data.vehicles.length > 0 && !selectedVehicleId) {
+            setSelectedVehicleId(data.vehicles[0]._id);
+          }
         }
+      } catch (error) {
+        console.error("Error fetching vehicles:", error);
       }
     };
     fetchVehicles();

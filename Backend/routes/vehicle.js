@@ -3,11 +3,13 @@ const router = express.Router();
 const Vehicle = require("../models/Vehicle");
 const User = require("../models/User");
 const Violation = require("../models/Violation");
+const { verifyToken } = require("../middleware/auth");
 
-// Add vehicle
-router.post("/add", async (req, res) => {
+// Add vehicle - Protected route
+router.post("/add", verifyToken, async (req, res) => {
   try {
-    const { userId, vehicleData } = req.body;
+    const userId = req.user.id; // Get from authenticated user
+    const vehicleData = req.body;
     
     // Check if IoT device ID is already in use
     if (vehicleData.iotDeviceId) {
@@ -30,11 +32,21 @@ router.post("/add", async (req, res) => {
   }
 });
 
-// Delete vehicle
-router.delete("/delete/:vehicleId", async (req, res) => {
+// Delete vehicle - Protected route
+router.delete("/delete/:vehicleId", verifyToken, async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.user.id; // Get from authenticated user
     const { vehicleId } = req.params;
+    
+    // Verify vehicle belongs to user
+    const vehicle = await Vehicle.findById(vehicleId);
+    if (!vehicle) {
+      return res.status(404).json({ success: false, message: "Vehicle not found" });
+    }
+    if (vehicle.owner.toString() !== userId) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+    
     await Vehicle.findByIdAndDelete(vehicleId);
     await User.findByIdAndUpdate(userId, { $pull: { vehicles: vehicleId } });
     res.json({ success: true });
@@ -44,10 +56,11 @@ router.delete("/delete/:vehicleId", async (req, res) => {
   }
 });
 
-// Get user vehicles
-router.get("/user/:userId", async (req, res) => {
+// Get user vehicles - Protected route
+router.get("/my-vehicles", verifyToken, async (req, res) => {
   try {
-    const vehicles = await Vehicle.find({ owner: req.params.userId });
+    const userId = req.user.id; // Get from authenticated user
+    const vehicles = await Vehicle.find({ owner: userId });
     res.json({ success: true, vehicles });
   } catch (err) {
     res

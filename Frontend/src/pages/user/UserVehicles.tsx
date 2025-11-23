@@ -29,11 +29,7 @@ const UserVehicles = () => {
     iotDeviceId: "", // IoT device identifier
   });
 
-  const mockUser = {
-    id: "64f8c2e2a1b2c3d4e5f6a7b8", // <-- Replace with a real MongoDB ObjectId
-    name: "John Smith",
-    role: "user" as const,
-  };
+  // User info will come from authentication
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -92,14 +88,14 @@ const UserVehicles = () => {
     return expiryDate < today;
   };
 
-  // Example function for adding a vehicle
+  // Add vehicle using authenticated user
   const handleAddVehicle = async (vehicleData) => {
     try {
-      const response = await fetch("http://localhost:5000/api/vehicle/add", {
+      const response = await fetch("https://speedguard-gz70.onrender.com/api/vehicle/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ userId: mockUser.id, vehicleData }), // use mockUser.id
+        body: JSON.stringify(vehicleData), // No need to send userId - comes from token
       });
       const data = await response.json();
       if (data.success) {
@@ -107,7 +103,8 @@ const UserVehicles = () => {
           title: "Vehicle Added",
           description: "Your vehicle was added successfully.",
         });
-        // Optionally refresh vehicle list here
+        setShowAddModal(false);
+        // Refresh vehicle list
       } else {
         toast({
           title: "Error",
@@ -127,17 +124,20 @@ const UserVehicles = () => {
   const handleDeleteVehicle = async (vehicleId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/vehicle/delete/${vehicleId}`,
+        `https://speedguard-gz70.onrender.com/api/vehicle/delete/${vehicleId}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ userId: mockUser.id }), // use mockUser.id
         }
       );
       const data = await response.json();
       if (data.success) {
-        // Optionally refresh vehicle list here
+        toast({
+          title: "Vehicle Deleted",
+          description: "Vehicle removed successfully.",
+        });
+        // Refresh vehicle list
       } else {
         toast({
           title: "Error",
@@ -158,7 +158,7 @@ const UserVehicles = () => {
     const fetchVehicles = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/vehicle/user/${mockUser.id}`,
+          `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
           { credentials: "include" }
         );
         const data = await response.json();
