@@ -12,24 +12,61 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AddVehicleModal from "@/components/AddVehicleModal";
 
 const UserVehicles = () => {
   const { toast } = useToast();
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newVehicle, setNewVehicle] = useState({
-    plateNumber: "",
-    make: "",
-    model: "",
-    year: "",
-    color: "",
-    registrationExpiry: "",
-    insuranceExpiry: "",
-    iotDeviceId: "", // IoT device identifier
-  });
 
-  // User info will come from authentication
+  const fetchVehicles = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast({
+          title: "Authentication Required",
+          description: "Please login to view your vehicles",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const response = await fetch(
+        `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
+        { 
+          credentials: "include",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.status === 401) {
+        toast({
+          title: "Session Expired",
+          description: "Please login again",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const data = await response.json();
+      if (data.success) setVehicles(data.vehicles);
+      else
+        toast({
+          title: "Error",
+          description: data.message,
+          variant: "destructive",
+        });
+    } catch {
+      toast({
+        title: "Error",
+        description: "Network error",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -88,42 +125,6 @@ const UserVehicles = () => {
     return expiryDate < today;
   };
 
-  // Add vehicle using authenticated user
-  const handleAddVehicle = async (vehicleData) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("https://speedguard-gz70.onrender.com/api/vehicle/add", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        credentials: "include",
-        body: JSON.stringify(vehicleData),
-      });
-      const data = await response.json();
-      if (data.success) {
-        toast({
-          title: "Vehicle Added",
-          description: "Your vehicle was added successfully.",
-        });
-        setShowAddModal(false);
-      } else {
-        toast({
-          title: "Error",
-          description: data.message,
-          variant: "destructive",
-        });
-      }
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Network error",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleDeleteVehicle = async (vehicleId) => {
     try {
       const token = localStorage.getItem("token");
@@ -161,55 +162,8 @@ const UserVehicles = () => {
   };
 
   useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          toast({
-            title: "Authentication Required",
-            description: "Please login to view your vehicles",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        const response = await fetch(
-          `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
-          { 
-            credentials: "include",
-            headers: {
-              "Authorization": `Bearer ${token}`
-            }
-          }
-        );
-        
-        if (response.status === 401) {
-          toast({
-            title: "Session Expired",
-            description: "Please login again",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        const data = await response.json();
-        if (data.success) setVehicles(data.vehicles);
-        else
-          toast({
-            title: "Error",
-            description: data.message,
-            variant: "destructive",
-          });
-      } catch {
-        toast({
-          title: "Error",
-          description: "Network error",
-          variant: "destructive",
-        });
-      }
-    };
     fetchVehicles();
-  }, [showAddModal]); // refetch when modal closes (after add)
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +18,9 @@ import {
   XCircle,
   AlertCircle,
   Camera,
-  LogOut, // Add LogOut icon
-  Download, // Add Download icon
+  LogOut,
+  Download,
+  Plus,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import "leaflet-defaulticon-compatibility";
@@ -28,7 +29,8 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import LiveSpeedometer from "./LiveSpeedometer";
 import QRCode from "react-qr-code";
-import VehicleCard from "@/pages/user/VehicleCard"; // Import VehicleCard component
+import VehicleCard from "@/pages/user/VehicleCard";
+import AddVehicleModal from "@/components/AddVehicleModal";
 
 interface Vehicle {
   _id: string;
@@ -73,44 +75,45 @@ const UserDashboard = () => {
     lat: number;
     lng: number;
   } | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const fetchVehicles = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found - user needs to login");
+        return;
+      }
+      
+      const response = await fetch(
+        `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
+        { 
+          credentials: "include",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.status === 401) {
+        console.error("Unauthorized - token invalid or expired");
+        return;
+      }
+      
+      const data = await response.json();
+      if (data.success) {
+        setVehicles(data.vehicles);
+        // Auto-select first vehicle if none selected
+        if (data.vehicles.length > 0 && !selectedVehicleId) {
+          setSelectedVehicleId(data.vehicles[0]._id);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching vehicles:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No token found - user needs to login");
-          return;
-        }
-        
-        const response = await fetch(
-          `https://speedguard-gz70.onrender.com/api/vehicle/my-vehicles`,
-          { 
-            credentials: "include",
-            headers: {
-              "Authorization": `Bearer ${token}`
-            }
-          }
-        );
-        
-        if (response.status === 401) {
-          console.error("Unauthorized - token invalid or expired");
-          // Optionally redirect to login
-          return;
-        }
-        
-        const data = await response.json();
-        if (data.success) {
-          setVehicles(data.vehicles);
-          // Auto-select first vehicle if none selected
-          if (data.vehicles.length > 0 && !selectedVehicleId) {
-            setSelectedVehicleId(data.vehicles[0]._id);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching vehicles:", error);
-      }
-    };
     fetchVehicles();
   }, []);
 
@@ -306,12 +309,14 @@ const UserDashboard = () => {
             <Card className="p-6 bg-gradient-card border-border/50">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold">My Vehicles</h2>
-                <Link to="/user/vehicles">
-                  <Button variant="outline" size="sm">
-                    <Car className="h-4 w-4 mr-2" />
-                    Add Vehicle
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowAddModal(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Vehicle
+                </Button>
               </div>
 
               <div className="space-y-3">
@@ -398,12 +403,14 @@ const UserDashboard = () => {
                     <p className="text-sm text-muted-foreground mb-3">
                       No vehicles added yet
                     </p>
-                    <Link to="/user/vehicles">
-                      <Button size="sm" className="shadow-glow-primary">
-                        <Car className="h-4 w-4 mr-2" />
-                        Add Your First Vehicle
-                      </Button>
-                    </Link>
+                    <Button 
+                      size="sm" 
+                      className="shadow-glow-primary"
+                      onClick={() => setShowAddModal(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Your First Vehicle
+                    </Button>
                   </div>
                 )}
               </div>
@@ -633,6 +640,13 @@ const UserDashboard = () => {
             </div>
           </Card>
         )}
+
+        {/* Add Vehicle Modal */}
+        <AddVehicleModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={fetchVehicles}
+        />
       </div>
     </div>
   );
