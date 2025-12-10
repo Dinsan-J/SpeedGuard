@@ -49,6 +49,7 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    //gfgfgf
     // Set JWT as HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
