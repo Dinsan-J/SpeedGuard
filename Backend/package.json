@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "axios": "^1.6.2",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -15,6 +16,9 @@
     "nodemon": "^3.1.10"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "init-locations": "node scripts/initializeSensitiveLocations.js",
+    "test-geofencing": "node test-geofencing.js"
   }
 }
