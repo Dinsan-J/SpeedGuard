@@ -13,17 +13,17 @@ async function checkUserViolation() {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
-    // Find the user's violation
+    // Find the university violation
     const userViolation = await Violation.findOne({ 
-      vehicleId: "USER-TEST-001" 
+      vehicleId: "UNIVERSITY-TEST-001" 
     }).sort({ timestamp: -1 });
 
     if (!userViolation) {
-      console.log("❌ No violation found for USER-TEST-001");
+      console.log("❌ No violation found for UNIVERSITY-TEST-001");
       return;
     }
 
-    console.log("\n📊 User Violation Details:");
+    console.log("\n📊 University Violation Details:");
     console.log("─".repeat(50));
     console.log(`🆔 Violation ID: ${userViolation._id}`);
     console.log(`🚗 Vehicle ID: ${userViolation.vehicleId}`);

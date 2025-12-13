@@ -14,13 +14,13 @@ async function createRealViolation() {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
-    // Test scenarios - using user's specific coordinates
+    // Test scenarios - using user's specific coordinates (University of Vavuniya)
     const testViolations = [
       {
-        vehicleId: "USER-TEST-001",
-        location: { lat: 8.758910343111971, lng: 80.41069101388995 }, // User specified coordinates
+        vehicleId: "UNIVERSITY-TEST-001",
+        location: { lat: 8.758910343111971, lng: 80.41069101388995 }, // University of Vavuniya coordinates
         speed: 85,
-        description: "User specified location violation test"
+        description: "University of Vavuniya violation test"
       }
     ];
 
