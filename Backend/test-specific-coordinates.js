@@ -16,7 +16,7 @@ async function testSpecificCoordinates() {
 
     // Test coordinates
     const testLat = 8.7611;
-    const testLng = 80.4416;
+    const testLng = 80.4410;
     
     console.log(`\n📍 Testing location: ${testLat}, ${testLng}`);
     console.log("─".repeat(60));

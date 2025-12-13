@@ -5,13 +5,13 @@ class OSMService {
   constructor() {
     this.overpassUrl = 'https://overpass-api.de/api/interpreter';
     
-    // Default radius for different location types (in meters)
+    // Default radius for all sensitive location types (in meters)
     this.defaultRadius = {
       hospital: 500,    // 500m around hospitals
-      school: 300,      // 300m around schools  
-      university: 800,  // 800m around universities
-      town: 1000,       // 1km around town centers
-      city: 2000        // 2km around city centers
+      school: 500,      // 500m around schools  
+      university: 500,  // 500m around universities
+      town: 500,        // 500m around town centers
+      city: 500         // 500m around city centers
     };
   }
 
