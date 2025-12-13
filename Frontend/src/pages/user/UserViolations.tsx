@@ -67,21 +67,16 @@ const UserViolations = () => {
   useEffect(() => {
     const fetchViolations = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
         const response = await fetch(`${API_URL}/api/violation`);
         const data = await response.json();
         if (data.success) {
-          // Filter violations to show only those with proper geofencing data
-          const validViolations = data.violations.filter((v: Violation) => 
-            v.fine && v.baseFine && v.speedLimit && v.sensitiveZone
-          );
-          
           // Map the new violation structure to include legacy fields for compatibility
-          const mappedViolations = validViolations.map((v: Violation) => ({
+          const mappedViolations = data.violations.map((v: Violation) => ({
             ...v,
             plateNumber: v.vehicleId,
             type: "Speed Violation",
-            amount: v.fine,
+            amount: v.fine || 2000,
             date: new Date(v.timestamp).toLocaleDateString(),
             time: new Date(v.timestamp).toLocaleTimeString(),
             severity: v.sensitiveZone?.isInZone ? "high" : "medium",

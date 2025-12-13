@@ -90,7 +90,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchVehicles = async () => {
       const response = await fetch(
-        `http://localhost:5000/api/vehicle/user/${userId}`,
+        `https://speedguard-gz70.onrender.com/api/vehicle/user/${userId}`,
         { credentials: "include" }
       );
       const data = await response.json();
@@ -108,20 +108,15 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchViolations = async () => {
       setIsLoadingViolations(true);
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
       
       try {
         const response = await fetch(`${API_URL}/api/violation`);
         const data = await response.json();
         
         if (data.success) {
-          // Filter violations to show only those with proper geofencing data and valid fines
-          const validViolations = data.violations.filter((v: Violation) => 
-            v.fine && v.baseFine && v.speedLimit && v.sensitiveZone
-          );
-          
           // Use the fine from geofencing service, fallback to calculation if needed
-          const violationsWithFines = validViolations.map((v: Violation) => {
+          const violationsWithFines = data.violations.map((v: Violation) => {
             const calculatedFine = v.fine || (v.baseFine || 2000) * (v.zoneMultiplier || 1);
             return { ...v, predictedFine: calculatedFine };
           });
@@ -139,12 +134,9 @@ const UserDashboard = () => {
     fetchViolations();
   }, []);
 
-  // Filter violations for selected vehicle
-  const selectedVehicle = vehicles.find(v => v._id === selectedVehicleId);
+  // Show all violations with speed > 70
   const filteredViolations = violations.filter((v) => {
-    return v.speed > 70 && 
-           selectedVehicle && 
-           v.vehicleId === selectedVehicle.plateNumber;
+    return v.speed > 70;
   });
 
   const stats = {
@@ -429,11 +421,6 @@ const UserDashboard = () => {
                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     <p className="text-sm text-muted-foreground mt-2">Loading violations...</p>
                   </div>
-                ) : !selectedVehicleId ? (
-                  <div className="text-center py-8">
-                    <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">Select a vehicle to view violations</p>
-                  </div>
                 ) : violations.length === 0 ? (
                   <div className="text-center py-8">
                     <CheckCircle className="h-12 w-12 text-success mx-auto mb-3" />
@@ -442,11 +429,8 @@ const UserDashboard = () => {
                 ) : (
                   violations
                   .filter((violation) => {
-                    // Filter by selected vehicle and speed > 70
-                    const selectedVehicle = vehicles.find(v => v._id === selectedVehicleId);
-                    return violation.speed > 70 && 
-                           selectedVehicle && 
-                           violation.vehicleId === selectedVehicle.plateNumber;
+                    // Show all violations with speed > 70, regardless of vehicle selection
+                    return violation.speed > 70;
                   })
                   .map((violation) => {
                     const limit = violation.speedLimit || 70;
