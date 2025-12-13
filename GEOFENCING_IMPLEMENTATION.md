@@ -17,8 +17,8 @@ This implementation adds intelligent geofencing capabilities to the vehicle moni
 - **Hospitals** (500m radius, 3x fine multiplier)
 - **Schools** (500m radius, 3x fine multiplier)
 - **Universities** (500m radius, 2x fine multiplier)
-- **Towns** (500m radius, 2x fine multiplier)
-- **Cities** (500m radius, 2x fine multiplier)
+- **Towns** (1000m radius, 2x fine multiplier)
+- **Cities** (1000m radius, 2x fine multiplier)
 
 ## Database Schema
 
@@ -77,7 +77,9 @@ Get statistics about sensitive locations
   total: 1250,
   byType: [
     { _id: 'school', count: 500, avgRadius: 500 },
-    { _id: 'hospital', count: 200, avgRadius: 500 }
+    { _id: 'hospital', count: 200, avgRadius: 500 },
+    { _id: 'town', count: 150, avgRadius: 1000 },
+    { _id: 'city', count: 50, avgRadius: 1000 }
   ],
   lastUpdated: "2024-01-15T10:30:00Z"
 }

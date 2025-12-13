@@ -14,9 +14,9 @@ async function testSpecificCoordinates() {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
-    // Test coordinates
-    const testLat = 8.7611;
-    const testLng = 80.4410;
+    // Test coordinates - Vavuniya city center
+    const testLat = 8.7503;
+    const testLng = 80.4973;
     
     console.log(`\n📍 Testing location: ${testLat}, ${testLng}`);
     console.log("─".repeat(60));
