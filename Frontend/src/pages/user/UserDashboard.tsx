@@ -52,14 +52,25 @@ interface Vehicle {
   lastUpdated?: string;
 }
 
-// Update Violation interface for MongoDB
+// Update Violation interface for MongoDB with geofencing data
 interface Violation {
   _id: string;
   vehicleId: string;
   location: { lat: number; lng: number };
   speed: number;
+  speedLimit?: number;
   timestamp: string;
+  fine?: number;
+  baseFine?: number;
+  zoneMultiplier?: number;
   predictedFine?: number;
+  sensitiveZone?: {
+    isInZone: boolean;
+    zoneType?: string;
+    zoneName?: string;
+    distanceFromZone?: number;
+    zoneRadius?: number;
+  };
 }
 
 const UserDashboard = () => {
@@ -104,10 +115,9 @@ const UserDashboard = () => {
         const data = await response.json();
         
         if (data.success) {
-          // Calculate fines using simple formula (no ML prediction needed)
+          // Use the fine from geofencing service, fallback to calculation if needed
           const violationsWithFines = data.violations.map((v: Violation) => {
-            const speedExcess = v.speed - 70;
-            const calculatedFine = 1500 + Math.floor(speedExcess / 5) * 300;
+            const calculatedFine = v.fine || (v.baseFine || 2000) * (v.zoneMultiplier || 1);
             return { ...v, predictedFine: calculatedFine };
           });
           
@@ -434,16 +444,35 @@ const UserDashboard = () => {
                            violation.vehicleId === selectedVehicle.plateNumber;
                   })
                   .map((violation) => {
-                    const limit = 70;
+                    const limit = violation.speedLimit || 70;
                     const excess = violation.speed - limit;
-                    // Use ML prediction if available, otherwise calculate fallback
-                    const fine = violation.predictedFine || (1500 + Math.floor(excess / 5) * 300);
+                    // Use geofencing fine if available, otherwise calculate fallback
+                    const fine = violation.fine || violation.predictedFine || (2000 * (violation.zoneMultiplier || 1));
 
                     return (
                       <div
                         key={violation._id}
-                        className="p-4 rounded-lg border transition-all duration-300 border-warning/50 bg-warning/5"
+                        className={`p-4 rounded-lg border transition-all duration-300 ${
+                          violation.sensitiveZone?.isInZone 
+                            ? "border-destructive/50 bg-destructive/5" 
+                            : "border-warning/50 bg-warning/5"
+                        }`}
                       >
+                        {/* Sensitive Zone Alert */}
+                        {violation.sensitiveZone?.isInZone && (
+                          <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs">
+                            <div className="flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3 text-destructive" />
+                              <span className="font-medium text-destructive">
+                                🚨 SENSITIVE ZONE: {violation.sensitiveZone.zoneName}
+                              </span>
+                            </div>
+                            <div className="text-destructive/80 mt-1">
+                              {violation.sensitiveZone.zoneType} • {Math.round(violation.sensitiveZone.distanceFromZone || 0)}m from center • {violation.zoneMultiplier}x fine multiplier
+                            </div>
+                          </div>
+                        )}
+
                         {/* Mobile and Desktop Layout */}
                         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
                           {/* Main Content */}
@@ -468,6 +497,11 @@ const UserDashboard = () => {
                                 <span className="font-semibold text-sm lg:text-base">
                                   Speed Violation
                                 </span>
+                                {violation.sensitiveZone?.isInZone && (
+                                  <Badge variant="destructive" className="text-xs">
+                                    {violation.sensitiveZone.zoneType}
+                                  </Badge>
+                                )}
                               </div>
 
                               {/* Date and Location - Responsive Grid */}
@@ -499,28 +533,38 @@ const UserDashboard = () => {
                               {/* Speed Details - Responsive Layout */}
                               <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm">
                                 <span className="bg-primary/10 px-2 py-1 rounded">
-                                  Speed:{" "}
+                                  🚗 Speed:{" "}
                                   <strong className="text-primary">
                                     {violation.speed} km/h
                                   </strong>
                                 </span>
                                 <span className="bg-muted/50 px-2 py-1 rounded">
-                                  Limit: <strong>{limit} km/h</strong>
+                                  🚦 Limit: <strong>{limit} km/h</strong>
+                                  <span className="text-xs ml-1">
+                                    ({violation.sensitiveZone?.isInZone ? 'Sensitive' : 'Normal'})
+                                  </span>
                                 </span>
                                 <span className="bg-warning/10 px-2 py-1 rounded">
-                                  Excess:{" "}
+                                  📊 Excess:{" "}
                                   <strong className="text-warning">
-                                    +{excess.toFixed(2)} km/h
+                                    +{excess} km/h
                                   </strong>
                                 </span>
                               </div>
+
+                              {/* Fine Breakdown */}
+                              {(violation.baseFine || violation.zoneMultiplier) && (
+                                <div className="mt-2 text-xs text-muted-foreground">
+                                  💰 Base: LKR {(violation.baseFine || 2000).toLocaleString()} × {violation.zoneMultiplier || 1}x = LKR {fine.toLocaleString()}
+                                </div>
+                              )}
                             </div>
                           </div>
 
                           {/* Fine Amount and Pay Button - Responsive */}
                           <div className="flex items-center justify-between lg:flex-col lg:items-end lg:text-right lg:ml-4 flex-shrink-0">
                             <div className="text-xl lg:text-2xl font-bold text-primary mb-0 lg:mb-1">
-                              Rs. {fine.toLocaleString()}
+                              LKR {fine.toLocaleString()}
                             </div>
                             <Button
                               size="sm"

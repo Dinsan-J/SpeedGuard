@@ -15,18 +15,41 @@ import {
   Calendar,
   Camera,
   Download,
+  Gauge,
+  Target,
+  Navigation,
+  Shield,
+  TrendingUp,
+  Info,
 } from "lucide-react";
 
 interface Violation {
   _id: string;
+  vehicleId: string;
+  location: {
+    lat: number;
+    lng: number;
+  };
+  speed: number;
+  speedLimit?: number;
+  timestamp: string;
+  fine: number;
+  baseFine?: number;
+  status: string;
+  zoneMultiplier?: number;
+  sensitiveZone?: {
+    isInZone: boolean;
+    zoneType?: string;
+    zoneName?: string;
+    distanceFromZone?: number;
+    zoneRadius?: number;
+  };
+  // Legacy fields for compatibility
   plateNumber?: string;
   type?: string;
   amount?: number;
-  status?: string;
   date?: string;
   time?: string;
-  location?: string;
-  speed?: string;
   officer?: string;
   dueDate?: string;
   description?: string;
@@ -43,9 +66,31 @@ const UserViolations = () => {
 
   useEffect(() => {
     const fetchViolations = async () => {
-      const response = await fetch("http://localhost:5000/api/violation");
-      const data = await response.json();
-      if (data.success) setViolations(data.violations);
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        const response = await fetch(`${API_URL}/api/violation`);
+        const data = await response.json();
+        if (data.success) {
+          // Map the new violation structure to include legacy fields for compatibility
+          const mappedViolations = data.violations.map((v: Violation) => ({
+            ...v,
+            plateNumber: v.vehicleId,
+            type: "Speed Violation",
+            amount: v.fine,
+            date: new Date(v.timestamp).toLocaleDateString(),
+            time: new Date(v.timestamp).toLocaleTimeString(),
+            severity: v.sensitiveZone?.isInZone ? "high" : "medium",
+            description: `Speed violation: ${v.speed} km/h in ${v.speedLimit || 70} km/h zone${
+              v.sensitiveZone?.isInZone 
+                ? ` (${v.sensitiveZone.zoneType}: ${v.sensitiveZone.zoneName})`
+                : ""
+            }`
+          }));
+          setViolations(mappedViolations);
+        }
+      } catch (error) {
+        console.error("Failed to fetch violations:", error);
+      }
     };
     fetchViolations();
   }, []);
@@ -115,8 +160,8 @@ const UserViolations = () => {
   };
 
   const totalUnpaid = filteredViolations
-    .filter((v) => v.status === "unpaid" || v.status === "overdue")
-    .reduce((sum, v) => sum + (v.amount || 0), 0);
+    .filter((v) => (v.status === "unpaid" || v.status === "overdue" || v.status === "pending"))
+    .reduce((sum, v) => sum + (v.fine || v.amount || 0), 0);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -161,7 +206,7 @@ const UserViolations = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Amount Due</p>
                   <p className="text-2xl font-bold text-warning">
-                    ${totalUnpaid}
+                    LKR {totalUnpaid.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -249,47 +294,129 @@ const UserViolations = () => {
                   <div className="flex items-center gap-3">
                     <div
                       className={`p-2 rounded-full ${
-                        violation.severity === "high"
+                        violation.sensitiveZone?.isInZone
                           ? "bg-destructive/10"
-                          : violation.severity === "medium"
-                          ? "bg-warning/10"
-                          : "bg-success/10"
+                          : "bg-warning/10"
                       }`}
                     >
-                      <AlertTriangle
-                        className={`h-5 w-5 ${getSeverityColor(
-                          violation.severity
-                        )}`}
-                      />
+                      {violation.sensitiveZone?.isInZone ? (
+                        <Shield className="h-5 w-5 text-destructive" />
+                      ) : (
+                        <Gauge className="h-5 w-5 text-warning" />
+                      )}
                     </div>
                     <div>
                       <CardTitle className="text-lg">
-                        {violation.type} - {violation._id}
+                        Speed Violation - {violation._id.slice(-6)}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Vehicle: {violation.plateNumber}
+                        Vehicle: {violation.vehicleId}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <p className="text-2xl font-bold">${violation.amount}</p>
-                      {getStatusBadge(violation.status)}
+                      <p className="text-2xl font-bold">LKR {violation.fine?.toLocaleString()}</p>
+                      {getStatusBadge(violation.status || "pending")}
                     </div>
                   </div>
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground">{violation.description}</p>
+              <CardContent className="space-y-6">
+                {/* Location and Zone Information */}
+                {violation.sensitiveZone?.isInZone && (
+                  <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="h-4 w-4 text-destructive" />
+                      <p className="text-sm font-medium text-destructive">
+                        🚨 IN SENSITIVE ZONE
+                      </p>
+                    </div>
+                    <p className="text-sm text-destructive/80 mb-2">
+                      <strong>{violation.sensitiveZone.zoneName}</strong> ({violation.sensitiveZone.zoneType})
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">Distance from center:</span>
+                        <span className="ml-1 font-medium">{Math.round(violation.sensitiveZone.distanceFromZone || 0)}m</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Zone radius:</span>
+                        <span className="ml-1 font-medium">{violation.sensitiveZone.zoneRadius}m</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Speed Details */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Gauge className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-medium">🚗 Speed</p>
+                    </div>
+                    <p className="text-lg font-bold text-primary">{violation.speed} km/h</p>
+                  </div>
+
+                  <div className="p-3 bg-muted/50 border border-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Target className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-sm font-medium">🚦 Speed Limit</p>
+                    </div>
+                    <p className="text-lg font-bold">
+                      {violation.speedLimit || 70} km/h
+                      <span className="text-xs ml-1 text-muted-foreground">
+                        ({violation.sensitiveZone?.isInZone ? 'Sensitive Zone' : 'Normal Road'})
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <TrendingUp className="h-4 w-4 text-warning" />
+                      <p className="text-sm font-medium">📊 Speed Violation</p>
+                    </div>
+                    <p className="text-lg font-bold text-warning">
+                      +{violation.speed - (violation.speedLimit || 70)} km/h
+                    </p>
+                  </div>
+                </div>
+
+                {/* Fine Breakdown */}
+                <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
+                  <div className="flex items-center gap-2 mb-3">
+                    <DollarSign className="h-4 w-4 text-accent" />
+                    <p className="text-sm font-medium">💰 Fine Calculation</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Base Fine:</span>
+                      <span className="ml-2 font-medium">LKR {(violation.baseFine || 2000).toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Zone Multiplier:</span>
+                      <span className="ml-2 font-medium">{violation.zoneMultiplier || 1}x</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Final Fine:</span>
+                      <span className="ml-2 font-bold text-primary">LKR {violation.fine?.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Location and Time Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-sm font-medium">Date & Time</p>
+                      <p className="text-sm font-medium">📅 Date & Time</p>
                       <p className="text-sm text-muted-foreground">
-                        {violation.date} at {violation.time}
+                        {new Date(violation.timestamp).toLocaleDateString()} at{" "}
+                        {new Date(violation.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </p>
                     </div>
                   </div>
@@ -297,53 +424,15 @@ const UserViolations = () => {
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-sm font-medium">Location</p>
+                      <p className="text-sm font-medium">📍 Location</p>
                       <p className="text-sm text-muted-foreground">
-                        {typeof violation.location === "object"
-                          ? `${violation.location.lat}, ${violation.location.lng}`
-                          : violation.location}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Due Date</p>
-                      <p
-                        className={`text-sm ${
-                          violation.status === "overdue"
-                            ? "text-destructive font-medium"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {violation.dueDate}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Officer</p>
-                      <p className="text-sm text-muted-foreground">
-                        {violation.officer}
+                        {violation.location.lat.toFixed(4)}, {violation.location.lng.toFixed(4)}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {violation.speed && (
-                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                    <p className="text-sm font-medium text-destructive">
-                      Speed Details
-                    </p>
-                    <p className="text-sm text-destructive/80">
-                      {violation.speed}
-                    </p>
-                  </div>
-                )}
-
+                {/* Status-specific information */}
                 {violation.status === "paid" && violation.paidDate && (
                   <div className="p-3 bg-success/10 border border-success/20 rounded-lg">
                     <p className="text-sm font-medium text-success">
@@ -368,24 +457,22 @@ const UserViolations = () => {
 
                 <Separator />
 
+                {/* Action Buttons */}
                 <div className="flex flex-wrap gap-2">
-                  {violation.status === "unpaid" ||
-                  violation.status === "overdue" ? (
+                  {(violation.status === "pending" || violation.status === "unpaid" || violation.status === "overdue") && (
                     <>
                       <Button className="shadow-glow-primary">
                         <DollarSign className="h-4 w-4 mr-2" />
-                        Pay Now - ${violation.amount}
+                        Pay Now - LKR {violation.fine?.toLocaleString()}
                       </Button>
                       <Button variant="outline">Dispute Violation</Button>
                     </>
-                  ) : null}
-
-                  {violation.hasPhoto && (
-                    <Button variant="outline" size="sm">
-                      <Camera className="h-4 w-4 mr-2" />
-                      View Photo
-                    </Button>
                   )}
+
+                  <Button variant="outline" size="sm">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    View on Map
+                  </Button>
 
                   <Button variant="outline" size="sm">
                     <Download className="h-4 w-4 mr-2" />
@@ -393,7 +480,7 @@ const UserViolations = () => {
                   </Button>
 
                   <Button variant="ghost" size="sm">
-                    <FileText className="h-4 w-4 mr-2" />
+                    <Info className="h-4 w-4 mr-2" />
                     Full Details
                   </Button>
                 </div>
