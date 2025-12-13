@@ -71,8 +71,13 @@ const UserViolations = () => {
         const response = await fetch(`${API_URL}/api/violation`);
         const data = await response.json();
         if (data.success) {
+          // Filter violations to show only those with proper geofencing data
+          const validViolations = data.violations.filter((v: Violation) => 
+            v.fine && v.baseFine && v.speedLimit && v.sensitiveZone
+          );
+          
           // Map the new violation structure to include legacy fields for compatibility
-          const mappedViolations = data.violations.map((v: Violation) => ({
+          const mappedViolations = validViolations.map((v: Violation) => ({
             ...v,
             plateNumber: v.vehicleId,
             type: "Speed Violation",

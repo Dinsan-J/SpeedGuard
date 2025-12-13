@@ -90,7 +90,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchVehicles = async () => {
       const response = await fetch(
-        `https://speedguard-gz70.onrender.com/api/vehicle/user/${userId}`,
+        `http://localhost:5000/api/vehicle/user/${userId}`,
         { credentials: "include" }
       );
       const data = await response.json();
@@ -108,15 +108,20 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchViolations = async () => {
       setIsLoadingViolations(true);
-      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
       
       try {
         const response = await fetch(`${API_URL}/api/violation`);
         const data = await response.json();
         
         if (data.success) {
+          // Filter violations to show only those with proper geofencing data and valid fines
+          const validViolations = data.violations.filter((v: Violation) => 
+            v.fine && v.baseFine && v.speedLimit && v.sensitiveZone
+          );
+          
           // Use the fine from geofencing service, fallback to calculation if needed
-          const violationsWithFines = data.violations.map((v: Violation) => {
+          const violationsWithFines = validViolations.map((v: Violation) => {
             const calculatedFine = v.fine || (v.baseFine || 2000) * (v.zoneMultiplier || 1);
             return { ...v, predictedFine: calculatedFine };
           });
