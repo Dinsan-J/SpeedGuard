@@ -17,6 +17,7 @@ import {
   FileText,
   Settings,
   ArrowRight,
+  Shield,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -105,6 +106,20 @@ const OfficerDashboard = () => {
 
   const quickActions = [
     {
+      icon: <Shield className="h-5 w-5" />,
+      title: "Police Confirmation",
+      description: "Confirm drivers & apply penalties",
+      link: "/officer/police-confirmation",
+      color: "primary",
+    },
+    {
+      icon: <TrendingUp className="h-5 w-5" />,
+      title: "Police Analytics",
+      description: "ML risk analysis & driver stats",
+      link: "/officer/police-analytics",
+      color: "secondary",
+    },
+    {
       icon: <QrCode className="h-5 w-5" />,
       title: "QR Vehicle Search",
       description: "Scan vehicle QR code",
@@ -117,20 +132,6 @@ const OfficerDashboard = () => {
       description: "Create new violation",
       link: "/officer/issue-fine",
       color: "warning",
-    },
-    {
-      icon: <Search className="h-5 w-5" />,
-      title: "Search Vehicle",
-      description: "Find by plate number",
-      link: "/officer/vehicles",
-      color: "secondary",
-    },
-    {
-      icon: <Camera className="h-5 w-5" />,
-      title: "Camera Status",
-      description: "Monitor live feeds",
-      link: "/officer/cameras",
-      color: "primary",
     },
   ];
 

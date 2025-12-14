@@ -15,6 +15,8 @@ import OfficerFines from "./pages/officer/OfficerFines";
 import OfficerAnalytics from "./pages/officer/OfficerAnalytics";
 import OfficerQRSearch from "./pages/officer/OfficerQRSearch";
 import OfficerIssueFine from "./pages/officer/OfficerIssueFine";
+import PoliceDashboard from "./pages/police/PoliceDashboard";
+import PoliceAnalytics from "./pages/police/PoliceAnalytics";
 import UserDashboard from "./pages/user/UserDashboard";
 import UserVehicles from "./pages/user/UserVehicles";
 import UserViolations from "./pages/user/UserViolations";
@@ -49,6 +51,8 @@ const App = () => (
             <Route path="analytics" element={<OfficerAnalytics />} />
             <Route path="qr-search" element={<OfficerQRSearch />} />
             <Route path="issue-fine" element={<OfficerIssueFine />} />
+            <Route path="police-confirmation" element={<PoliceDashboard />} />
+            <Route path="police-analytics" element={<PoliceAnalytics />} />
           </Route>
 
           {/* User routes with UserLayout */}

@@ -30,9 +30,11 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
 
   const officerLinks = [
     { to: "/officer/dashboard", label: "Dashboard" },
+    { to: "/officer/police-confirmation", label: "Police Confirmation" },
+    { to: "/officer/police-analytics", label: "Police Analytics" },
     { to: "/officer/vehicles", label: "Vehicles" },
     { to: "/officer/fines", label: "Fines" },
-    { to: "/officer/analytics", label: "Analytics" },
+    { to: "/officer/analytics", label: "System Analytics" },
   ];
 
   const userLinks = [
