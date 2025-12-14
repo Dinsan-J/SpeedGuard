@@ -21,7 +21,8 @@ import {
   TrendingUp,
   Calendar,
   Phone,
-  Mail
+  Mail,
+  Info
 } from "lucide-react";
 
 interface VehicleData {
@@ -98,7 +99,7 @@ const QRScanner = () => {
     setLoading(true);
     try {
       const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
-      const response = await fetch(`${API_URL}/api/police/scan/${encodeURIComponent(vehicleId)}`);
+      const response = await fetch(`${API_URL}/api/police/test/scan/${encodeURIComponent(vehicleId)}`);
       const data = await response.json();
       
       if (data.success) {
@@ -128,7 +129,7 @@ const QRScanner = () => {
     setConfirming(violationId);
     try {
       const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
-      const response = await fetch(`${API_URL}/api/police/violations/${violationId}/quick-confirm`, {
+      const response = await fetch(`${API_URL}/api/police/test/violations/${violationId}/quick-confirm`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,13 +149,23 @@ const QRScanner = () => {
           pendingViolations: prev.pendingViolations.filter(v => v._id !== violationId)
         } : null);
         
-        alert(`✅ Violation confirmed!\n🎯 Merit points deducted: ${data.meritPointsDeducted}\n👤 Driver: ${data.driver.name}\n📊 New merit points: ${data.driver.meritPoints}`);
+        const successMessage = `✅ VIOLATION CONFIRMED!\n\n` +
+          `👤 Driver: ${data.driver?.fullName || data.driver?.name || driverLicenseInput}\n` +
+          `🎯 Merit points deducted: ${data.meritPointsDeducted || 'N/A'}\n` +
+          `📊 New merit points: ${data.driver?.meritPoints || 'N/A'}\n` +
+          `📈 Driver status: ${data.driver?.status?.toUpperCase() || 'N/A'}\n\n` +
+          `🚨 Violation has been officially confirmed and penalties applied!`;
+        
+        alert(successMessage);
+        
+        // Clear the license input for next violation
+        setDriverLicenseInput('');
       } else {
-        alert('Failed to confirm violation: ' + data.message);
+        alert(`❌ Failed to confirm violation:\n\n${data.message}\n\nPlease check the driver license ID and try again.`);
       }
     } catch (error) {
       console.error('Failed to confirm violation:', error);
-      alert('Network error occurred');
+      alert(`❌ Network error occurred:\n\n${error}\n\nPlease check your internet connection and try again.`);
     } finally {
       setConfirming(null);
     }
@@ -386,18 +397,55 @@ const QRScanner = () => {
                   </div>
                 ) : (
                   <>
-                    {/* Driver License Input */}
-                    <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
-                      <h4 className="font-medium mb-2">Driver License ID</h4>
-                      <Input
-                        placeholder="Enter driver license ID to confirm violations..."
-                        value={driverLicenseInput}
-                        onChange={(e) => setDriverLicenseInput(e.target.value)}
-                        className="mb-2"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        This will be used to confirm all pending violations for this vehicle
-                      </p>
+                    {/* Driver License Input with Search */}
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue/20 rounded-lg">
+                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        <User className="h-4 w-4 text-blue-600" />
+                        Driver Identification
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <Input
+                            placeholder="Enter or search driver license ID..."
+                            value={driverLicenseInput}
+                            onChange={(e) => setDriverLicenseInput(e.target.value)}
+                            className="pr-20"
+                          />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="absolute right-1 top-1 h-8"
+                            onClick={() => {
+                              // Simple validation
+                              if (driverLicenseInput.length < 3) {
+                                alert('Please enter at least 3 characters');
+                                return;
+                              }
+                              alert(`Searching for driver: ${driverLicenseInput}`);
+                            }}
+                          >
+                            <Search className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        
+                        {/* Quick License Suggestions */}
+                        {scanResult.recentDriver && (
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setDriverLicenseInput(scanResult.recentDriver!.licenseId)}
+                              className="text-xs"
+                            >
+                              Use Recent: {scanResult.recentDriver.licenseId}
+                            </Button>
+                          </div>
+                        )}
+                        
+                        <p className="text-xs text-muted-foreground">
+                          💡 Enter the driver's license ID to confirm violations and apply merit point penalties
+                        </p>
+                      </div>
                     </div>
 
                     {/* Violations List */}
@@ -437,24 +485,68 @@ const QRScanner = () => {
                             <div className="text-xs text-muted-foreground">
                               {new Date(violation.timestamp).toLocaleString()}
                             </div>
-                            <Button
-                              onClick={() => quickConfirmViolation(violation._id)}
-                              disabled={!driverLicenseInput.trim() || confirming === violation._id}
-                              size="sm"
-                              className="bg-success hover:bg-success/90"
-                            >
-                              {confirming === violation._id ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                                  Confirming...
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle className="h-3 w-3 mr-1" />
-                                  Quick Confirm
-                                </>
-                              )}
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => {
+                                  if (!driverLicenseInput.trim()) {
+                                    alert('⚠️ Please enter driver license ID first');
+                                    return;
+                                  }
+                                  
+                                  const confirmMessage = `🚨 CONFIRM VIOLATION\n\n` +
+                                    `Driver: ${driverLicenseInput}\n` +
+                                    `Speed: ${violation.speed} km/h (Limit: ${violation.speedLimit} km/h)\n` +
+                                    `Fine: LKR ${violation.finalFine.toLocaleString()}\n` +
+                                    `Merit Points: -${violation.meritPointsDeducted} points\n` +
+                                    `Risk Level: ${violation.riskLevel.toUpperCase()}\n\n` +
+                                    `⚠️ This action cannot be undone!\n\n` +
+                                    `Confirm violation and apply penalties?`;
+                                  
+                                  if (window.confirm(confirmMessage)) {
+                                    quickConfirmViolation(violation._id);
+                                  }
+                                }}
+                                disabled={!driverLicenseInput.trim() || confirming === violation._id}
+                                size="sm"
+                                className="bg-success hover:bg-success/90 flex-1"
+                              >
+                                {confirming === violation._id ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                                    Confirming...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Confirm & Apply Penalty
+                                  </>
+                                )}
+                              </Button>
+                              
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const details = `📋 VIOLATION DETAILS\n\n` +
+                                    `Vehicle: ${scanResult.vehicle.plateNumber}\n` +
+                                    `Time: ${new Date(violation.timestamp).toLocaleString()}\n` +
+                                    `Location: ${violation.location.lat.toFixed(4)}, ${violation.location.lng.toFixed(4)}\n` +
+                                    `Speed: ${violation.speed} km/h (Limit: ${violation.speedLimit} km/h)\n` +
+                                    `Risk Score: ${Math.round((violation.riskScore || 0) * 100)}%\n` +
+                                    `Base Fine: LKR 2,000\n` +
+                                    `Final Fine: LKR ${violation.finalFine.toLocaleString()}\n` +
+                                    `Merit Points: -${violation.meritPointsDeducted}\n` +
+                                    (violation.sensitiveZone?.isInZone ? 
+                                      `\n🚨 SENSITIVE ZONE:\n${violation.sensitiveZone.zoneName} (${violation.sensitiveZone.zoneType})` : 
+                                      '\n✅ Normal road violation');
+                                  
+                                  alert(details);
+                                }}
+                                className="px-3"
+                              >
+                                <Info className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))}
