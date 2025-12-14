@@ -18,7 +18,8 @@ import {
   DollarSign,
   Award,
   TrendingUp,
-  BookOpen
+  BookOpen,
+  QrCode
 } from "lucide-react";
 
 interface PendingViolation {
@@ -205,6 +206,13 @@ The violation has been officially confirmed and penalties have been applied to t
             <Badge variant="outline" className="text-lg px-4 py-2">
               {pendingViolations.length} Pending Confirmations
             </Badge>
+            <Button 
+              onClick={() => window.location.href = '/police/qr-scanner'}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <QrCode className="h-4 w-4 mr-2" />
+              QR Scanner
+            </Button>
           </div>
         </div>
 

@@ -284,3 +284,150 @@ exports.getHighRiskDrivers = async (req, res) => {
     });
   }
 };
+
+// QR Code Scanner - Get vehicle and driver information
+exports.scanVehicleQR = async (req, res) => {
+  try {
+    const { vehicleId } = req.params;
+    
+    // Find vehicle
+    const Vehicle = require('../models/Vehicle');
+    const vehicle = await Vehicle.findOne({ 
+      $or: [
+        { plateNumber: vehicleId },
+        { _id: vehicleId }
+      ]
+    }).populate('owner');
+
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found'
+      });
+    }
+
+    // Get pending violations for this vehicle
+    const pendingViolations = await Violation.find({
+      vehicleId: vehicle.plateNumber,
+      driverConfirmed: false,
+      status: 'pending'
+    }).sort({ timestamp: -1 });
+
+    // Get confirmed violations for this vehicle (last 10)
+    const recentViolations = await Violation.find({
+      vehicleId: vehicle.plateNumber,
+      driverConfirmed: true
+    }).sort({ timestamp: -1 }).limit(10);
+
+    // Get driver information if available from recent violations
+    let driverInfo = null;
+    if (recentViolations.length > 0) {
+      const lastDriverLicense = recentViolations[0].drivingLicenseId;
+      if (lastDriverLicense) {
+        driverInfo = await Driver.findByLicenseId(lastDriverLicense);
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        vehicle: {
+          plateNumber: vehicle.plateNumber,
+          make: vehicle.make,
+          model: vehicle.model,
+          year: vehicle.year,
+          color: vehicle.color,
+          status: vehicle.status,
+          owner: vehicle.owner ? {
+            username: vehicle.owner.username,
+            email: vehicle.owner.email
+          } : null,
+          iotDeviceId: vehicle.iotDeviceId,
+          currentSpeed: vehicle.currentSpeed,
+          currentLocation: vehicle.currentLocation,
+          lastUpdated: vehicle.lastUpdated
+        },
+        pendingViolations: pendingViolations.map(v => ({
+          _id: v._id,
+          speed: v.speed,
+          speedLimit: v.speedLimit,
+          timestamp: v.timestamp,
+          location: v.location,
+          finalFine: v.finalFine,
+          riskScore: v.riskScore,
+          riskLevel: v.riskLevel,
+          meritPointsDeducted: v.meritPointsDeducted,
+          sensitiveZone: v.sensitiveZone
+        })),
+        recentDriver: driverInfo ? {
+          licenseId: driverInfo.drivingLicenseId,
+          fullName: driverInfo.fullName,
+          meritPoints: driverInfo.meritPoints,
+          status: driverInfo.status,
+          riskLevel: driverInfo.riskLevel,
+          totalViolations: driverInfo.totalViolations,
+          lastViolationDate: driverInfo.lastViolationDate,
+          mandatoryTrainingRequired: driverInfo.mandatoryTrainingRequired
+        } : null,
+        recentViolations: recentViolations.slice(0, 5).map(v => ({
+          timestamp: v.timestamp,
+          speed: v.speed,
+          finalFine: v.finalFine,
+          riskLevel: v.riskLevel,
+          drivingLicenseId: v.drivingLicenseId
+        }))
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error scanning vehicle QR:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Error scanning vehicle QR code',
+      error: error.message
+    });
+  }
+};
+
+// Quick violation confirmation from QR scan
+exports.quickConfirmViolation = async (req, res) => {
+  try {
+    const { violationId } = req.params;
+    const { drivingLicenseId, quickConfirm } = req.body;
+    const officerId = req.user?.id;
+
+    if (!officerId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Officer authentication required'
+      });
+    }
+
+    if (!quickConfirm) {
+      return res.status(400).json({
+        success: false,
+        message: 'Quick confirmation flag required'
+      });
+    }
+
+    // Use existing confirmation service
+    const result = await policeConfirmationService.confirmDriver(
+      violationId,
+      drivingLicenseId,
+      officerId,
+      { quickConfirm: true }
+    );
+
+    res.json({
+      ...result,
+      message: 'Violation confirmed via QR scan'
+    });
+
+  } catch (error) {
+    console.error('❌ Error in quick confirm:', error.message);
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

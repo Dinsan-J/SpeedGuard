@@ -52,4 +52,8 @@ router.get('/drivers/:licenseId', verifyOfficer, policeController.getDriverDetai
 // Get high-risk drivers requiring attention
 router.get('/drivers/high-risk', verifyOfficer, policeController.getHighRiskDrivers);
 
+// QR Code Scanner Routes
+router.get('/scan/:vehicleId', verifyOfficer, policeController.scanVehicleQR);
+router.post('/violations/:violationId/quick-confirm', verifyOfficer, policeController.quickConfirmViolation);
+
 module.exports = router;
