@@ -1,4 +1,6 @@
 const SensitiveLocation = require('../models/SensitiveLocation');
+const mlRiskService = require('./mlRiskService');
+const Driver = require('../models/Driver');
 
 class GeofencingService {
   constructor() {
@@ -156,14 +158,16 @@ class GeofencingService {
   }
 
   /**
-   * Calculate final fine with geofencing considerations and dynamic speed limits
+   * Calculate final fine with geofencing, ML risk assessment, and dynamic speed limits
    * @param {number} actualSpeed - Actual speed in km/h
    * @param {number} latitude - Violation latitude
    * @param {number} longitude - Violation longitude
+   * @param {string} drivingLicenseId - Optional driver license ID for risk assessment
    * @param {number} customSpeedLimit - Optional custom speed limit (overrides automatic detection)
-   * @returns {Object} Complete violation analysis
+   * @param {Object} additionalContext - Additional context for ML (timeOfDay, trafficDensity, etc.)
+   * @returns {Object} Complete violation analysis with ML risk assessment
    */
-  async calculateViolationFine(actualSpeed, latitude, longitude, customSpeedLimit = null) {
+  async calculateViolationFine(actualSpeed, latitude, longitude, drivingLicenseId = null, customSpeedLimit = null, additionalContext = {}) {
     try {
       // First analyze geofencing to determine if in sensitive zone
       const geofencing = await this.analyzeViolationLocation(latitude, longitude);
@@ -193,8 +197,38 @@ class GeofencingService {
         };
       }
 
-      // Calculate final fine with zone multiplier
-      const finalFine = Math.round(baseFine * geofencing.multiplier);
+      // Get driver data for ML risk assessment
+      let driverData = null;
+      if (drivingLicenseId) {
+        driverData = await Driver.findByLicenseId(drivingLicenseId);
+      }
+
+      // Prepare violation data for ML risk assessment
+      const violationData = {
+        speed: actualSpeed,
+        speedLimit: speedLimit,
+        sensitiveZone: {
+          isInZone: geofencing.isInZone,
+          zoneType: geofencing.zoneType,
+          zoneName: geofencing.zoneName
+        },
+        timestamp: new Date(),
+        trafficDensity: additionalContext.trafficDensity || 'moderate',
+        weatherConditions: additionalContext.weatherConditions || 'clear'
+      };
+
+      // Calculate ML risk assessment
+      const riskAssessment = await mlRiskService.calculateRiskScore(violationData, driverData);
+
+      // Calculate final fine with both zone and risk multipliers
+      const zoneAdjustedFine = Math.round(baseFine * geofencing.multiplier);
+      const finalFine = Math.round(zoneAdjustedFine * riskAssessment.riskMultiplier);
+
+      // Calculate merit points deduction
+      const meritPointsDeduction = mlRiskService.calculateMeritPointsDeduction(
+        riskAssessment.riskScore, 
+        'speed'
+      );
 
       return {
         baseFine,
@@ -202,6 +236,8 @@ class GeofencingService {
         isViolation: true,
         speedLimit,
         speedViolation: actualSpeed - speedLimit,
+        
+        // Geofencing data
         geofencing: {
           isInZone: geofencing.isInZone,
           zoneType: geofencing.zoneType,
@@ -210,7 +246,36 @@ class GeofencingService {
           zoneRadius: geofencing.zoneRadius,
           multiplier: geofencing.multiplier,
           closestZone: geofencing.closestZone
-        }
+        },
+        
+        // ML Risk Assessment
+        riskAssessment: {
+          riskScore: riskAssessment.riskScore,
+          riskLevel: riskAssessment.riskLevel,
+          riskMultiplier: riskAssessment.riskMultiplier,
+          explanation: riskAssessment.explanation,
+          features: riskAssessment.features
+        },
+        
+        // Fine breakdown
+        fineBreakdown: {
+          base: baseFine,
+          afterZoneMultiplier: zoneAdjustedFine,
+          afterRiskMultiplier: finalFine,
+          zoneMultiplier: geofencing.multiplier,
+          riskMultiplier: riskAssessment.riskMultiplier
+        },
+        
+        // Merit points impact
+        meritPointsDeduction,
+        
+        // Driver context
+        driverData: driverData ? {
+          licenseId: driverData.drivingLicenseId,
+          currentMeritPoints: driverData.meritPoints,
+          riskLevel: driverData.riskLevel,
+          status: driverData.status
+        } : null
       };
     } catch (error) {
       console.error('❌ Error calculating violation fine:', error.message);

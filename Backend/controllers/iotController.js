@@ -46,9 +46,20 @@ exports.receiveIoTData = async (req, res) => {
 
     await vehicle.save();
 
-    // Calculate fine with geofencing analysis (this will determine appropriate speed limit)
+    // Prepare additional context for ML risk assessment
+    const additionalContext = {
+      trafficDensity: req.body.trafficDensity || 'moderate',
+      weatherConditions: req.body.weatherConditions || 'clear'
+    };
+
+    // Calculate fine with geofencing and ML risk analysis
     const violationAnalysis = await geofencingService.calculateViolationFine(
-      speed, location.lat, location.lng, speedLimit !== 60 ? speedLimit : null // Use custom speed limit if provided, otherwise auto-detect
+      speed, 
+      location.lat, 
+      location.lng, 
+      null, // No driver ID at this stage (will be confirmed by police)
+      speedLimit !== 60 ? speedLimit : null, // Use custom speed limit if provided, otherwise auto-detect
+      additionalContext
     );
 
     // Check for speed violations using dynamic speed limits
@@ -56,24 +67,48 @@ exports.receiveIoTData = async (req, res) => {
       console.log(`🚨 Speed violation detected: ${speed} km/h (limit: ${violationAnalysis.speedLimit} km/h)`);
       console.log(`📍 Location type: ${violationAnalysis.geofencing.isInZone ? 'Sensitive Zone' : 'Normal Road'}`);
       
-      // Create violation record with geofencing data
+      // Create violation record with complete analysis data
       const violation = new Violation({
         vehicleId: vehicle.plateNumber,
+        deviceId: iotDeviceId,
         location: location,
         speed: speed,
-        speedLimit: violationAnalysis.speedLimit, // Store the actual speed limit used
+        speedLimit: violationAnalysis.speedLimit,
         timestamp: timestamp || new Date(),
         status: "pending",
+        
+        // Fine calculation
         baseFine: violationAnalysis.baseFine,
-        fine: violationAnalysis.finalFine,
+        finalFine: violationAnalysis.finalFine,
         zoneMultiplier: violationAnalysis.geofencing.multiplier,
+        riskMultiplier: violationAnalysis.riskAssessment?.riskMultiplier || 1.0,
+        fineBreakdown: violationAnalysis.fineBreakdown,
+        
+        // Geofencing data
         sensitiveZone: {
           isInZone: violationAnalysis.geofencing.isInZone,
           zoneType: violationAnalysis.geofencing.zoneType,
           zoneName: violationAnalysis.geofencing.zoneName,
           distanceFromZone: violationAnalysis.geofencing.distanceFromZone,
           zoneRadius: violationAnalysis.geofencing.zoneRadius
-        }
+        },
+        
+        // ML Risk Assessment
+        riskScore: violationAnalysis.riskAssessment?.riskScore || 0.3,
+        riskLevel: violationAnalysis.riskAssessment?.riskLevel || 'medium',
+        riskFactors: violationAnalysis.riskAssessment?.features ? 
+          Object.entries(violationAnalysis.riskAssessment.features).map(([factor, weight]) => ({
+            factor,
+            weight,
+            description: `${factor}: ${(weight * 100).toFixed(1)}%`
+          })) : [],
+        
+        // Merit points (will be applied after police confirmation)
+        meritPointsDeducted: violationAnalysis.meritPointsDeduction || 5,
+        
+        // Additional context
+        trafficDensity: additionalContext.trafficDensity,
+        weatherConditions: additionalContext.weatherConditions
       });
 
       await violation.save();
@@ -96,7 +131,12 @@ exports.receiveIoTData = async (req, res) => {
         });
       }
 
-      console.log(`💰 Fine calculated: LKR ${violationAnalysis.finalFine} (Base: LKR ${violationAnalysis.baseFine}, Multiplier: ${violationAnalysis.geofencing.multiplier}x)`);
+      console.log(`💰 Fine calculated: LKR ${violationAnalysis.finalFine}`);
+      console.log(`   Base: LKR ${violationAnalysis.baseFine}`);
+      console.log(`   Zone multiplier: ${violationAnalysis.geofencing.multiplier}x`);
+      console.log(`   Risk multiplier: ${violationAnalysis.riskAssessment?.riskMultiplier || 1.0}x`);
+      console.log(`🤖 ML Risk Assessment: ${violationAnalysis.riskAssessment?.riskLevel || 'medium'} (${((violationAnalysis.riskAssessment?.riskScore || 0.3) * 100).toFixed(1)}%)`);
+      console.log(`🎯 Merit points to deduct: ${violationAnalysis.meritPointsDeduction || 5}`);
       
       if (violationAnalysis.geofencing.isInZone) {
         console.log(`📍 Violation in sensitive zone: ${violationAnalysis.geofencing.zoneName} (${violationAnalysis.geofencing.zoneType})`);

@@ -26,6 +26,7 @@ import {
 interface Violation {
   _id: string;
   vehicleId: string;
+  deviceId?: string;
   location: {
     lat: number;
     lng: number;
@@ -37,6 +38,15 @@ interface Violation {
   baseFine?: number;
   status: string;
   zoneMultiplier?: number;
+  riskMultiplier?: number;
+  
+  // Driver Information
+  drivingLicenseId?: string;
+  driverConfirmed?: boolean;
+  confirmedBy?: string;
+  confirmationDate?: string;
+  
+  // Geofencing
   sensitiveZone?: {
     isInZone: boolean;
     zoneType?: string;
@@ -44,6 +54,33 @@ interface Violation {
     distanceFromZone?: number;
     zoneRadius?: number;
   };
+  
+  // ML Risk Assessment
+  riskScore?: number;
+  riskLevel?: 'low' | 'medium' | 'high';
+  riskFactors?: Array<{
+    factor: string;
+    weight: number;
+    description: string;
+  }>;
+  
+  // Merit Points
+  meritPointsDeducted?: number;
+  meritPointsApplied?: boolean;
+  
+  // Fine Breakdown
+  fineBreakdown?: {
+    base: number;
+    zoneAdjustment: number;
+    riskAdjustment: number;
+    total: number;
+  };
+  
+  // Additional Context
+  timeOfDay?: string;
+  trafficDensity?: string;
+  weatherConditions?: string;
+  
   // Legacy fields for compatibility
   plateNumber?: string;
   type?: string;
@@ -383,13 +420,62 @@ const UserViolations = () => {
                   </div>
                 </div>
 
-                {/* Fine Breakdown */}
+                {/* ML Risk Assessment */}
+                {violation.riskScore && (
+                  <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple/20 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-1 bg-purple-100 rounded">
+                        <span className="text-sm">🤖</span>
+                      </div>
+                      <p className="text-sm font-medium text-purple-800">AI Risk Assessment</p>
+                      <Badge 
+                        variant={violation.riskLevel === 'high' ? 'destructive' : 
+                                violation.riskLevel === 'medium' ? 'secondary' : 'outline'}
+                        className="ml-auto"
+                      >
+                        {violation.riskLevel?.toUpperCase()} RISK
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Risk Score:</span>
+                        <span className="ml-2 font-bold text-purple-700">
+                          {Math.round((violation.riskScore || 0) * 100)}%
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Risk Multiplier:</span>
+                        <span className="ml-2 font-medium">{violation.riskMultiplier || 1.0}x</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Merit Points:</span>
+                        <span className="ml-2 font-bold text-destructive">
+                          -{violation.meritPointsDeducted || 0} points
+                        </span>
+                      </div>
+                    </div>
+                    {violation.riskFactors && violation.riskFactors.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-purple/20">
+                        <p className="text-xs text-muted-foreground mb-2">Key Risk Factors:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {violation.riskFactors.slice(0, 3).map((factor, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {factor.factor}: {(factor.weight * 100).toFixed(0)}%
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Enhanced Fine Breakdown */}
                 <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
                   <div className="flex items-center gap-2 mb-3">
                     <DollarSign className="h-4 w-4 text-accent" />
                     <p className="text-sm font-medium">💰 Fine Calculation</p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Base Fine:</span>
                       <span className="ml-2 font-medium">LKR {(violation.baseFine || 2000).toLocaleString()}</span>
@@ -399,10 +485,71 @@ const UserViolations = () => {
                       <span className="ml-2 font-medium">{violation.zoneMultiplier || 1}x</span>
                     </div>
                     <div>
+                      <span className="text-muted-foreground">Risk Multiplier:</span>
+                      <span className="ml-2 font-medium">{violation.riskMultiplier || 1.0}x</span>
+                    </div>
+                    <div>
                       <span className="text-muted-foreground">Final Fine:</span>
                       <span className="ml-2 font-bold text-primary">LKR {violation.fine?.toLocaleString()}</span>
                     </div>
                   </div>
+                  {violation.fineBreakdown && (
+                    <div className="mt-3 pt-3 border-t border-accent/20 text-xs text-muted-foreground">
+                      <div className="flex justify-between items-center">
+                        <span>Calculation: LKR {violation.fineBreakdown.base.toLocaleString()} → 
+                        LKR {(violation.fineBreakdown.base + violation.fineBreakdown.zoneAdjustment).toLocaleString()} → 
+                        LKR {violation.fineBreakdown.total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Police Confirmation Status */}
+                <div className={`p-4 border rounded-lg ${
+                  violation.driverConfirmed 
+                    ? 'bg-success/10 border-success/20' 
+                    : 'bg-warning/10 border-warning/20'
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    {violation.driverConfirmed ? (
+                      <CheckCircle className="h-4 w-4 text-success" />
+                    ) : (
+                      <Clock className="h-4 w-4 text-warning" />
+                    )}
+                    <p className={`text-sm font-medium ${
+                      violation.driverConfirmed ? 'text-success' : 'text-warning'
+                    }`}>
+                      👮 Police Confirmation Status
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Driver Confirmed:</span>
+                      <span className={`ml-2 font-medium ${
+                        violation.driverConfirmed ? 'text-success' : 'text-warning'
+                      }`}>
+                        {violation.driverConfirmed ? 'YES' : 'PENDING'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Merit Points Applied:</span>
+                      <span className={`ml-2 font-medium ${
+                        violation.meritPointsApplied ? 'text-destructive' : 'text-muted-foreground'
+                      }`}>
+                        {violation.meritPointsApplied ? 'YES' : 'NO'}
+                      </span>
+                    </div>
+                  </div>
+                  {violation.drivingLicenseId && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Driver License: {violation.drivingLicenseId}
+                    </div>
+                  )}
+                  {violation.confirmationDate && (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Confirmed on: {new Date(violation.confirmationDate).toLocaleDateString()}
+                    </div>
+                  )}
                 </div>
 
                 {/* Location and Time Details */}

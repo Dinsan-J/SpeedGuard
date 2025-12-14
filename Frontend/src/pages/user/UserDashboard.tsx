@@ -52,7 +52,7 @@ interface Vehicle {
   lastUpdated?: string;
 }
 
-// Update Violation interface for MongoDB with geofencing data
+// Enhanced Violation interface with ML risk assessment
 interface Violation {
   _id: string;
   vehicleId: string;
@@ -63,13 +63,40 @@ interface Violation {
   fine?: number;
   baseFine?: number;
   zoneMultiplier?: number;
+  riskMultiplier?: number;
   predictedFine?: number;
+  status?: string;
+  driverConfirmed?: boolean;
+  drivingLicenseId?: string;
+  
+  // Geofencing data
   sensitiveZone?: {
     isInZone: boolean;
     zoneType?: string;
     zoneName?: string;
     distanceFromZone?: number;
     zoneRadius?: number;
+  };
+  
+  // ML Risk Assessment
+  riskScore?: number;
+  riskLevel?: 'low' | 'medium' | 'high';
+  riskFactors?: Array<{
+    factor: string;
+    weight: number;
+    description: string;
+  }>;
+  
+  // Merit Points
+  meritPointsDeducted?: number;
+  meritPointsApplied?: boolean;
+  
+  // Fine breakdown
+  fineBreakdown?: {
+    base: number;
+    zoneAdjustment: number;
+    riskAdjustment: number;
+    total: number;
   };
 }
 
@@ -447,17 +474,50 @@ const UserDashboard = () => {
                             : "border-warning/50 bg-warning/5"
                         }`}
                       >
-                        {/* Sensitive Zone Alert */}
-                        {violation.sensitiveZone?.isInZone && (
+                        {/* ML Risk Assessment Alert */}
+                        {violation.riskLevel === 'high' && (
                           <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs">
                             <div className="flex items-center gap-1">
                               <AlertTriangle className="h-3 w-3 text-destructive" />
                               <span className="font-medium text-destructive">
+                                🤖 HIGH RISK VIOLATION
+                              </span>
+                              <Badge variant="destructive" className="text-xs ml-2">
+                                {Math.round((violation.riskScore || 0) * 100)}% Risk
+                              </Badge>
+                            </div>
+                            <div className="text-destructive/80 mt-1">
+                              Merit Points: -{violation.meritPointsDeducted || 0} • Risk Multiplier: {violation.riskMultiplier || 1.0}x
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Sensitive Zone Alert */}
+                        {violation.sensitiveZone?.isInZone && (
+                          <div className="mb-3 p-2 bg-warning/10 border border-warning/20 rounded text-xs">
+                            <div className="flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3 text-warning" />
+                              <span className="font-medium text-warning">
                                 🚨 SENSITIVE ZONE: {violation.sensitiveZone.zoneName}
                               </span>
                             </div>
-                            <div className="text-destructive/80 mt-1">
-                              {violation.sensitiveZone.zoneType} • {Math.round(violation.sensitiveZone.distanceFromZone || 0)}m from center • {violation.zoneMultiplier}x fine multiplier
+                            <div className="text-warning/80 mt-1">
+                              {violation.sensitiveZone.zoneType} • {Math.round(violation.sensitiveZone.distanceFromZone || 0)}m from center • {violation.zoneMultiplier}x zone multiplier
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Police Confirmation Status */}
+                        {!violation.driverConfirmed && (
+                          <div className="mb-3 p-2 bg-info/10 border border-info/20 rounded text-xs">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3 text-info" />
+                              <span className="font-medium text-info">
+                                👮 AWAITING POLICE CONFIRMATION
+                              </span>
+                            </div>
+                            <div className="text-info/80 mt-1">
+                              Driver identification pending • Merit points not yet applied
                             </div>
                           </div>
                         )}
@@ -541,10 +601,32 @@ const UserDashboard = () => {
                                 </span>
                               </div>
 
-                              {/* Fine Breakdown */}
-                              {(violation.baseFine || violation.zoneMultiplier) && (
-                                <div className="mt-2 text-xs text-muted-foreground">
-                                  💰 Base: LKR {(violation.baseFine || 2000).toLocaleString()} × {violation.zoneMultiplier || 1}x = LKR {fine.toLocaleString()}
+                              {/* Enhanced Fine Breakdown */}
+                              {(violation.baseFine || violation.zoneMultiplier || violation.riskMultiplier) && (
+                                <div className="mt-2 text-xs text-muted-foreground space-y-1">
+                                  <div>
+                                    💰 Base: LKR {(violation.baseFine || 2000).toLocaleString()} 
+                                    × {violation.zoneMultiplier || 1}x (zone)
+                                    × {violation.riskMultiplier || 1.0}x (risk)
+                                    = LKR {fine.toLocaleString()}
+                                  </div>
+                                  {violation.riskLevel && (
+                                    <div className="flex items-center gap-1">
+                                      <span>🤖 ML Risk:</span>
+                                      <Badge 
+                                        variant={violation.riskLevel === 'high' ? 'destructive' : 
+                                                violation.riskLevel === 'medium' ? 'secondary' : 'outline'}
+                                        className="text-xs"
+                                      >
+                                        {violation.riskLevel.toUpperCase()}
+                                      </Badge>
+                                      {violation.meritPointsDeducted && (
+                                        <span className="text-destructive">
+                                          -{violation.meritPointsDeducted} merit points
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
