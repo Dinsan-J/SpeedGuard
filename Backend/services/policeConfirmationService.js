@@ -53,7 +53,7 @@ class PoliceConfirmationService {
   /**
    * Confirm driver for a violation
    * @param {string} violationId - Violation ID
-   * @param {string} drivingLicenseId - Driver's license ID
+   * @param {string} drivingLicenseId - Driver's license ID or user email
    * @param {string} officerId - Police officer's user ID
    * @param {Object} additionalInfo - Additional confirmation details
    * @returns {Object} Confirmation result
@@ -81,69 +81,69 @@ class PoliceConfirmationService {
         throw new Error('Invalid police officer');
       }
 
-      // Find or create driver record
-      let driver = await Driver.findByLicenseId(drivingLicenseId);
-      if (!driver) {
-        // Create new driver record with basic info
-        driver = new Driver({
-          drivingLicenseId: drivingLicenseId,
-          fullName: additionalInfo.driverName || 'Unknown Driver',
-          dateOfBirth: additionalInfo.dateOfBirth || new Date('1990-01-01'),
-          licenseIssueDate: additionalInfo.licenseIssueDate || new Date(),
-          licenseExpiryDate: additionalInfo.licenseExpiryDate || new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000), // 5 years from now
-          licenseClass: additionalInfo.licenseClass || 'B'
-        });
-        await driver.save();
-        console.log(`✅ Created new driver record: ${drivingLicenseId}`);
+      // Find user by license ID or email
+      let user = await User.findOne({
+        $or: [
+          { 'driverProfile.licenseNumber': drivingLicenseId },
+          { email: drivingLicenseId }
+        ],
+        role: 'user'
+      });
+
+      if (!user) {
+        throw new Error(`Driver not found with license/email: ${drivingLicenseId}. Please ensure the driver is registered in the system.`);
       }
 
       // Confirm the violation
-      await violation.confirmDriver(drivingLicenseId, officerId);
+      violation.drivingLicenseId = user.driverProfile.licenseNumber || drivingLicenseId;
+      violation.userId = user._id;
+      violation.driverConfirmed = true;
+      violation.confirmedBy = officerId;
+      violation.confirmationDate = new Date();
+      violation.status = 'confirmed';
 
-      // Apply merit points deduction
-      if (violation.meritPointsDeducted > 0) {
-        await driver.deductMeritPoints(
-          violation.meritPointsDeducted, 
-          `Speed violation: ${violation.speed} km/h in ${violation.speedLimit} km/h zone`
-        );
+      // Apply merit points deduction using new system
+      if (violation.meritPointsDeducted > 0 && !violation.meritPointsApplied) {
+        const result = user.deductMeritPoints(violation.speedOverLimit);
         
+        violation.meritPointsDeducted = result.pointsDeducted;
         violation.meritPointsApplied = true;
-        await violation.save();
+        
+        console.log(`📊 Merit points deducted: ${result.pointsDeducted}`);
+        console.log(`🎯 New merit total: ${result.newTotal}/100`);
+        console.log(`🚦 Driving status: ${user.drivingStatus}`);
       }
 
-      // Update driver's violation history
-      driver.totalViolations += 1;
-      driver.confirmedViolations.push(violation._id);
-      driver.lastViolationDate = violation.timestamp;
-      
-      // Update driver's risk profile if risk score is available
-      if (violation.riskScore) {
-        await driver.updateRiskProfile(violation.riskScore);
-      }
-      
-      await driver.save();
+      await violation.save();
+      await user.save();
 
-      console.log(`✅ Violation confirmed: ${violationId} → Driver: ${drivingLicenseId}`);
-      console.log(`📊 Merit points deducted: ${violation.meritPointsDeducted}`);
-      console.log(`🎯 Driver merit points: ${driver.meritPoints} (Status: ${driver.status})`);
+      console.log(`✅ Violation confirmed: ${violationId} → Driver: ${user.username} (${drivingLicenseId})`);
+      console.log(`🚗 Vehicle type: ${violation.vehicleType}`);
+      console.log(`⚡ Speed: ${violation.speed} km/h (limit: ${violation.appliedSpeedLimit} km/h)`);
+      console.log(`📈 Over limit: ${violation.speedOverLimit} km/h (${violation.severityLevel})`);
 
       return {
         success: true,
         message: 'Driver confirmed successfully',
         violation: violation,
         driver: {
-          licenseId: driver.drivingLicenseId,
-          name: driver.fullName,
-          meritPoints: driver.meritPoints,
-          status: driver.status,
-          riskLevel: driver.riskLevel
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          licenseId: user.driverProfile.licenseNumber,
+          fullName: user.driverProfile.fullName,
+          meritPoints: user.meritPoints,
+          drivingStatus: user.drivingStatus,
+          vehicleType: user.vehicleType,
+          totalViolations: user.totalViolations
         },
         officer: {
           id: officer._id,
           policeId: officer.policeId,
           username: officer.username
         },
-        meritPointsDeducted: violation.meritPointsDeducted
+        meritPointsDeducted: violation.meritPointsDeducted,
+        severityLevel: violation.severityLevel
       };
 
     } catch (error) {

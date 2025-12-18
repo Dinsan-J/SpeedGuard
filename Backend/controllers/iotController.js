@@ -5,7 +5,7 @@ const geofencingService = require("../services/geofencingService");
 // Receive real-time data from IoT device
 exports.receiveIoTData = async (req, res) => {
   try {
-    const { iotDeviceId, speed, location, timestamp, speedLimit = 60 } = req.body;
+    const { iotDeviceId, speed, location, timestamp, vehicleType } = req.body;
 
     // Validate required fields
     if (!iotDeviceId || !speed || !location || !location.lat || !location.lng) {
@@ -16,7 +16,7 @@ exports.receiveIoTData = async (req, res) => {
     }
 
     // Find vehicle by IoT device ID
-    const vehicle = await Vehicle.findOne({ iotDeviceId });
+    const vehicle = await Vehicle.findOne({ iotDeviceId }).populate('owner');
     
     if (!vehicle) {
       return res.status(404).json({ 
@@ -24,6 +24,33 @@ exports.receiveIoTData = async (req, res) => {
         message: "Vehicle not found for this IoT device" 
       });
     }
+
+    // Get dynamic speed limit based on vehicle type
+    let appliedSpeedLimit;
+    let detectedVehicleType;
+    
+    if (vehicleType) {
+      // Use vehicle type from IoT device if provided
+      detectedVehicleType = vehicleType;
+    } else if (vehicle.vehicleType) {
+      // Use vehicle type from database
+      detectedVehicleType = vehicle.vehicleType;
+    } else if (vehicle.owner && vehicle.owner.vehicleType) {
+      // Use vehicle type from user profile
+      detectedVehicleType = vehicle.owner.vehicleType;
+    } else {
+      // Default to light vehicle if no type specified
+      detectedVehicleType = 'light_vehicle';
+    }
+    
+    // Calculate speed limit based on vehicle type
+    const speedLimits = {
+      motorcycle: 70,
+      light_vehicle: 70,
+      three_wheeler: 50,
+      heavy_vehicle: 50
+    };
+    appliedSpeedLimit = speedLimits[detectedVehicleType] || 70;
 
     // Update vehicle's current speed and location
     vehicle.currentSpeed = speed;
@@ -52,28 +79,36 @@ exports.receiveIoTData = async (req, res) => {
       weatherConditions: req.body.weatherConditions || 'clear'
     };
 
-    // Calculate fine with geofencing and ML risk analysis
+    // Calculate fine with geofencing and ML risk analysis using dynamic speed limit
     const violationAnalysis = await geofencingService.calculateViolationFine(
       speed, 
       location.lat, 
       location.lng, 
-      null, // No driver ID at this stage (will be confirmed by police)
-      speedLimit !== 60 ? speedLimit : null, // Use custom speed limit if provided, otherwise auto-detect
+      vehicle.owner ? vehicle.owner._id : null, // Driver ID if available
+      appliedSpeedLimit, // Use dynamic speed limit based on vehicle type
       additionalContext
     );
 
     // Check for speed violations using dynamic speed limits
-    if (violationAnalysis.isViolation) {
-      console.log(`🚨 Speed violation detected: ${speed} km/h (limit: ${violationAnalysis.speedLimit} km/h)`);
-      console.log(`📍 Location type: ${violationAnalysis.geofencing.isInZone ? 'Sensitive Zone' : 'Normal Road'}`);
+    const speedOverLimit = speed - appliedSpeedLimit;
+    const isViolation = speedOverLimit > 0;
+    
+    if (isViolation) {
+      console.log(`🚨 Speed violation detected: ${speed} km/h (limit: ${appliedSpeedLimit} km/h)`);
+      console.log(`🚗 Vehicle type: ${detectedVehicleType}`);
+      console.log(`📊 Speed over limit: ${speedOverLimit} km/h`);
+      console.log(`📍 Location type: ${violationAnalysis.geofencing?.isInZone ? 'Sensitive Zone' : 'Normal Road'}`);
       
       // Create violation record with complete analysis data
       const violation = new Violation({
         vehicleId: vehicle.plateNumber,
         deviceId: iotDeviceId,
+        vehicleType: detectedVehicleType,
+        appliedSpeedLimit: appliedSpeedLimit,
+        userId: vehicle.owner ? vehicle.owner._id : null,
         location: location,
         speed: speed,
-        speedLimit: violationAnalysis.speedLimit,
+        speedOverLimit: speedOverLimit,
         timestamp: timestamp || new Date(),
         status: "pending",
         

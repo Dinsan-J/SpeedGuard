@@ -5,8 +5,17 @@ const violationSchema = new mongoose.Schema({
   vehicleId: { type: String, required: true }, // Vehicle plate number
   deviceId: { type: String, required: true }, // ESP32 device ID
   
+  // Vehicle Type and Speed Limit (NEW)
+  vehicleType: {
+    type: String,
+    enum: ["motorcycle", "light_vehicle", "three_wheeler", "heavy_vehicle"],
+    required: true
+  },
+  appliedSpeedLimit: { type: Number, required: true }, // Dynamic speed limit based on vehicle type
+  
   // Driver Information (filled after police confirmation)
   drivingLicenseId: { type: String }, // Confirmed by police officer
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Link to user account
   driverConfirmed: { type: Boolean, default: false },
   confirmedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Police officer
   confirmationDate: Date,
@@ -17,7 +26,7 @@ const violationSchema = new mongoose.Schema({
     lng: { type: Number, required: true }
   },
   speed: { type: Number, required: true },
-  speedLimit: { type: Number, default: 70 },
+  speedOverLimit: { type: Number, default: 0 }, // How much over the limit
   timestamp: { type: Date, default: Date.now },
   
   // Geofencing Analysis
@@ -39,10 +48,10 @@ const violationSchema = new mongoose.Schema({
   }],
   
   // Fine Calculation
-  baseFine: { type: Number, required: true }, // Base fine before any adjustments
+  baseFine: { type: Number, default: 1000 }, // Base fine before any adjustments
   zoneMultiplier: { type: Number, default: 1 }, // Geofencing multiplier
   riskMultiplier: { type: Number, default: 1 }, // ML risk multiplier
-  finalFine: { type: Number, required: true }, // Final calculated fine
+  finalFine: { type: Number, default: 1000 }, // Final calculated fine
   fineBreakdown: {
     base: Number,
     zoneAdjustment: Number,
@@ -57,9 +66,15 @@ const violationSchema = new mongoose.Schema({
     default: 'pending' 
   },
   
-  // Merit Points Impact
+  // Merit Points Impact (UPDATED)
   meritPointsDeducted: { type: Number, default: 0 },
   meritPointsApplied: { type: Boolean, default: false },
+  severityLevel: {
+    type: String,
+    enum: ['minor', 'moderate', 'serious', 'severe'],
+    default: 'minor'
+  },
+  requiresFine: { type: Boolean, default: false }, // For >30 km/h violations
   
   // Additional Context
   timeOfDay: { type: String }, // morning, afternoon, evening, night
@@ -84,9 +99,40 @@ violationSchema.index({ status: 1 });
 violationSchema.index({ driverConfirmed: 1 });
 violationSchema.index({ riskLevel: 1 });
 
-// Middleware to update timestamps
+// Middleware to update timestamps and calculate severity
 violationSchema.pre('save', function(next) {
   this.updatedAt = new Date();
+  
+  // Calculate speed over limit if not already set
+  if (this.speedOverLimit === 0 || !this.speedOverLimit) {
+    this.speedOverLimit = Math.max(0, this.speed - this.appliedSpeedLimit);
+  }
+  
+  // Determine severity level and merit points
+  if (this.speedOverLimit <= 10) {
+    this.severityLevel = 'minor';
+    this.meritPointsDeducted = 5;
+    this.requiresFine = false;
+    this.baseFine = 1000;
+  } else if (this.speedOverLimit <= 20) {
+    this.severityLevel = 'moderate';
+    this.meritPointsDeducted = 10;
+    this.requiresFine = false;
+    this.baseFine = 2000;
+  } else if (this.speedOverLimit <= 30) {
+    this.severityLevel = 'serious';
+    this.meritPointsDeducted = 20;
+    this.requiresFine = false;
+    this.baseFine = 5000;
+  } else {
+    this.severityLevel = 'severe';
+    this.meritPointsDeducted = 30;
+    this.requiresFine = true;
+    this.baseFine = 10000;
+  }
+  
+  // Calculate final fine
+  this.finalFine = this.baseFine * (this.zoneMultiplier || 1) * (this.riskMultiplier || 1);
   
   // Set time of day based on timestamp
   const hour = this.timestamp.getHours();

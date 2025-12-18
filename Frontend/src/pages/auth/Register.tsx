@@ -24,6 +24,12 @@ const Register = () => {
     password: "",
     policeId: "",
     role: "user" as "officer" | "user",
+    vehicleType: "",
+    driverProfile: {
+      fullName: "",
+      phoneNumber: "",
+      licenseNumber: ""
+    }
   });
   const { toast } = useToast();
 
@@ -68,11 +74,24 @@ const Register = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    if (name.startsWith('driverProfile.')) {
+      const profileField = name.split('.')[1];
+      setFormData((prev) => ({
+        ...prev,
+        driverProfile: {
+          ...prev.driverProfile,
+          [profileField]: value
+        }
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   return (
@@ -238,6 +257,120 @@ const Register = () => {
                     />
                   </div>
                 </div>
+              )}
+
+              {/* Vehicle Type Selection (only for users) */}
+              {formData.role === "user" && (
+                <>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Vehicle Type</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, vehicleType: "motorcycle" }))}
+                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                          formData.vehicleType === "motorcycle"
+                            ? "border-secondary bg-secondary/10 text-secondary"
+                            : "border-border bg-accent/20 hover:border-secondary/50"
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="text-sm font-medium">Motorcycle</div>
+                          <div className="text-xs text-muted-foreground">70 km/h limit</div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, vehicleType: "light_vehicle" }))}
+                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                          formData.vehicleType === "light_vehicle"
+                            ? "border-secondary bg-secondary/10 text-secondary"
+                            : "border-border bg-accent/20 hover:border-secondary/50"
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="text-sm font-medium">Light Vehicle</div>
+                          <div className="text-xs text-muted-foreground">Car, Van, Jeep - 70 km/h</div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, vehicleType: "three_wheeler" }))}
+                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                          formData.vehicleType === "three_wheeler"
+                            ? "border-secondary bg-secondary/10 text-secondary"
+                            : "border-border bg-accent/20 hover:border-secondary/50"
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="text-sm font-medium">Three-Wheeler</div>
+                          <div className="text-xs text-muted-foreground">Auto - 50 km/h limit</div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, vehicleType: "heavy_vehicle" }))}
+                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                          formData.vehicleType === "heavy_vehicle"
+                            ? "border-secondary bg-secondary/10 text-secondary"
+                            : "border-border bg-accent/20 hover:border-secondary/50"
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="text-sm font-medium">Heavy Vehicle</div>
+                          <div className="text-xs text-muted-foreground">Bus, Lorry - 50 km/h</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Driver Profile Fields */}
+                  <div className="space-y-4">
+                    <Label className="text-sm font-medium">Driver Information</Label>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        name="driverProfile.fullName"
+                        type="text"
+                        value={formData.driverProfile.fullName}
+                        onChange={handleChange}
+                        className="h-12"
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <Input
+                        id="phoneNumber"
+                        name="driverProfile.phoneNumber"
+                        type="tel"
+                        value={formData.driverProfile.phoneNumber}
+                        onChange={handleChange}
+                        className="h-12"
+                        placeholder="Enter your phone number"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="licenseNumber">Driving License Number</Label>
+                      <Input
+                        id="licenseNumber"
+                        name="driverProfile.licenseNumber"
+                        type="text"
+                        value={formData.driverProfile.licenseNumber}
+                        onChange={handleChange}
+                        className="h-12"
+                        placeholder="Enter your license number"
+                      />
+                    </div>
+                  </div>
+                </>
               )}
 
               {/* Submit Button */}

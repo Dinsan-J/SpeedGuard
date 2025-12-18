@@ -38,6 +38,7 @@ app.use("/api/violation", require("./routes/violation"));
 app.use("/api/iot", require("./routes/iot")); // IoT device routes
 app.use("/api/sensitive-locations", require("./routes/sensitiveLocation")); // Geofencing routes
 app.use("/api/police", require("./routes/police")); // Police dashboard routes
+app.use("/api/merit-points", require("./routes/meritPoint")); // Merit point system routes
 app.use("/data", require("./routes/violationData")); // ESP32 POST
 app.use("/api", mlRoutes);
 
