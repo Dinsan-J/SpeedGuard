@@ -38,7 +38,6 @@ const App = () => (
           <Route path="/officer" element={<OfficerLayout />}>
             <Route path="dashboard" element={<OfficerDashboard />} />
             <Route path="qr-search" element={<OfficerQRSearch />} />
-            <Route path="police-confirmation" element={<PoliceDashboard />} />
             <Route path="police-analytics" element={<PoliceAnalytics />} />
           </Route>
 

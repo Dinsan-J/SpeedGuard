@@ -28,8 +28,7 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
 
   const officerLinks = [
     { to: "/officer/dashboard", label: "Dashboard" },
-    { to: "/officer/police-confirmation", label: "Police Confirmation" },
-    { to: "/officer/police-analytics", label: "Police Analytics" },
+    { to: "/officer/police-analytics", label: "Traffic Analytics" },
     { to: "/officer/qr-search", label: "QR Scanner" },
   ];
 

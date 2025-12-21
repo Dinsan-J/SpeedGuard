@@ -105,15 +105,8 @@ const OfficerDashboard = () => {
 
   const quickActions = [
     {
-      icon: <Shield className="h-5 w-5" />,
-      title: "Police Confirmation",
-      description: "Confirm drivers & apply penalties",
-      link: "/officer/police-confirmation",
-      color: "primary",
-    },
-    {
       icon: <TrendingUp className="h-5 w-5" />,
-      title: "Police Analytics",
+      title: "Traffic Analytics",
       description: "ML risk analysis & driver stats",
       link: "/officer/police-analytics",
       color: "secondary",
@@ -197,7 +190,7 @@ const OfficerDashboard = () => {
           <Card className="p-6 bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pending Confirmations</p>
+                <p className="text-sm text-muted-foreground">Auto-Applied Violations</p>
                 <p className="text-3xl font-bold text-primary">
                   {stats.pendingFines}
                 </p>
@@ -209,7 +202,7 @@ const OfficerDashboard = () => {
             <div className="mt-4">
               <div className="flex items-center text-sm text-muted-foreground">
                 <Clock className="h-3 w-3 mr-1" />
-                Awaiting police confirmation
+                Merit points automatically deducted
               </div>
             </div>
           </Card>
@@ -427,7 +420,7 @@ const OfficerDashboard = () => {
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-accent/20 rounded-lg">
-                  <span className="text-sm font-medium">Pending Confirmations</span>
+                  <span className="text-sm font-medium">Auto-Applied Today</span>
                   <span className="text-lg font-bold text-primary">
                     {stats.pendingFines}
                   </span>
@@ -454,7 +447,7 @@ const OfficerDashboard = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Merit System</span>
-                  <span className="font-medium text-warning">Active</span>
+                  <span className="font-medium text-warning">Automatic</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">ML Risk Analysis</span>

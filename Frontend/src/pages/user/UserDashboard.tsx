@@ -507,17 +507,17 @@ const UserDashboard = () => {
                           </div>
                         )}
 
-                        {/* Police Confirmation Status */}
-                        {!violation.driverConfirmed && (
-                          <div className="mb-3 p-2 bg-info/10 border border-info/20 rounded text-xs">
+                        {/* Merit Points Applied Status */}
+                        {violation.meritPointsApplied && (
+                          <div className="mb-3 p-2 bg-success/10 border border-success/20 rounded text-xs">
                             <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3 text-info" />
-                              <span className="font-medium text-info">
-                                👮 AWAITING POLICE CONFIRMATION
+                              <CheckCircle className="h-3 w-3 text-success" />
+                              <span className="font-medium text-success">
+                                ✅ MERIT POINTS APPLIED AUTOMATICALLY
                               </span>
                             </div>
-                            <div className="text-info/80 mt-1">
-                              Driver identification pending • Merit points not yet applied
+                            <div className="text-success/80 mt-1">
+                              -{violation.meritPointsDeducted} merit points deducted • Fine: LKR {violation.finalFine}
                             </div>
                           </div>
                         )}

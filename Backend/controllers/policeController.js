@@ -427,8 +427,8 @@ exports.getDashboardStats = async (req, res) => {
 
     // Get pending confirmations
     const pendingFines = await Violation.countDocuments({
-      status: "pending",
-      driverConfirmed: false
+      status: "confirmed",
+      meritPointsApplied: true
     });
 
     // Get total fines amount (confirmed violations only)

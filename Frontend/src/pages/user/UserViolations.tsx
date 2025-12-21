@@ -18,6 +18,7 @@ import {
   Gauge,
   Target,
   Navigation,
+  CheckCircle,
   Shield,
   TrendingUp,
   Info,
@@ -504,39 +505,39 @@ const UserViolations = () => {
                   )}
                 </div>
 
-                {/* Police Confirmation Status */}
+                {/* Merit Points Status */}
                 <div className={`p-4 border rounded-lg ${
-                  violation.driverConfirmed 
+                  violation.meritPointsApplied 
                     ? 'bg-success/10 border-success/20' 
                     : 'bg-warning/10 border-warning/20'
                 }`}>
                   <div className="flex items-center gap-2 mb-2">
-                    {violation.driverConfirmed ? (
+                    {violation.meritPointsApplied ? (
                       <CheckCircle className="h-4 w-4 text-success" />
                     ) : (
                       <Clock className="h-4 w-4 text-warning" />
                     )}
                     <p className={`text-sm font-medium ${
-                      violation.driverConfirmed ? 'text-success' : 'text-warning'
+                      violation.meritPointsApplied ? 'text-success' : 'text-warning'
                     }`}>
-                      👮 Police Confirmation Status
+                      🎯 Merit Points Status
                     </p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Driver Confirmed:</span>
+                      <span className="text-muted-foreground">Status:</span>
                       <span className={`ml-2 font-medium ${
-                        violation.driverConfirmed ? 'text-success' : 'text-warning'
+                        violation.meritPointsApplied ? 'text-success' : 'text-warning'
                       }`}>
-                        {violation.driverConfirmed ? 'YES' : 'PENDING'}
+                        {violation.meritPointsApplied ? 'AUTOMATICALLY APPLIED' : 'PROCESSING'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Merit Points Applied:</span>
+                      <span className="text-muted-foreground">Points Deducted:</span>
                       <span className={`ml-2 font-medium ${
                         violation.meritPointsApplied ? 'text-destructive' : 'text-muted-foreground'
                       }`}>
-                        {violation.meritPointsApplied ? 'YES' : 'NO'}
+                        {violation.meritPointsApplied ? `-${violation.meritPointsDeducted}` : 'Pending'}
                       </span>
                     </div>
                   </div>

@@ -110,7 +110,7 @@ exports.receiveIoTData = async (req, res) => {
         speed: speed,
         speedOverLimit: speedOverLimit,
         timestamp: timestamp || new Date(),
-        status: "pending",
+        status: "confirmed", // Automatically confirmed
         
         // Fine calculation
         baseFine: violationAnalysis.baseFine,
@@ -138,8 +138,10 @@ exports.receiveIoTData = async (req, res) => {
             description: `${factor}: ${(weight * 100).toFixed(1)}%`
           })) : [],
         
-        // Merit points (will be applied after police confirmation)
+        // Merit points (automatically applied)
         meritPointsDeducted: violationAnalysis.meritPointsDeduction || 5,
+        driverConfirmed: true, // Automatically confirmed
+        meritPointsApplied: true, // Automatically applied
         
         // Additional context
         trafficDensity: additionalContext.trafficDensity,
@@ -147,6 +149,23 @@ exports.receiveIoTData = async (req, res) => {
       });
 
       await violation.save();
+
+      // Automatically apply merit points to the user
+      if (vehicle.owner && violationAnalysis.meritPointsDeduction) {
+        const User = require('../models/User');
+        const user = await User.findById(vehicle.owner._id);
+        
+        if (user) {
+          const result = user.deductMeritPoints(speedOverLimit);
+          await user.save();
+          
+          console.log(`🎯 Merit points automatically applied:`);
+          console.log(`   Driver: ${user.username}`);
+          console.log(`   Points deducted: ${result.pointsDeducted}`);
+          console.log(`   New total: ${result.newTotal}`);
+          console.log(`   Status: ${user.drivingStatus}`);
+        }
+      }
 
       // Add violation to vehicle
       vehicle.violations.push(violation._id);
