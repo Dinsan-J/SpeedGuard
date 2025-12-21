@@ -130,4 +130,28 @@ router.get("/:vehicleId", async (req, res) => {
   }
 });
 
+// Get active IoT vehicles for officer dashboard
+router.get("/active-iot-vehicles", async (req, res) => {
+  try {
+    const vehicles = await Vehicle.find({ 
+      iotDeviceId: { $exists: true, $ne: null },
+      status: "active"
+    })
+    .populate('owner', 'username')
+    .select('plateNumber vehicleType currentSpeed currentLocation lastUpdated iotDeviceId status owner')
+    .sort({ lastUpdated: -1 });
+
+    // Add speed limits based on vehicle type
+    const vehiclesWithLimits = vehicles.map(vehicle => ({
+      ...vehicle.toObject(),
+      speedLimit: vehicle.getSpeedLimit()
+    }));
+
+    res.json(vehiclesWithLimits);
+  } catch (err) {
+    console.error("Get active IoT vehicles error:", err);
+    res.status(500).json({ success: false, message: "Error fetching active vehicles" });
+  }
+});
+
 module.exports = router;

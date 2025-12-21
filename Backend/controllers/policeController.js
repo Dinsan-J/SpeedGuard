@@ -403,3 +403,57 @@ exports.quickConfirmViolation = async (req, res) => {
     });
   }
 };
+
+// Get dashboard statistics for officer dashboard
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const Vehicle = require('../models/Vehicle');
+    
+    // Get active IoT devices count
+    const activeDevices = await Vehicle.countDocuments({ 
+      iotDeviceId: { $exists: true, $ne: null },
+      status: "active"
+    });
+
+    // Get today's violations
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const todayViolations = await Violation.countDocuments({
+      timestamp: { $gte: today, $lt: tomorrow }
+    });
+
+    // Get pending confirmations
+    const pendingFines = await Violation.countDocuments({
+      status: "pending",
+      driverConfirmed: false
+    });
+
+    // Get total fines amount (confirmed violations only)
+    const confirmedViolations = await Violation.find({
+      status: "confirmed",
+      finalFine: { $exists: true }
+    });
+
+    const totalRevenue = confirmedViolations.reduce((sum, violation) => {
+      return sum + (violation.finalFine || 0);
+    }, 0);
+
+    res.json({
+      activeDevices,
+      todayViolations,
+      pendingFines,
+      revenue: totalRevenue
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching dashboard stats:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching dashboard statistics',
+      error: error.message
+    });
+  }
+};

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Car,
   AlertTriangle,
@@ -12,47 +11,41 @@ import {
   MapPin,
   Camera,
   TrendingUp,
-  Search,
   QrCode,
   FileText,
   Settings,
-  ArrowRight,
   Shield,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 
 interface VehicleData {
-  id: string;
-  plate: string;
-  speed: number;
-  limit: number;
-  location: string;
-  timestamp: string;
-  violation: boolean;
+  _id: string;
+  plateNumber: string;
+  currentSpeed: number;
+  speedLimit: number;
+  currentLocation: {
+    lat: number;
+    lng: number;
+  };
+  lastUpdated: string;
+  iotDeviceId: string;
+  status: string;
+  owner: {
+    username: string;
+  };
 }
 
-interface FineStats {
-  today: number;
-  week: number;
-  month: number;
-  total: number;
-}
+
 
 const OfficerDashboard = () => {
   const [liveVehicles, setLiveVehicles] = useState<VehicleData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    activeCameras: 124,
-    todayViolations: 87,
-    pendingFines: 156,
-    revenue: 45600,
-  });
-
-  const [fineStats] = useState<FineStats>({
-    today: 87,
-    week: 542,
-    month: 2340,
-    total: 15670,
+    activeDevices: 0,
+    todayViolations: 0,
+    pendingFines: 0,
+    revenue: 0,
   });
 
   const navigate = useNavigate();
@@ -69,38 +62,44 @@ const OfficerDashboard = () => {
     navigate("/login");
   };
 
-  // Simulate live vehicle data
+  // Fetch real vehicle data from database
   useEffect(() => {
-    const generateVehicleData = (): VehicleData => ({
-      id: Math.random().toString(36).substr(2, 9),
-      plate: `${Math.random()
-        .toString(36)
-        .substr(2, 3)
-        .toUpperCase()}-${Math.floor(Math.random() * 9999)}`,
-      speed: Math.floor(Math.random() * 40) + 40,
-      limit: Math.random() > 0.3 ? 60 : 50,
-      location: [
-        "Main St & 5th Ave",
-        "Highway 101",
-        "Downtown Plaza",
-        "School Zone",
-      ][Math.floor(Math.random() * 4)],
-      timestamp: new Date().toLocaleTimeString(),
-      violation: Math.random() > 0.7,
-    });
+    const fetchVehicleData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch vehicles with IoT devices
+        const vehicleResponse = await fetch('/api/vehicle/active-iot-vehicles', {
+          credentials: 'include'
+        });
+        
+        if (vehicleResponse.ok) {
+          const vehicles = await vehicleResponse.json();
+          setLiveVehicles(vehicles);
+        }
+        
+        // Fetch dashboard statistics
+        const statsResponse = await fetch('/api/police/dashboard-stats', {
+          credentials: 'include'
+        });
+        
+        if (statsResponse.ok) {
+          const dashboardStats = await statsResponse.json();
+          setStats(dashboardStats);
+        }
+        
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const initialData = Array.from({ length: 6 }, generateVehicleData);
-    setLiveVehicles(initialData);
-
-    const interval = setInterval(() => {
-      setLiveVehicles((prev) => {
-        const newData = [...prev];
-        const randomIndex = Math.floor(Math.random() * newData.length);
-        newData[randomIndex] = generateVehicleData();
-        return newData;
-      });
-    }, 3000);
-
+    fetchVehicleData();
+    
+    // Refresh data every 30 seconds
+    const interval = setInterval(fetchVehicleData, 30000);
+    
     return () => clearInterval(interval);
   }, []);
 
@@ -156,9 +155,9 @@ const OfficerDashboard = () => {
           <Card className="p-6 bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active Cameras</p>
+                <p className="text-sm text-muted-foreground">Active IoT Devices</p>
                 <p className="text-3xl font-bold text-info">
-                  {stats.activeCameras}
+                  {stats.activeDevices}
                 </p>
               </div>
               <div className="p-3 bg-info/10 rounded-lg">
@@ -168,7 +167,7 @@ const OfficerDashboard = () => {
             <div className="mt-4">
               <div className="flex items-center text-sm text-muted-foreground">
                 <div className="w-2 h-2 bg-secondary rounded-full mr-2"></div>
-                98% operational
+                Registered vehicles with ESP32
               </div>
             </div>
           </Card>
@@ -188,9 +187,9 @@ const OfficerDashboard = () => {
               </div>
             </div>
             <div className="mt-4">
-              <div className="flex items-center text-sm text-secondary">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                +12% from yesterday
+              <div className="flex items-center text-sm text-muted-foreground">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Real violations detected
               </div>
             </div>
           </Card>
@@ -198,7 +197,7 @@ const OfficerDashboard = () => {
           <Card className="p-6 bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pending Fines</p>
+                <p className="text-sm text-muted-foreground">Pending Confirmations</p>
                 <p className="text-3xl font-bold text-primary">
                   {stats.pendingFines}
                 </p>
@@ -208,19 +207,19 @@ const OfficerDashboard = () => {
               </div>
             </div>
             <div className="mt-4">
-              <Progress value={65} className="h-2" />
-              <p className="text-xs text-muted-foreground mt-1">
-                65% processed
-              </p>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Clock className="h-3 w-3 mr-1" />
+                Awaiting police confirmation
+              </div>
             </div>
           </Card>
 
           <Card className="p-6 bg-gradient-card border-border/50 hover:border-secondary/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Revenue (Month)</p>
+                <p className="text-sm text-muted-foreground">Total Fines (LKR)</p>
                 <p className="text-3xl font-bold text-secondary">
-                  ${stats.revenue.toLocaleString()}
+                  {stats.revenue.toLocaleString()}
                 </p>
               </div>
               <div className="p-3 bg-secondary/10 rounded-lg">
@@ -228,9 +227,9 @@ const OfficerDashboard = () => {
               </div>
             </div>
             <div className="mt-4">
-              <div className="flex items-center text-sm text-secondary">
+              <div className="flex items-center text-sm text-muted-foreground">
                 <TrendingUp className="h-3 w-3 mr-1" />
-                +8% from last month
+                From confirmed violations
               </div>
             </div>
           </Card>
@@ -303,126 +302,163 @@ const OfficerDashboard = () => {
               </div>
 
               <div className="space-y-4">
-                {liveVehicles.map((vehicle) => (
-                  <div
-                    key={vehicle.id}
-                    className={`p-4 rounded-lg border transition-all duration-300 ${
-                      vehicle.violation
-                        ? "border-primary/50 bg-primary/5"
-                        : "border-border bg-accent/20"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div
-                          className={`p-2 rounded-lg ${
-                            vehicle.violation
-                              ? "bg-primary/20"
-                              : "bg-secondary/20"
-                          }`}
-                        >
-                          <Car
-                            className={`h-5 w-5 ${
-                              vehicle.violation
-                                ? "text-primary"
-                                : "text-secondary"
-                            }`}
-                          />
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-bold text-lg">
-                              {vehicle.plate}
-                            </span>
-                            {vehicle.violation && (
-                              <Badge variant="destructive" className="text-xs">
-                                VIOLATION
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                            <div className="flex items-center">
-                              <MapPin className="h-3 w-3 mr-1" />
-                              {vehicle.location}
-                            </div>
-                            <div className="flex items-center">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {vehicle.timestamp}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div
-                          className={`text-2xl font-bold ${
-                            vehicle.violation
-                              ? "text-primary"
-                              : "text-secondary"
-                          }`}
-                        >
-                          {vehicle.speed} km/h
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Limit: {vehicle.limit} km/h
-                        </div>
-                      </div>
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading vehicle data...</p>
+                  </div>
+                ) : liveVehicles.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No Active Vehicles</h3>
+                    <p className="text-muted-foreground mb-4">
+                      No vehicles with IoT devices are currently active in the system.
+                    </p>
+                    <div className="text-sm text-muted-foreground">
+                      <p>• Vehicles need to be registered with ESP32 devices</p>
+                      <p>• IoT devices must be sending real-time data</p>
+                      <p>• Check device connectivity and registration</p>
                     </div>
                   </div>
-                ))}
+                ) : (
+                  liveVehicles.map((vehicle) => {
+                    const isViolation = vehicle.currentSpeed > vehicle.speedLimit;
+                    const locationText = vehicle.currentLocation 
+                      ? `${vehicle.currentLocation.lat.toFixed(4)}, ${vehicle.currentLocation.lng.toFixed(4)}`
+                      : 'Location unavailable';
+                    
+                    return (
+                      <div
+                        key={vehicle._id}
+                        className={`p-4 rounded-lg border transition-all duration-300 ${
+                          isViolation
+                            ? "border-primary/50 bg-primary/5"
+                            : "border-border bg-accent/20"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div
+                              className={`p-2 rounded-lg ${
+                                isViolation
+                                  ? "bg-primary/20"
+                                  : "bg-secondary/20"
+                              }`}
+                            >
+                              <Car
+                                className={`h-5 w-5 ${
+                                  isViolation
+                                    ? "text-primary"
+                                    : "text-secondary"
+                                }`}
+                              />
+                            </div>
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <span className="font-bold text-lg">
+                                  {vehicle.plateNumber}
+                                </span>
+                                {isViolation && (
+                                  <Badge variant="destructive" className="text-xs">
+                                    VIOLATION
+                                  </Badge>
+                                )}
+                                <Badge variant="outline" className="text-xs">
+                                  {vehicle.iotDeviceId}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                <div className="flex items-center">
+                                  <MapPin className="h-3 w-3 mr-1" />
+                                  {locationText}
+                                </div>
+                                <div className="flex items-center">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  {new Date(vehicle.lastUpdated).toLocaleTimeString()}
+                                </div>
+                                <div className="flex items-center">
+                                  <Users className="h-3 w-3 mr-1" />
+                                  {vehicle.owner?.username || 'Unknown'}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div
+                              className={`text-2xl font-bold ${
+                                isViolation
+                                  ? "text-primary"
+                                  : "text-secondary"
+                              }`}
+                            >
+                              {vehicle.currentSpeed || 0} km/h
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Limit: {vehicle.speedLimit} km/h
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Status: {vehicle.status}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </Card>
           </div>
 
-          {/* Fine Statistics */}
+          {/* Real-time Statistics */}
           <div className="space-y-6">
             <Card className="p-6 bg-gradient-card border-border/50">
-              <h3 className="text-xl font-bold mb-4">Fine Statistics</h3>
+              <h3 className="text-xl font-bold mb-4">System Status</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center p-3 bg-accent/20 rounded-lg">
-                  <span className="text-sm font-medium">Today</span>
-                  <span className="text-lg font-bold text-warning">
-                    {fineStats.today}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-accent/20 rounded-lg">
-                  <span className="text-sm font-medium">This Week</span>
+                  <span className="text-sm font-medium">Active Devices</span>
                   <span className="text-lg font-bold text-info">
-                    {fineStats.week}
+                    {stats.activeDevices}
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-accent/20 rounded-lg">
-                  <span className="text-sm font-medium">This Month</span>
-                  <span className="text-lg font-bold text-secondary">
-                    {fineStats.month}
+                  <span className="text-sm font-medium">Today's Violations</span>
+                  <span className="text-lg font-bold text-warning">
+                    {stats.todayViolations}
                   </span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg border border-primary/20">
-                  <span className="text-sm font-medium">Total</span>
+                <div className="flex justify-between items-center p-3 bg-accent/20 rounded-lg">
+                  <span className="text-sm font-medium">Pending Confirmations</span>
                   <span className="text-lg font-bold text-primary">
-                    {fineStats.total.toLocaleString()}
+                    {stats.pendingFines}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-secondary/10 rounded-lg border border-secondary/20">
+                  <span className="text-sm font-medium">Total Fines (LKR)</span>
+                  <span className="text-lg font-bold text-secondary">
+                    {stats.revenue.toLocaleString()}
                   </span>
                 </div>
               </div>
             </Card>
 
             <Card className="p-6 bg-gradient-card border-border/50">
-              <h3 className="text-xl font-bold mb-4">Quick Stats</h3>
+              <h3 className="text-xl font-bold mb-4">System Info</h3>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Average Fine</span>
-                  <span className="font-medium">$125</span>
+                  <span className="text-muted-foreground">IoT Integration</span>
+                  <span className="font-medium text-success">ESP32 + GPS</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Payment Rate</span>
-                  <span className="font-medium text-secondary">87%</span>
+                  <span className="text-muted-foreground">Speed Detection</span>
+                  <span className="font-medium text-info">Real-time</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Appeal Rate</span>
-                  <span className="font-medium text-warning">8%</span>
+                  <span className="text-muted-foreground">Merit System</span>
+                  <span className="font-medium text-warning">Active</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Revenue/Day</span>
-                  <span className="font-medium text-primary">$2,340</span>
+                  <span className="text-muted-foreground">ML Risk Analysis</span>
+                  <span className="font-medium text-primary">Enabled</span>
                 </div>
               </div>
             </Card>

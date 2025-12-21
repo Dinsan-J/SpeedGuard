@@ -35,6 +35,9 @@ router.post('/violations/:violationId/cancel', verifyOfficer, policeController.c
 // Get violation statistics
 router.get('/stats/violations', verifyOfficer, policeController.getViolationStats);
 
+// Get dashboard statistics for officer dashboard
+router.get('/dashboard-stats', verifyOfficer, policeController.getDashboardStats);
+
 // Search drivers by license ID or name
 router.get('/drivers/search', verifyOfficer, policeController.searchDrivers);
 
