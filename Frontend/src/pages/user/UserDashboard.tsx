@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Add this import
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,10 +18,8 @@ import {
   XCircle,
   AlertCircle,
   Camera,
-  LogOut,
-  Download,
-  Shield,
-  Award,
+  LogOut, // Add LogOut icon
+  Download, // Add Download icon
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import "leaflet-defaulticon-compatibility";
@@ -30,8 +28,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import LiveSpeedometer from "./LiveSpeedometer";
 import QRCode from "react-qr-code";
-import VehicleCard from "@/pages/user/VehicleCard";
-import MeritPointTracker from "@/components/MeritPointTracker";
+import VehicleCard from "@/pages/user/VehicleCard"; // Import VehicleCard component
 
 interface Vehicle {
   _id: string;
@@ -107,6 +104,7 @@ const UserDashboard = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [showQRVehicleId, setShowQRVehicleId] = useState<string | null>(null);
+  // Remove dummy violations, use MongoDB data
   const [violations, setViolations] = useState<Violation[]>([]);
   const [isLoadingViolations, setIsLoadingViolations] = useState(true);
   const [mapOpen, setMapOpen] = useState(false);
@@ -114,9 +112,7 @@ const UserDashboard = () => {
     lat: number;
     lng: number;
   } | null>(null);
-  const [userMeritData, setUserMeritData] = useState<any>(null);
-  const [isLoadingMerit, setIsLoadingMerit] = useState(true);
-  const userId = "64f8c2e2a1b2c3d4e5f6a7b8";
+  const userId = "64f8c2e2a1b2c3d4e5f6a7b8"; // Use your real user id
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -134,29 +130,6 @@ const UserDashboard = () => {
       }
     };
     fetchVehicles();
-  }, []);
-
-  useEffect(() => {
-    const fetchMeritPoints = async () => {
-      setIsLoadingMerit(true);
-      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
-      
-      try {
-        const response = await fetch(`${API_URL}/api/merit-points/status`, {
-          credentials: 'include'
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-          setUserMeritData(data.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch merit points:', error);
-      } finally {
-        setIsLoadingMerit(false);
-      }
-    };
-    fetchMeritPoints();
   }, []);
 
   useEffect(() => {
@@ -265,45 +238,7 @@ const UserDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-          {/* Merit Points Card */}
-          <Card className="p-6 bg-gradient-card border-border/50 hover:border-success/50 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Merit Points</p>
-                {isLoadingMerit ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-success"></div>
-                  </div>
-                ) : (
-                  <p className="text-3xl font-bold text-success">
-                    {userMeritData?.currentPoints || 100}/100
-                  </p>
-                )}
-              </div>
-              <div className="p-3 bg-success/10 rounded-lg">
-                <Shield className="h-6 w-6 text-success" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-muted-foreground">Status</span>
-                <span className={`font-medium ${
-                  userMeritData?.drivingStatus === 'active' ? 'text-success' :
-                  userMeritData?.drivingStatus === 'warning' ? 'text-warning' :
-                  userMeritData?.drivingStatus === 'review' ? 'text-destructive' :
-                  'text-destructive'
-                }`}>
-                  {userMeritData?.drivingStatus?.toUpperCase() || 'ACTIVE'}
-                </span>
-              </div>
-              <Progress 
-                value={userMeritData?.currentPoints || 100} 
-                className="h-2"
-              />
-            </div>
-          </Card>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="p-6 bg-gradient-card border-border/50 hover:border-info/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -376,88 +311,6 @@ const UserDashboard = () => {
           </Card>
 
           <LiveSpeedometer />
-        </div>
-
-        {/* Merit Points Dashboard */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <MeritPointTracker className="lg:col-span-1" />
-          
-          {/* Violation-Free Progress */}
-          <Card className="p-6 bg-gradient-card border-border/50 lg:col-span-2">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Award className="h-5 w-5 text-success" />
-                  Safe Driving Progress
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Track your violation-free streak and merit point recovery
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-success/10 rounded-lg">
-                <div className="text-2xl font-bold text-success mb-1">
-                  {userMeritData?.violationFreeWeeks || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">Violation-Free Weeks</div>
-                <div className="text-xs text-success mt-1">
-                  +{(userMeritData?.violationFreeWeeks || 0) * 2} points recovered
-                </div>
-              </div>
-
-              <div className="text-center p-4 bg-info/10 rounded-lg">
-                <div className="text-2xl font-bold text-info mb-1">
-                  {userMeritData?.totalViolations || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">Total Violations</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {userMeritData?.lastViolationDate 
-                    ? `Last: ${new Date(userMeritData.lastViolationDate).toLocaleDateString()}`
-                    : 'No violations recorded'
-                  }
-                </div>
-              </div>
-
-              <div className="text-center p-4 bg-warning/10 rounded-lg">
-                <div className="text-2xl font-bold text-warning mb-1">
-                  {userMeritData?.potentialRecovery || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">Points Available</div>
-                <div className="text-xs text-warning mt-1">
-                  Next recovery in {7 - (new Date().getDay())} days
-                </div>
-              </div>
-            </div>
-
-            {/* Recovery Timeline */}
-            <div className="mt-6 p-4 bg-accent/10 rounded-lg">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Merit Point Recovery System
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="font-medium text-success mb-1">✅ How to Recover Points:</div>
-                  <ul className="text-muted-foreground space-y-1 text-xs">
-                    <li>• Drive violation-free for 1 week = +2 points</li>
-                    <li>• Maximum recovery: 100 points</li>
-                    <li>• Automatic weekly processing</li>
-                  </ul>
-                </div>
-                <div>
-                  <div className="font-medium text-info mb-1">📊 Status Levels:</div>
-                  <ul className="text-muted-foreground space-y-1 text-xs">
-                    <li>• 50-100 points: <span className="text-success">Active</span></li>
-                    <li>• 30-49 points: <span className="text-warning">Warning</span></li>
-                    <li>• 1-29 points: <span className="text-destructive">Review</span></li>
-                    <li>• 0 points: <span className="text-destructive">Suspended</span></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </Card>
         </div>
 
         {/* My Vehicles & Recent Violations */}
@@ -650,6 +503,21 @@ const UserDashboard = () => {
                             </div>
                             <div className="text-warning/80 mt-1">
                               {violation.sensitiveZone.zoneType} • {Math.round(violation.sensitiveZone.distanceFromZone || 0)}m from center • {violation.zoneMultiplier}x zone multiplier
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Police Confirmation Status */}
+                        {!violation.driverConfirmed && (
+                          <div className="mb-3 p-2 bg-info/10 border border-info/20 rounded text-xs">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3 text-info" />
+                              <span className="font-medium text-info">
+                                👮 AWAITING POLICE CONFIRMATION
+                              </span>
+                            </div>
+                            <div className="text-info/80 mt-1">
+                              Driver identification pending • Merit points not yet applied
                             </div>
                           </div>
                         )}
