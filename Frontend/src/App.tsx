@@ -7,20 +7,13 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
 import OfficerDashboard from "./pages/officer/OfficerDashboard";
-import OfficerVehicles from "./pages/officer/OfficerVehicles";
-import OfficerFines from "./pages/officer/OfficerFines";
-import OfficerAnalytics from "./pages/officer/OfficerAnalytics";
 import OfficerQRSearch from "./pages/officer/OfficerQRSearch";
-import OfficerIssueFine from "./pages/officer/OfficerIssueFine";
 import PoliceDashboard from "./pages/police/PoliceDashboard";
 import PoliceAnalytics from "./pages/police/PoliceAnalytics";
 import UserDashboard from "./pages/user/UserDashboard";
 import UserVehicles from "./pages/user/UserVehicles";
 import UserViolations from "./pages/user/UserViolations";
-import UserPayments from "./pages/user/UserPayments";
 import UserLayout from "@/components/Layout/UserLayout";
 import MainLayout from "@/components/Layout/MainLayout";
 import OfficerLayout from "@/components/Layout/OfficerLayout";
@@ -39,18 +32,12 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
           </Route>
 
           {/* Officer routes with OfficerLayout */}
           <Route path="/officer" element={<OfficerLayout />}>
             <Route path="dashboard" element={<OfficerDashboard />} />
-            <Route path="vehicles" element={<OfficerVehicles />} />
-            <Route path="fines" element={<OfficerFines />} />
-            <Route path="analytics" element={<OfficerAnalytics />} />
             <Route path="qr-search" element={<OfficerQRSearch />} />
-            <Route path="issue-fine" element={<OfficerIssueFine />} />
             <Route path="police-confirmation" element={<PoliceDashboard />} />
             <Route path="police-analytics" element={<PoliceAnalytics />} />
           </Route>
@@ -60,7 +47,6 @@ const App = () => (
             <Route path="dashboard" element={<UserDashboard />} />
             <Route path="vehicles" element={<UserVehicles />} />
             <Route path="violations" element={<UserViolations />} />
-            <Route path="payments" element={<UserPayments />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

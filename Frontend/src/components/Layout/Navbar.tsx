@@ -24,24 +24,19 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
 
   const publicLinks = [
     { to: "/", label: "Home" },
-    { to: "/about", label: "About" },
-    { to: "/contact", label: "Contact" },
   ];
 
   const officerLinks = [
     { to: "/officer/dashboard", label: "Dashboard" },
     { to: "/officer/police-confirmation", label: "Police Confirmation" },
     { to: "/officer/police-analytics", label: "Police Analytics" },
-    { to: "/officer/vehicles", label: "Vehicles" },
-    { to: "/officer/fines", label: "Fines" },
-    { to: "/officer/analytics", label: "System Analytics" },
+    { to: "/officer/qr-search", label: "QR Scanner" },
   ];
 
   const userLinks = [
     { to: "/user/dashboard", label: "Dashboard" },
     { to: "/user/vehicles", label: "My Vehicles" },
     { to: "/user/violations", label: "Violations" },
-    { to: "/user/payments", label: "Payments" },
   ];
 
   const getNavLinks = () => {

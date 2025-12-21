@@ -126,13 +126,6 @@ const OfficerDashboard = () => {
       link: "/officer/qr-search",
       color: "info",
     },
-    {
-      icon: <FileText className="h-5 w-5" />,
-      title: "Issue Fine",
-      description: "Create new violation",
-      link: "/officer/issue-fine",
-      color: "warning",
-    },
   ];
 
   return (
