@@ -94,6 +94,15 @@ class MeritPointService {
       if (!user) {
         throw new Error('User not found');
       }
+
+      // Initialize merit points if not set
+      if (user.meritPoints === undefined || user.meritPoints === null) {
+        user.meritPoints = 100;
+        user.drivingStatus = 'active';
+        user.totalViolations = 0;
+        user.violationFreeWeeks = 0;
+        await user.save();
+      }
       
       // Calculate weeks since last violation
       let weeksSinceViolation = 0;
@@ -115,7 +124,10 @@ class MeritPointService {
         violationFreeWeeks: user.violationFreeWeeks,
         potentialRecovery: potentialRecovery.recovered,
         statusMessage: this.getStatusMessage(user.drivingStatus, user.meritPoints),
-        recommendations: this.getRecommendations(user)
+        recommendations: this.getRecommendations(user),
+        lastViolationDate: user.lastViolationDate,
+        vehicleType: user.vehicleType,
+        speedLimit: user.getSpeedLimit ? user.getSpeedLimit() : 70
       };
       
     } catch (error) {

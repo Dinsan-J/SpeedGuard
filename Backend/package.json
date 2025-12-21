@@ -19,6 +19,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "init-locations": "node scripts/initializeSensitiveLocations.js",
+    "init-merit-points": "node scripts/initializeMeritPoints.js",
     "test-geofencing": "node test-geofencing.js"
   }
 }

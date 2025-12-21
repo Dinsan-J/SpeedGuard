@@ -2,7 +2,7 @@ const MeritPointService = require('../services/meritPointService');
 const User = require('../models/User');
 
 /**
- * Get user's merit point status
+ * Get user's merit point status (authenticated user)
  */
 exports.getUserMeritStatus = async (req, res) => {
   try {
@@ -18,6 +18,47 @@ exports.getUserMeritStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error retrieving merit point status',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Get current user profile with merit points
+ */
+exports.getCurrentUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Get merit point status
+    const meritStatus = await MeritPointService.getUserMeritStatus(userId);
+    
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          vehicleType: user.vehicleType,
+          driverProfile: user.driverProfile
+        },
+        meritPoints: meritStatus
+      }
+    });
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving user profile',
       error: error.message
     });
   }
