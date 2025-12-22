@@ -48,8 +48,9 @@ router.post("/add", async (req, res) => {
       driverId: user.driverProfile._id,
       vehicleNumber: vehicleData.vehicleNumber.toUpperCase(),
       registrationDate: new Date(),
-      registrationExpiry: new Date(vehicleData.registrationExpiry),
-      insuranceExpiry: new Date(vehicleData.insuranceExpiry)
+      // Set default expiry dates if not provided
+      registrationExpiry: vehicleData.registrationExpiry ? new Date(vehicleData.registrationExpiry) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+      insuranceExpiry: vehicleData.insuranceExpiry ? new Date(vehicleData.insuranceExpiry) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
     });
     
     await vehicle.save();

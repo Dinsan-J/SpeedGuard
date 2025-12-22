@@ -32,8 +32,6 @@ const UserVehicles = () => {
     model: "",
     year: "",
     color: "",
-    registrationExpiry: "",
-    insuranceExpiry: "",
   });
 
   const mockUser = {
@@ -256,8 +254,6 @@ const UserVehicles = () => {
           model: "",
           year: "",
           color: "",
-          registrationExpiry: "",
-          insuranceExpiry: "",
         });
         fetchVehicles(); // Refresh vehicle list
       } else {
@@ -732,42 +728,6 @@ const UserVehicles = () => {
                         required
                       />
                     </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="block text-black font-medium text-sm">
-                      Registration Expiry
-                    </label>
-                    <input
-                      type="date"
-                      value={newVehicle.registrationExpiry}
-                      onChange={(e) =>
-                        setNewVehicle({
-                          ...newVehicle,
-                          registrationExpiry: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="block text-black font-medium text-sm">
-                      Insurance Expiry
-                    </label>
-                    <input
-                      type="date"
-                      value={newVehicle.insuranceExpiry}
-                      onChange={(e) =>
-                        setNewVehicle({
-                          ...newVehicle,
-                          insuranceExpiry: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded px-3 py-2 text-black"
-                      required
-                    />
                   </div>
                   
                   <div className="flex gap-2 pt-4">
