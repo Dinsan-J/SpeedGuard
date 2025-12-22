@@ -25,12 +25,7 @@ const Register = () => {
     phoneNumber: "",
     role: "driver" as "officer" | "driver",
     // Driver fields
-    fullName: "",
-    nicNumber: "",
     drivingLicenseNumber: "",
-    licenseClass: "B",
-    licenseIssueDate: "",
-    licenseExpiryDate: "",
     // Officer fields
     policeIdNumber: "",
     policeStation: "",
@@ -258,34 +253,6 @@ const Register = () => {
                     <Label className="text-sm font-medium">Driver Information</Label>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="fullName">Full Name</Label>
-                      <Input
-                        id="fullName"
-                        name="fullName"
-                        type="text"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        className="h-12"
-                        placeholder="Enter your full name"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="nicNumber">NIC Number</Label>
-                      <Input
-                        id="nicNumber"
-                        name="nicNumber"
-                        type="text"
-                        value={formData.nicNumber}
-                        onChange={handleChange}
-                        className="h-12"
-                        placeholder="Enter your NIC number"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
                       <Label htmlFor="drivingLicenseNumber">Driving License Number</Label>
                       <Input
                         id="drivingLicenseNumber"
@@ -298,57 +265,6 @@ const Register = () => {
                         required
                       />
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="licenseClass">License Class</Label>
-                      <select
-                        id="licenseClass"
-                        name="licenseClass"
-                        value={formData.licenseClass}
-                        onChange={handleChange}
-                        className="w-full h-12 px-3 border border-border rounded-md bg-background"
-                        required
-                      >
-                        <option value="A">A - Motorcycle</option>
-                        <option value="A1">A1 - Light Motorcycle</option>
-                        <option value="B">B - Light Vehicle</option>
-                        <option value="B1">B1 - Three Wheeler</option>
-                        <option value="C">C - Heavy Vehicle</option>
-                        <option value="C1">C1 - Medium Vehicle</option>
-                        <option value="CE">CE - Heavy Vehicle with Trailer</option>
-                        <option value="D">D - Bus</option>
-                        <option value="D1">D1 - Minibus</option>
-                        <option value="DE">DE - Bus with Trailer</option>
-                        <option value="G">G - Tractor</option>
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="licenseIssueDate">License Issue Date</Label>
-                        <Input
-                          id="licenseIssueDate"
-                          name="licenseIssueDate"
-                          type="date"
-                          value={formData.licenseIssueDate}
-                          onChange={handleChange}
-                          className="h-12"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="licenseExpiryDate">License Expiry Date</Label>
-                        <Input
-                          id="licenseExpiryDate"
-                          name="licenseExpiryDate"
-                          type="date"
-                          value={formData.licenseExpiryDate}
-                          onChange={handleChange}
-                          className="h-12"
-                          required
-                        />
-                      </div>
-                    </div>
                   </div>
                 </>
               )}
@@ -359,20 +275,6 @@ const Register = () => {
                   <div className="space-y-4">
                     <Label className="text-sm font-medium">Officer Information</Label>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName">Full Name</Label>
-                      <Input
-                        id="fullName"
-                        name="fullName"
-                        type="text"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        className="h-12"
-                        placeholder="Enter your full name"
-                        required
-                      />
-                    </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="policeIdNumber">Police ID</Label>
                       <div className="relative">
@@ -430,7 +332,6 @@ const Register = () => {
                         <option value="">Select Rank</option>
                         <option value="Police Constable">Police Constable</option>
                         <option value="Police Sergeant">Police Sergeant</option>
-                        <option value="Police Inspector">Police Inspector</option>
                         <option value="Sub Inspector">Sub Inspector</option>
                         <option value="Assistant Superintendent">Assistant Superintendent</option>
                         <option value="Deputy Inspector General">Deputy Inspector General</option>

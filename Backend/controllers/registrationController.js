@@ -18,12 +18,7 @@ exports.register = async (req, res) => {
       role,
       
       // Driver-specific fields
-      fullName,
-      nicNumber,
       drivingLicenseNumber,
-      licenseClass,
-      licenseIssueDate,
-      licenseExpiryDate,
       address,
       emergencyContact,
       
@@ -83,41 +78,37 @@ exports.register = async (req, res) => {
 
     if (role === 'driver') {
       // Validate driver-specific required fields
-      if (!fullName || !nicNumber || !drivingLicenseNumber || !licenseClass || 
-          !licenseIssueDate || !licenseExpiryDate) {
+      if (!drivingLicenseNumber) {
         await User.findByIdAndDelete(user._id); // Cleanup
         return res.status(400).json({
           success: false,
-          message: 'Missing required driver fields: fullName, nicNumber, drivingLicenseNumber, licenseClass, licenseIssueDate, licenseExpiryDate'
+          message: 'Missing required driver field: drivingLicenseNumber'
         });
       }
 
-      // Check for duplicate NIC and license
+      // Check for duplicate license
       const existingDriver = await DriverProfile.findOne({
-        $or: [
-          { nicNumber },
-          { drivingLicenseNumber: drivingLicenseNumber.toUpperCase() }
-        ]
+        drivingLicenseNumber: drivingLicenseNumber.toUpperCase()
       });
 
       if (existingDriver) {
         await User.findByIdAndDelete(user._id); // Cleanup
         return res.status(400).json({
           success: false,
-          message: 'Driver with this NIC or driving license number already exists'
+          message: 'Driver with this driving license number already exists'
         });
       }
 
-      // Create driver profile
+      // Create driver profile with minimal required fields
       const driverProfile = new DriverProfile({
         userId: user._id,
-        fullName,
-        nicNumber,
+        fullName: username, // Use username as placeholder for fullName
+        nicNumber: 'PENDING', // Placeholder - to be updated later
         phoneNumber,
         drivingLicenseNumber: drivingLicenseNumber.toUpperCase(),
-        licenseClass,
-        licenseIssueDate: new Date(licenseIssueDate),
-        licenseExpiryDate: new Date(licenseExpiryDate),
+        licenseClass: 'B', // Default license class
+        licenseIssueDate: new Date('2020-01-01'), // Placeholder date
+        licenseExpiryDate: new Date('2030-01-01'), // Placeholder date
         address: address || {},
         emergencyContact: emergencyContact || {}
       });
@@ -132,11 +123,11 @@ exports.register = async (req, res) => {
 
     } else if (role === 'officer') {
       // Validate officer-specific required fields
-      if (!fullName || !policeIdNumber || !policeStation || !division) {
+      if (!policeIdNumber || !policeStation || !division) {
         await User.findByIdAndDelete(user._id); // Cleanup
         return res.status(400).json({
           success: false,
-          message: 'Missing required officer fields: fullName, policeIdNumber, policeStation, division'
+          message: 'Missing required officer fields: policeIdNumber, policeStation, division'
         });
       }
 
@@ -156,7 +147,7 @@ exports.register = async (req, res) => {
       // Create officer profile
       const officerProfile = new OfficerProfile({
         userId: user._id,
-        fullName,
+        fullName: username, // Use username as placeholder for fullName
         phoneNumber,
         policeIdNumber: policeIdNumber.toUpperCase(),
         policeStation,
@@ -201,9 +192,9 @@ exports.register = async (req, res) => {
 
     console.log(`✅ User registered successfully: ${user.username} (${user.role})`);
     if (role === 'driver') {
-      console.log(`   Driver: ${fullName} - License: ${drivingLicenseNumber}`);
+      console.log(`   Driver: ${username} - License: ${drivingLicenseNumber}`);
     } else {
-      console.log(`   Officer: ${fullName} - Police ID: ${policeIdNumber} - Station: ${policeStation}`);
+      console.log(`   Officer: ${username} - Police ID: ${policeIdNumber} - Station: ${policeStation}`);
     }
 
     res.status(201).json({
@@ -264,14 +255,12 @@ exports.getRegistrationRequirements = async (req, res) => {
     if (!role || role === 'driver') {
       requirements.driver = {
         required: [
-          'fullName', 'nicNumber', 'drivingLicenseNumber', 
-          'licenseClass', 'licenseIssueDate', 'licenseExpiryDate'
+          'drivingLicenseNumber'
         ],
         optional: [
           'address', 'emergencyContact'
         ],
         validation: {
-          nicNumber: 'Valid Sri Lankan NIC (9 digits + V/X or 12 digits)',
           drivingLicenseNumber: 'Valid driving license number',
           phoneNumber: 'Valid Sri Lankan phone number'
         }
@@ -281,7 +270,7 @@ exports.getRegistrationRequirements = async (req, res) => {
     if (!role || role === 'officer') {
       requirements.officer = {
         required: [
-          'fullName', 'policeIdNumber', 'policeStation', 'division'
+          'policeIdNumber', 'policeStation', 'division'
         ],
         optional: ['rank', 'department'],
         ranks: [
@@ -318,12 +307,11 @@ exports.getRegistrationRequirements = async (req, res) => {
  */
 exports.validateRegistrationData = async (req, res) => {
   try {
-    const { email, username, nicNumber, drivingLicenseNumber, policeIdNumber } = req.body;
+    const { email, username, drivingLicenseNumber, policeIdNumber } = req.body;
 
     const validation = {
       email: { available: true },
       username: { available: true },
-      nicNumber: { available: true },
       drivingLicenseNumber: { available: true },
       policeIdNumber: { available: true }
     };
@@ -338,12 +326,6 @@ exports.validateRegistrationData = async (req, res) => {
     if (username) {
       const existingUsername = await User.findOne({ username });
       validation.username.available = !existingUsername;
-    }
-
-    // Check NIC
-    if (nicNumber) {
-      const existingNIC = await DriverProfile.findOne({ nicNumber });
-      validation.nicNumber.available = !existingNIC;
     }
 
     // Check driving license
