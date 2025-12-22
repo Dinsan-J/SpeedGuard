@@ -96,10 +96,13 @@ exports.register = async (req, res) => {
       }
 
       // Create driver profile with minimal required fields
+      // Generate a unique placeholder NIC using timestamp
+      const uniqueNIC = `${Date.now().toString().slice(-9)}V`;
+      
       const driverProfile = new DriverProfile({
         userId: user._id,
         fullName: username, // Use username as placeholder for fullName
-        nicNumber: 'PENDING', // Placeholder - to be updated later
+        nicNumber: uniqueNIC, // Unique placeholder NIC format
         phoneNumber,
         drivingLicenseNumber: drivingLicenseNumber.toUpperCase(),
         licenseClass: 'B', // Default license class
@@ -146,7 +149,7 @@ exports.register = async (req, res) => {
         fullName: username, // Use username as placeholder for fullName
         phoneNumber,
         policeIdNumber: policeIdNumber.toUpperCase(),
-        policeStation: 'PENDING', // Placeholder
+        policeStation: 'Central Police Station', // Default station
         division: 'Traffic Police', // Default division
         rank: null,
         department: 'Traffic Police'
