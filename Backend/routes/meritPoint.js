@@ -8,7 +8,8 @@ router.use(authMiddleware);
 
 // User routes
 router.get('/status', meritPointController.getUserMeritStatus);
-router.get('/history/:userId?', meritPointController.getMeritPointHistory);
+router.get('/history/:userId', meritPointController.getMeritPointHistory);
+router.get('/history', meritPointController.getMeritPointHistory);
 router.put('/vehicle-type', meritPointController.updateVehicleType);
 
 // Officer routes
