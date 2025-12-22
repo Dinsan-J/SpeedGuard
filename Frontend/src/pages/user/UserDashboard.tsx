@@ -161,9 +161,10 @@ const UserDashboard = () => {
     fetchViolations();
   }, []);
 
-  // Show all violations with speed > 70
+  // Filter violations by selected vehicle and speed > 70
   const filteredViolations = violations.filter((v) => {
-    return v.speed > 70;
+    const matchesVehicle = selectedVehicleId ? v.vehicleId === vehicles.find(vehicle => vehicle._id === selectedVehicleId)?.plateNumber : true;
+    return v.speed > 70 && matchesVehicle;
   });
 
   const stats = {
@@ -453,12 +454,18 @@ const UserDashboard = () => {
                     <CheckCircle className="h-12 w-12 text-success mx-auto mb-3" />
                     <p className="text-muted-foreground">No violations found for this vehicle</p>
                   </div>
+                ) : filteredViolations.length === 0 ? (
+                  <div className="text-center py-8">
+                    <CheckCircle className="h-12 w-12 text-success mx-auto mb-3" />
+                    <p className="text-muted-foreground">
+                      {selectedVehicleId 
+                        ? `No violations found for ${vehicles.find(v => v._id === selectedVehicleId)?.plateNumber || 'selected vehicle'}`
+                        : "No violations found"
+                      }
+                    </p>
+                  </div>
                 ) : (
-                  violations
-                  .filter((violation) => {
-                    // Show all violations with speed > 70, regardless of vehicle selection
-                    return violation.speed > 70;
-                  })
+                  filteredViolations
                   .map((violation) => {
                     const limit = violation.speedLimit || 70;
                     const excess = violation.speed - limit;

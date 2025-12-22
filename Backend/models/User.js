@@ -1,132 +1,140 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ["user", "officer"], default: "user" },
-  policeId: { type: String }, // Only required for officers
-  
-  // Vehicle Type Selection (NEW)
-  vehicleType: {
-    type: String,
-    enum: ["motorcycle", "light_vehicle", "three_wheeler", "heavy_vehicle"],
-    required: function() {
-      return this.role === "user"; // Only required for regular users
+  // Common Authentication Fields
+  username: { 
+    type: String, 
+    required: true, 
+    unique: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 30
+  },
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true,
+    lowercase: true,
+    validate: {
+      validator: function(v) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      },
+      message: 'Invalid email format'
+    }
+  },
+  password: { 
+    type: String, 
+    required: true,
+    minlength: 6
+  },
+  phoneNumber: { 
+    type: String, 
+    required: true,
+    validate: {
+      validator: function(v) {
+        // Sri Lankan phone number validation
+        return /^(\+94|0)?[1-9]\d{8}$/.test(v);
+      },
+      message: 'Invalid Sri Lankan phone number format'
     }
   },
   
-  // Driver Profile (NEW)
-  driverProfile: {
-    fullName: String,
-    dateOfBirth: Date,
-    phoneNumber: String,
-    address: String,
-    licenseNumber: String,
-    licenseClass: String,
-    licenseIssueDate: Date,
-    licenseExpiryDate: Date
+  // Role-Based Access Control
+  role: { 
+    type: String, 
+    enum: ["driver", "officer"], 
+    required: true
   },
   
-  // Merit Point System (NEW)
-  meritPoints: {
-    type: Number,
-    default: 100,
-    min: 0,
-    max: 100
+  // Account Status
+  isActive: { type: Boolean, default: true },
+  isEmailVerified: { type: Boolean, default: false },
+  emailVerificationToken: String,
+  emailVerificationExpiry: Date,
+  
+  // Password Reset
+  passwordResetToken: String,
+  passwordResetExpiry: Date,
+  
+  // Login Tracking
+  lastLogin: Date,
+  loginAttempts: { type: Number, default: 0 },
+  lockUntil: Date,
+  
+  // Profile References (populated based on role)
+  driverProfile: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "DriverProfile",
+    required: function() { return this.role === 'driver'; }
   },
-  
-  // Status based on merit points (NEW)
-  drivingStatus: {
-    type: String,
-    enum: ['active', 'warning', 'review', 'suspended'],
-    default: 'active'
+  officerProfile: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "OfficerProfile",
+    required: function() { return this.role === 'officer'; }
   },
-  
-  // Violation tracking (NEW)
-  totalViolations: { type: Number, default: 0 },
-  lastViolationDate: Date,
-  violationFreeWeeks: { type: Number, default: 0 },
-  lastMeritRecovery: Date,
-  
-  vehicles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Vehicle" }],
   
   // Timestamps
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Middleware to update driving status based on merit points
+// Indexes for performance
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ isActive: 1 });
+
+// Virtual for account lock status
+userSchema.virtual('isLocked').get(function() {
+  return !!(this.lockUntil && this.lockUntil > Date.now());
+});
+
+// Middleware to update timestamps
 userSchema.pre('save', function(next) {
-  if (this.role === 'user') {
-    if (this.meritPoints >= 50) {
-      this.drivingStatus = 'active';
-    } else if (this.meritPoints >= 30) {
-      this.drivingStatus = 'warning';
-    } else if (this.meritPoints > 0) {
-      this.drivingStatus = 'review';
-    } else {
-      this.drivingStatus = 'suspended';
-    }
-  }
-  
   this.updatedAt = new Date();
   next();
 });
 
-// Method to get speed limit based on vehicle type
-userSchema.methods.getSpeedLimit = function() {
-  const speedLimits = {
-    motorcycle: 70,
-    light_vehicle: 70,
-    three_wheeler: 50,
-    heavy_vehicle: 50
-  };
-  return speedLimits[this.vehicleType] || 70;
-};
-
-// Method to deduct merit points with severity calculation
-userSchema.methods.deductMeritPoints = function(speedOverLimit) {
-  let pointsToDeduct = 0;
-  
-  if (speedOverLimit <= 10) {
-    pointsToDeduct = 5;
-  } else if (speedOverLimit <= 20) {
-    pointsToDeduct = 10;
-  } else if (speedOverLimit <= 30) {
-    pointsToDeduct = 20;
-  } else {
-    pointsToDeduct = 30;
+// Method to increment login attempts
+userSchema.methods.incLoginAttempts = function() {
+  // If we have a previous lock that has expired, restart at 1
+  if (this.lockUntil && this.lockUntil < Date.now()) {
+    return this.updateOne({
+      $unset: { lockUntil: 1 },
+      $set: { loginAttempts: 1 }
+    });
   }
   
-  this.meritPoints = Math.max(0, this.meritPoints - pointsToDeduct);
-  this.totalViolations += 1;
-  this.lastViolationDate = new Date();
-  this.violationFreeWeeks = 0; // Reset violation-free streak
+  const updates = { $inc: { loginAttempts: 1 } };
   
-  return { pointsDeducted: pointsToDeduct, newTotal: this.meritPoints };
-};
-
-// Method to recover merit points (weekly recovery)
-userSchema.methods.recoverMeritPoints = function() {
-  if (!this.lastViolationDate) return { recovered: 0, newTotal: this.meritPoints };
-  
-  const now = new Date();
-  const lastViolation = new Date(this.lastViolationDate);
-  const weeksSinceViolation = Math.floor((now - lastViolation) / (7 * 24 * 60 * 60 * 1000));
-  
-  if (weeksSinceViolation > this.violationFreeWeeks) {
-    const weeksToRecover = weeksSinceViolation - this.violationFreeWeeks;
-    const pointsToRecover = Math.min(weeksToRecover * 2, 100 - this.meritPoints);
-    
-    this.meritPoints = Math.min(100, this.meritPoints + pointsToRecover);
-    this.violationFreeWeeks = weeksSinceViolation;
-    this.lastMeritRecovery = now;
-    
-    return { recovered: pointsToRecover, newTotal: this.meritPoints };
+  // Lock account after 5 failed attempts for 2 hours
+  if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
+    updates.$set = { lockUntil: Date.now() + 2 * 60 * 60 * 1000 }; // 2 hours
   }
   
-  return { recovered: 0, newTotal: this.meritPoints };
+  return this.updateOne(updates);
+};
+
+// Method to reset login attempts
+userSchema.methods.resetLoginAttempts = function() {
+  return this.updateOne({
+    $unset: { loginAttempts: 1, lockUntil: 1 },
+    $set: { lastLogin: new Date() }
+  });
+};
+
+// Static method to find user with populated profile
+userSchema.statics.findByIdWithProfile = function(id) {
+  return this.findById(id)
+    .populate('driverProfile')
+    .populate('officerProfile');
+};
+
+// Static method to find user by email with populated profile
+userSchema.statics.findByEmailWithProfile = function(email) {
+  return this.findOne({ email: email.toLowerCase() })
+    .populate('driverProfile')
+    .populate('officerProfile');
 };
 
 module.exports = mongoose.model("User", userSchema);
