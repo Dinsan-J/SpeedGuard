@@ -23,11 +23,7 @@ exports.register = async (req, res) => {
       emergencyContact,
       
       // Officer-specific fields
-      policeIdNumber,
-      policeStation,
-      division,
-      rank,
-      department
+      policeIdNumber
     } = req.body;
 
     // Validate required common fields
@@ -123,11 +119,11 @@ exports.register = async (req, res) => {
 
     } else if (role === 'officer') {
       // Validate officer-specific required fields
-      if (!policeIdNumber || !policeStation || !division) {
+      if (!policeIdNumber) {
         await User.findByIdAndDelete(user._id); // Cleanup
         return res.status(400).json({
           success: false,
-          message: 'Missing required officer fields: policeIdNumber, policeStation, division'
+          message: 'Missing required officer field: policeIdNumber'
         });
       }
 
@@ -144,16 +140,16 @@ exports.register = async (req, res) => {
         });
       }
 
-      // Create officer profile
+      // Create officer profile with minimal required fields
       const officerProfile = new OfficerProfile({
         userId: user._id,
         fullName: username, // Use username as placeholder for fullName
         phoneNumber,
         policeIdNumber: policeIdNumber.toUpperCase(),
-        policeStation,
-        division,
-        rank: rank || null,
-        department: department || 'Traffic Police'
+        policeStation: 'PENDING', // Placeholder
+        division: 'Traffic Police', // Default division
+        rank: null,
+        department: 'Traffic Police'
       });
 
       await officerProfile.save();
@@ -194,7 +190,7 @@ exports.register = async (req, res) => {
     if (role === 'driver') {
       console.log(`   Driver: ${username} - License: ${drivingLicenseNumber}`);
     } else {
-      console.log(`   Officer: ${username} - Police ID: ${policeIdNumber} - Station: ${policeStation}`);
+      console.log(`   Officer: ${username} - Police ID: ${policeIdNumber}`);
     }
 
     res.status(201).json({
@@ -270,17 +266,9 @@ exports.getRegistrationRequirements = async (req, res) => {
     if (!role || role === 'officer') {
       requirements.officer = {
         required: [
-          'policeIdNumber', 'policeStation', 'division'
+          'policeIdNumber'
         ],
-        optional: ['rank', 'department'],
-        ranks: [
-          'Police Constable', 'Police Sergeant', 'Police Inspector', 
-          'Sub Inspector', 'Assistant Superintendent', 
-          'Deputy Inspector General', 'Inspector General'
-        ],
-        departments: [
-          'Traffic Police', 'General Police', 'Special Task Force', 'Criminal Investigation'
-        ],
+        optional: [],
         validation: {
           policeIdNumber: 'Valid police ID number',
           phoneNumber: 'Valid Sri Lankan phone number'

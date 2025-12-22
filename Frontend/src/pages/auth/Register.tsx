@@ -27,10 +27,7 @@ const Register = () => {
     // Driver fields
     drivingLicenseNumber: "",
     // Officer fields
-    policeIdNumber: "",
-    policeStation: "",
-    division: "",
-    rank: ""
+    policeIdNumber: ""
   });
   const { toast } = useToast();
 
@@ -271,75 +268,22 @@ const Register = () => {
 
               {/* Police ID Field (only for officers) */}
               {formData.role === "officer" && (
-                <>
-                  <div className="space-y-4">
-                    <Label className="text-sm font-medium">Officer Information</Label>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="policeIdNumber">Police ID</Label>
-                      <div className="relative">
-                        <BadgeCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="policeIdNumber"
-                          name="policeIdNumber"
-                          type="text"
-                          value={formData.policeIdNumber}
-                          onChange={handleChange}
-                          className="pl-10 h-12"
-                          placeholder="Enter your police ID"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="policeStation">Police Station</Label>
-                      <Input
-                        id="policeStation"
-                        name="policeStation"
-                        type="text"
-                        value={formData.policeStation}
-                        onChange={handleChange}
-                        className="h-12"
-                        placeholder="Enter your police station"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="division">Division</Label>
-                      <Input
-                        id="division"
-                        name="division"
-                        type="text"
-                        value={formData.division}
-                        onChange={handleChange}
-                        className="h-12"
-                        placeholder="Enter your division"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="rank">Rank (Optional)</Label>
-                      <select
-                        id="rank"
-                        name="rank"
-                        value={formData.rank}
-                        onChange={handleChange}
-                        className="w-full h-12 px-3 border border-border rounded-md bg-background"
-                      >
-                        <option value="">Select Rank</option>
-                        <option value="Police Constable">Police Constable</option>
-                        <option value="Police Sergeant">Police Sergeant</option>
-                        <option value="Sub Inspector">Sub Inspector</option>
-                        <option value="Assistant Superintendent">Assistant Superintendent</option>
-                        <option value="Deputy Inspector General">Deputy Inspector General</option>
-                        <option value="Inspector General">Inspector General</option>
-                      </select>
-                    </div>
+                <div className="space-y-2">
+                  <Label htmlFor="policeIdNumber">Police ID</Label>
+                  <div className="relative">
+                    <BadgeCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="policeIdNumber"
+                      name="policeIdNumber"
+                      type="text"
+                      value={formData.policeIdNumber}
+                      onChange={handleChange}
+                      className="pl-10 h-12"
+                      placeholder="Enter your police ID"
+                      required
+                    />
                   </div>
-                </>
+                </div>
               )}
 
               {/* Submit Button */}
