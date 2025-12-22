@@ -434,7 +434,10 @@ const UserViolations = () => {
                                 violation.riskLevel === 'medium' ? 'secondary' : 'outline'}
                         className="ml-auto"
                       >
-                        {violation.riskLevel?.toUpperCase()} RISK
+                        {/* Normalize risk level display */}
+                        {['low', 'medium', 'high'].includes(violation.riskLevel?.toLowerCase()) 
+                          ? violation.riskLevel.toUpperCase() 
+                          : 'MEDIUM'} RISK
                       </Badge>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">

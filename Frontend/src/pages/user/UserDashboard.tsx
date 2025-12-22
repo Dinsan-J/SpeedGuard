@@ -614,11 +614,16 @@ const UserDashboard = () => {
                                     <div className="flex items-center gap-1">
                                       <span>🤖 ML Risk:</span>
                                       <Badge 
-                                        variant={violation.riskLevel === 'high' ? 'destructive' : 
-                                                violation.riskLevel === 'medium' ? 'secondary' : 'outline'}
+                                        variant={
+                                          violation.riskLevel === 'high' ? 'destructive' : 
+                                          violation.riskLevel === 'medium' ? 'secondary' : 'outline'
+                                        }
                                         className="text-xs"
                                       >
-                                        {violation.riskLevel.toUpperCase()}
+                                        {/* Normalize risk level display */}
+                                        {['low', 'medium', 'high'].includes(violation.riskLevel?.toLowerCase()) 
+                                          ? violation.riskLevel.toUpperCase() 
+                                          : 'MEDIUM'}
                                       </Badge>
                                       {violation.meritPointsDeducted && (
                                         <span className="text-destructive">

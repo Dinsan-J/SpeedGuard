@@ -128,9 +128,11 @@ exports.receiveIoTData = async (req, res) => {
           zoneRadius: violationAnalysis.geofencing.zoneRadius
         },
         
-        // ML Risk Assessment
+        // ML Risk Assessment (with validation)
         riskScore: violationAnalysis.riskAssessment?.riskScore || 0.3,
-        riskLevel: violationAnalysis.riskAssessment?.riskLevel || 'medium',
+        riskLevel: ['low', 'medium', 'high'].includes(violationAnalysis.riskAssessment?.riskLevel) 
+          ? violationAnalysis.riskAssessment.riskLevel 
+          : 'medium', // Default to medium if invalid
         riskFactors: violationAnalysis.riskAssessment?.features ? 
           Object.entries(violationAnalysis.riskAssessment.features).map(([factor, weight]) => ({
             factor,
