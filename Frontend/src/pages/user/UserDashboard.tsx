@@ -517,7 +517,7 @@ const UserDashboard = () => {
                               </span>
                             </div>
                             <div className="text-success/80 mt-1">
-                              -{violation.meritPointsDeducted} merit points deducted • Fine: LKR {violation.finalFine}
+                              -{violation.meritPointsDeducted} merit points deducted
                             </div>
                           </div>
                         )}
