@@ -19,7 +19,8 @@ const UserVehicles = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newVehicle, setNewVehicle] = useState({
-    plateNumber: "",
+    vehicleNumber: "",
+    vehicleType: "",
     make: "",
     model: "",
     year: "",
@@ -95,7 +96,7 @@ const UserVehicles = () => {
   // Example function for adding a vehicle
   const handleAddVehicle = async (vehicleData) => {
     try {
-      const response = await fetch("http://localhost:5000/api/vehicle/add", {
+      const response = await fetch("https://speedguard-gz70.onrender.com/api/vehicle/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -127,7 +128,7 @@ const UserVehicles = () => {
   const handleDeleteVehicle = async (vehicleId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/vehicle/delete/${vehicleId}`,
+        `https://speedguard-gz70.onrender.com/api/vehicle/delete/${vehicleId}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -158,7 +159,7 @@ const UserVehicles = () => {
     const fetchVehicles = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/vehicle/user/${mockUser.id}`,
+          `https://speedguard-gz70.onrender.com/api/vehicle/user/${mockUser.id}`,
           { credentials: "include" }
         );
         const data = await response.json();
@@ -417,21 +418,43 @@ const UserVehicles = () => {
                   className="space-y-3"
                 >
                   <label className="block text-black font-medium mb-1">
-                    Plate Number
+                    Vehicle Number
                   </label>
                   <input
                     type="text"
-                    placeholder="Plate Number"
-                    value={newVehicle.plateNumber}
+                    placeholder="Vehicle Number (e.g., ABC-1234)"
+                    value={newVehicle.vehicleNumber}
                     onChange={(e) =>
                       setNewVehicle({
                         ...newVehicle,
-                        plateNumber: e.target.value,
+                        vehicleNumber: e.target.value,
                       })
                     }
                     className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
                     required
                   />
+                  
+                  <label className="block text-black font-medium mb-1 mt-3">
+                    Vehicle Type
+                  </label>
+                  <select
+                    value={newVehicle.vehicleType}
+                    onChange={(e) =>
+                      setNewVehicle({
+                        ...newVehicle,
+                        vehicleType: e.target.value,
+                      })
+                    }
+                    className="w-full border rounded px-3 py-2 text-black"
+                    required
+                  >
+                    <option value="">Select Vehicle Type</option>
+                    <option value="motorcycle">Motorcycle (70 km/h limit)</option>
+                    <option value="light_vehicle">Light Vehicle - Car, Van, Jeep (70 km/h limit)</option>
+                    <option value="three_wheeler">Three-Wheeler (50 km/h limit)</option>
+                    <option value="heavy_vehicle">Heavy Vehicle - Bus, Lorry (50 km/h limit)</option>
+                  </select>
+                  
                   <label className="block text-black font-medium mb-1">
                     Make
                   </label>

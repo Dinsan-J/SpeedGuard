@@ -22,14 +22,20 @@ const Register = () => {
     username: "",
     email: "",
     password: "",
-    policeId: "",
-    role: "user" as "officer" | "user",
-    vehicleType: "",
-    driverProfile: {
-      fullName: "",
-      phoneNumber: "",
-      licenseNumber: ""
-    }
+    phoneNumber: "",
+    role: "driver" as "officer" | "driver",
+    // Driver fields
+    fullName: "",
+    nicNumber: "",
+    drivingLicenseNumber: "",
+    licenseClass: "B",
+    licenseIssueDate: "",
+    licenseExpiryDate: "",
+    // Officer fields
+    policeIdNumber: "",
+    policeStation: "",
+    division: "",
+    rank: ""
   });
   const { toast } = useToast();
 
@@ -76,22 +82,10 @@ const Register = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
-    if (name.startsWith('driverProfile.')) {
-      const profileField = name.split('.')[1];
-      setFormData((prev) => ({
-        ...prev,
-        driverProfile: {
-          ...prev.driverProfile,
-          [profileField]: value
-        }
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   return (
@@ -137,10 +131,10 @@ const Register = () => {
                   <button
                     type="button"
                     onClick={() =>
-                      setFormData((prev) => ({ ...prev, role: "user" }))
+                      setFormData((prev) => ({ ...prev, role: "driver" }))
                     }
                     className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${
-                      formData.role === "user"
+                      formData.role === "driver"
                         ? "border-secondary bg-secondary/10 text-secondary"
                         : "border-border bg-accent/20 hover:border-secondary/50"
                     }`}
@@ -239,95 +233,27 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Police ID Field (only for officers) */}
-              {formData.role === "officer" && (
-                <div className="space-y-2">
-                  <Label htmlFor="policeId">Police ID</Label>
-                  <div className="relative">
-                    <BadgeCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="policeId"
-                      name="policeId"
-                      type="text"
-                      value={formData.policeId}
-                      onChange={handleChange}
-                      className="pl-10 h-12"
-                      placeholder="Enter your police ID"
-                      required
-                    />
-                  </div>
+              {/* Phone Number Field */}
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    className="pl-10 h-12"
+                    placeholder="Enter your phone number"
+                    required
+                  />
                 </div>
-              )}
+              </div>
 
-              {/* Vehicle Type Selection (only for users) */}
-              {formData.role === "user" && (
+              {/* Driver-specific fields */}
+              {formData.role === "driver" && (
                 <>
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Vehicle Type</Label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, vehicleType: "motorcycle" }))}
-                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                          formData.vehicleType === "motorcycle"
-                            ? "border-secondary bg-secondary/10 text-secondary"
-                            : "border-border bg-accent/20 hover:border-secondary/50"
-                        }`}
-                      >
-                        <div className="text-center">
-                          <div className="text-sm font-medium">Motorcycle</div>
-                          <div className="text-xs text-muted-foreground">70 km/h limit</div>
-                        </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, vehicleType: "light_vehicle" }))}
-                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                          formData.vehicleType === "light_vehicle"
-                            ? "border-secondary bg-secondary/10 text-secondary"
-                            : "border-border bg-accent/20 hover:border-secondary/50"
-                        }`}
-                      >
-                        <div className="text-center">
-                          <div className="text-sm font-medium">Light Vehicle</div>
-                          <div className="text-xs text-muted-foreground">Car, Van, Jeep - 70 km/h</div>
-                        </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, vehicleType: "three_wheeler" }))}
-                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                          formData.vehicleType === "three_wheeler"
-                            ? "border-secondary bg-secondary/10 text-secondary"
-                            : "border-border bg-accent/20 hover:border-secondary/50"
-                        }`}
-                      >
-                        <div className="text-center">
-                          <div className="text-sm font-medium">Three-Wheeler</div>
-                          <div className="text-xs text-muted-foreground">Auto - 50 km/h limit</div>
-                        </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, vehicleType: "heavy_vehicle" }))}
-                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                          formData.vehicleType === "heavy_vehicle"
-                            ? "border-secondary bg-secondary/10 text-secondary"
-                            : "border-border bg-accent/20 hover:border-secondary/50"
-                        }`}
-                      >
-                        <div className="text-center">
-                          <div className="text-sm font-medium">Heavy Vehicle</div>
-                          <div className="text-xs text-muted-foreground">Bus, Lorry - 50 km/h</div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Driver Profile Fields */}
                   <div className="space-y-4">
                     <Label className="text-sm font-medium">Driver Information</Label>
                     
@@ -335,39 +261,181 @@ const Register = () => {
                       <Label htmlFor="fullName">Full Name</Label>
                       <Input
                         id="fullName"
-                        name="driverProfile.fullName"
+                        name="fullName"
                         type="text"
-                        value={formData.driverProfile.fullName}
+                        value={formData.fullName}
                         onChange={handleChange}
                         className="h-12"
                         placeholder="Enter your full name"
+                        required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <Label htmlFor="nicNumber">NIC Number</Label>
                       <Input
-                        id="phoneNumber"
-                        name="driverProfile.phoneNumber"
-                        type="tel"
-                        value={formData.driverProfile.phoneNumber}
+                        id="nicNumber"
+                        name="nicNumber"
+                        type="text"
+                        value={formData.nicNumber}
                         onChange={handleChange}
                         className="h-12"
-                        placeholder="Enter your phone number"
+                        placeholder="Enter your NIC number"
+                        required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="licenseNumber">Driving License Number</Label>
+                      <Label htmlFor="drivingLicenseNumber">Driving License Number</Label>
                       <Input
-                        id="licenseNumber"
-                        name="driverProfile.licenseNumber"
+                        id="drivingLicenseNumber"
+                        name="drivingLicenseNumber"
                         type="text"
-                        value={formData.driverProfile.licenseNumber}
+                        value={formData.drivingLicenseNumber}
                         onChange={handleChange}
                         className="h-12"
                         placeholder="Enter your license number"
+                        required
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="licenseClass">License Class</Label>
+                      <select
+                        id="licenseClass"
+                        name="licenseClass"
+                        value={formData.licenseClass}
+                        onChange={handleChange}
+                        className="w-full h-12 px-3 border border-border rounded-md bg-background"
+                        required
+                      >
+                        <option value="A">A - Motorcycle</option>
+                        <option value="A1">A1 - Light Motorcycle</option>
+                        <option value="B">B - Light Vehicle</option>
+                        <option value="B1">B1 - Three Wheeler</option>
+                        <option value="C">C - Heavy Vehicle</option>
+                        <option value="C1">C1 - Medium Vehicle</option>
+                        <option value="CE">CE - Heavy Vehicle with Trailer</option>
+                        <option value="D">D - Bus</option>
+                        <option value="D1">D1 - Minibus</option>
+                        <option value="DE">DE - Bus with Trailer</option>
+                        <option value="G">G - Tractor</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="licenseIssueDate">License Issue Date</Label>
+                        <Input
+                          id="licenseIssueDate"
+                          name="licenseIssueDate"
+                          type="date"
+                          value={formData.licenseIssueDate}
+                          onChange={handleChange}
+                          className="h-12"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="licenseExpiryDate">License Expiry Date</Label>
+                        <Input
+                          id="licenseExpiryDate"
+                          name="licenseExpiryDate"
+                          type="date"
+                          value={formData.licenseExpiryDate}
+                          onChange={handleChange}
+                          className="h-12"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Police ID Field (only for officers) */}
+              {formData.role === "officer" && (
+                <>
+                  <div className="space-y-4">
+                    <Label className="text-sm font-medium">Officer Information</Label>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        name="fullName"
+                        type="text"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        className="h-12"
+                        placeholder="Enter your full name"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="policeIdNumber">Police ID</Label>
+                      <div className="relative">
+                        <BadgeCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="policeIdNumber"
+                          name="policeIdNumber"
+                          type="text"
+                          value={formData.policeIdNumber}
+                          onChange={handleChange}
+                          className="pl-10 h-12"
+                          placeholder="Enter your police ID"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="policeStation">Police Station</Label>
+                      <Input
+                        id="policeStation"
+                        name="policeStation"
+                        type="text"
+                        value={formData.policeStation}
+                        onChange={handleChange}
+                        className="h-12"
+                        placeholder="Enter your police station"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="division">Division</Label>
+                      <Input
+                        id="division"
+                        name="division"
+                        type="text"
+                        value={formData.division}
+                        onChange={handleChange}
+                        className="h-12"
+                        placeholder="Enter your division"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="rank">Rank (Optional)</Label>
+                      <select
+                        id="rank"
+                        name="rank"
+                        value={formData.rank}
+                        onChange={handleChange}
+                        className="w-full h-12 px-3 border border-border rounded-md bg-background"
+                      >
+                        <option value="">Select Rank</option>
+                        <option value="Police Constable">Police Constable</option>
+                        <option value="Police Sergeant">Police Sergeant</option>
+                        <option value="Police Inspector">Police Inspector</option>
+                        <option value="Sub Inspector">Sub Inspector</option>
+                        <option value="Assistant Superintendent">Assistant Superintendent</option>
+                        <option value="Deputy Inspector General">Deputy Inspector General</option>
+                        <option value="Inspector General">Inspector General</option>
+                      </select>
                     </div>
                   </div>
                 </>

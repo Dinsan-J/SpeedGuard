@@ -9,6 +9,28 @@ router.post("/add", async (req, res) => {
   try {
     const { userId, vehicleData } = req.body;
     
+    // Find the user and their driver profile
+    const user = await User.findById(userId).populate('driverProfile');
+    if (!user || user.role !== 'driver' || !user.driverProfile) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "User must be a driver with a valid profile to add vehicles" 
+      });
+    }
+    
+    // Check if vehicle number already exists
+    if (vehicleData.vehicleNumber) {
+      const existingVehicle = await Vehicle.findOne({ 
+        vehicleNumber: vehicleData.vehicleNumber.toUpperCase() 
+      });
+      if (existingVehicle) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vehicle with this number already exists" 
+        });
+      }
+    }
+    
     // Check if IoT device ID is already in use
     if (vehicleData.iotDeviceId) {
       const existingVehicle = await Vehicle.findOne({ iotDeviceId: vehicleData.iotDeviceId });
@@ -20,9 +42,17 @@ router.post("/add", async (req, res) => {
       }
     }
     
-    const vehicle = new Vehicle({ ...vehicleData, owner: userId });
+    // Create vehicle with proper driver reference
+    const vehicle = new Vehicle({ 
+      ...vehicleData, 
+      driverId: user.driverProfile._id,
+      vehicleNumber: vehicleData.vehicleNumber.toUpperCase()
+    });
+    
     await vehicle.save();
-    await User.findByIdAndUpdate(userId, { $push: { vehicles: vehicle._id } });
+    
+    console.log(`✅ Vehicle added: ${vehicle.vehicleNumber} (${vehicle.vehicleType}) - Speed Limit: ${vehicle.speedLimit} km/h`);
+    
     res.json({ success: true, vehicle });
   } catch (err) {
     console.log("Add vehicle error:", err);
@@ -47,7 +77,14 @@ router.delete("/delete/:vehicleId", async (req, res) => {
 // Get user vehicles
 router.get("/user/:userId", async (req, res) => {
   try {
-    const vehicles = await Vehicle.find({ owner: req.params.userId });
+    // Find the user and their driver profile
+    const user = await User.findById(req.params.userId).populate('driverProfile');
+    if (!user || user.role !== 'driver' || !user.driverProfile) {
+      return res.json({ success: true, vehicles: [] });
+    }
+    
+    // Find vehicles by driver ID
+    const vehicles = await Vehicle.find({ driverId: user.driverProfile._id });
     res.json({ success: true, vehicles });
   } catch (err) {
     res
