@@ -5,30 +5,24 @@ import { Badge } from "@/components/ui/badge";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Car,
-  Plus,
   QrCode,
   Settings,
   AlertTriangle,
   CheckCircle,
+  Scan,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import QRScanner from "@/components/QRScanner";
+import VehicleRegistrationModal from "@/components/VehicleRegistrationModal";
 
 const UserVehicles = () => {
   const { toast } = useToast();
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newVehicle, setNewVehicle] = useState({
-    vehicleNumber: "",
-    vehicleType: "",
-    make: "",
-    model: "",
-    year: "",
-    color: "",
-    registrationExpiry: "",
-    insuranceExpiry: "",
-    iotDeviceId: "", // IoT device identifier
-  });
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [scannedVehicleData, setScannedVehicleData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const mockUser = {
     id: "64f8c2e2a1b2c3d4e5f6a7b8", // <-- Replace with a real MongoDB ObjectId
@@ -93,35 +87,128 @@ const UserVehicles = () => {
     return expiryDate < today;
   };
 
-  // Example function for adding a vehicle
-  const handleAddVehicle = async (vehicleData) => {
+  // Handle QR code scan
+  const handleQRScan = async (qrData: string) => {
     try {
-      const response = await fetch("https://speedguard-gz70.onrender.com/api/vehicle/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ userId: mockUser.id, vehicleData }), // use mockUser.id
-      });
+      const vehicleData = JSON.parse(qrData);
+      
+      // Check if this device is already registered
+      const response = await fetch(
+        `https://speedguard-gz70.onrender.com/api/vehicle/check-device/${vehicleData.deviceId}`,
+        { credentials: "include" }
+      );
+      
       const data = await response.json();
+      
+      if (data.exists) {
+        // Vehicle already exists, connect it to this user
+        await connectExistingVehicle(vehicleData.deviceId);
+      } else {
+        // New vehicle, show registration modal
+        setScannedVehicleData(vehicleData);
+        setShowQRScanner(false);
+        setShowRegistrationModal(true);
+      }
+    } catch (error) {
+      console.error('Error parsing QR code:', error);
+      toast({
+        title: "Invalid QR Code",
+        description: "The scanned QR code is not valid.",
+        variant: "destructive",
+      });
+      setShowQRScanner(false);
+    }
+  };
+
+  // Connect existing vehicle to user
+  const connectExistingVehicle = async (deviceId: string) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(
+        "https://speedguard-gz70.onrender.com/api/vehicle/connect",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ 
+            userId: mockUser.id, 
+            deviceId 
+          }),
+        }
+      );
+      
+      const data = await response.json();
+      
       if (data.success) {
         toast({
-          title: "Vehicle Added",
-          description: "Your vehicle was added successfully.",
+          title: "Vehicle Connected",
+          description: "Vehicle has been connected to your account.",
         });
-        // Optionally refresh vehicle list here
+        fetchVehicles(); // Refresh vehicle list
       } else {
         toast({
-          title: "Error",
-          description: data.message,
+          title: "Connection Failed",
+          description: data.message || "Failed to connect vehicle.",
           variant: "destructive",
         });
       }
-    } catch (err) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Network error",
+        description: "Network error occurred.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
+      setShowQRScanner(false);
+    }
+  };
+
+  // Register new vehicle
+  const handleVehicleRegistration = async (vehicleData: any) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(
+        "https://speedguard-gz70.onrender.com/api/vehicle/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ 
+            userId: mockUser.id, 
+            vehicleData: {
+              ...vehicleData,
+              iotDeviceId: scannedVehicleData?.deviceId
+            }
+          }),
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Vehicle Registered",
+          description: "Your vehicle has been registered successfully.",
+        });
+        setShowRegistrationModal(false);
+        setScannedVehicleData(null);
+        fetchVehicles(); // Refresh vehicle list
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: data.message || "Failed to register vehicle.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Network error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -155,31 +242,32 @@ const UserVehicles = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const response = await fetch(
-          `https://speedguard-gz70.onrender.com/api/vehicle/user/${mockUser.id}`,
-          { credentials: "include" }
-        );
-        const data = await response.json();
-        if (data.success) setVehicles(data.vehicles);
-        else
-          toast({
-            title: "Error",
-            description: data.message,
-            variant: "destructive",
-          });
-      } catch {
+  const fetchVehicles = async () => {
+    try {
+      const response = await fetch(
+        `https://speedguard-gz70.onrender.com/api/vehicle/user/${mockUser.id}`,
+        { credentials: "include" }
+      );
+      const data = await response.json();
+      if (data.success) setVehicles(data.vehicles);
+      else
         toast({
           title: "Error",
-          description: "Network error",
+          description: data.message,
           variant: "destructive",
         });
-      }
-    };
+    } catch {
+      toast({
+        title: "Error",
+        description: "Network error",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
     fetchVehicles();
-  }, [showAddModal]); // refetch when modal closes (after add)
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -196,10 +284,10 @@ const UserVehicles = () => {
             </div>
             <Button
               className="shadow-glow-primary"
-              onClick={() => setShowAddModal(true)}
+              onClick={() => setShowQRScanner(true)}
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Vehicle
+              <Scan className="h-4 w-4 mr-2" />
+              Connect Vehicle
             </Button>
           </div>
         </div>
@@ -392,188 +480,37 @@ const UserVehicles = () => {
                   No vehicles registered
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Add your first vehicle to start managing it with SpeedGuard
+                  Connect your first vehicle by scanning its QR code
                 </p>
-                <Button className="shadow-glow-primary">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Vehicle
+                <Button 
+                  className="shadow-glow-primary"
+                  onClick={() => setShowQRScanner(true)}
+                >
+                  <Scan className="h-4 w-4 mr-2" />
+                  Connect Your First Vehicle
                 </Button>
               </CardContent>
             </Card>
           )}
 
-          {/* Add Vehicle Modal */}
-          {showAddModal && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-                <h2 className="text-xl font-bold mb-4 text-black">
-                  Add Vehicle
-                </h2>
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    await handleAddVehicle(newVehicle);
-                    setShowAddModal(false);
-                  }}
-                  className="space-y-3"
-                >
-                  <label className="block text-black font-medium mb-1">
-                    Vehicle Number
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Vehicle Number (e.g., ABC-1234)"
-                    value={newVehicle.vehicleNumber}
-                    onChange={(e) =>
-                      setNewVehicle({
-                        ...newVehicle,
-                        vehicleNumber: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  
-                  <label className="block text-black font-medium mb-1 mt-3">
-                    Vehicle Type
-                  </label>
-                  <select
-                    value={newVehicle.vehicleType}
-                    onChange={(e) =>
-                      setNewVehicle({
-                        ...newVehicle,
-                        vehicleType: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black"
-                    required
-                  >
-                    <option value="">Select Vehicle Type</option>
-                    <option value="motorcycle">Motorcycle (70 km/h limit)</option>
-                    <option value="light_vehicle">Light Vehicle - Car, Van, Jeep (70 km/h limit)</option>
-                    <option value="three_wheeler">Three-Wheeler (50 km/h limit)</option>
-                    <option value="heavy_vehicle">Heavy Vehicle - Bus, Lorry (50 km/h limit)</option>
-                  </select>
-                  
-                  <label className="block text-black font-medium mb-1">
-                    Make
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Make"
-                    value={newVehicle.make}
-                    onChange={(e) =>
-                      setNewVehicle({ ...newVehicle, make: e.target.value })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Model
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Model"
-                    value={newVehicle.model}
-                    onChange={(e) =>
-                      setNewVehicle({ ...newVehicle, model: e.target.value })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Year
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Year"
-                    value={newVehicle.year}
-                    onChange={(e) =>
-                      setNewVehicle({ ...newVehicle, year: e.target.value })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Color
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Color"
-                    value={newVehicle.color}
-                    onChange={(e) =>
-                      setNewVehicle({ ...newVehicle, color: e.target.value })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Registration Expiry
-                  </label>
-                  <input
-                    type="date"
-                    placeholder="Registration Expiry"
-                    value={newVehicle.registrationExpiry}
-                    onChange={(e) =>
-                      setNewVehicle({
-                        ...newVehicle,
-                        registrationExpiry: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1">
-                    Insurance Expiry
-                  </label>
-                  <input
-                    type="date"
-                    placeholder="Insurance Expiry"
-                    value={newVehicle.insuranceExpiry}
-                    onChange={(e) =>
-                      setNewVehicle({
-                        ...newVehicle,
-                        insuranceExpiry: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-black"
-                    required
-                  />
-                  <label className="block text-black font-medium mb-1 mt-3">
-                    IoT Device ID (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., IOT-DEVICE-12345"
-                    value={newVehicle.iotDeviceId}
-                    onChange={(e) =>
-                      setNewVehicle({
-                        ...newVehicle,
-                        iotDeviceId: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded px-3 py-2 text-black placeholder:text-gray-400"
-                  />
-                  <p className="text-xs text-gray-600 mt-1">
-                    Enter your IoT device ID to enable real-time speed tracking
-                  </p>
-                  <div className="flex gap-2 mt-4">
-                    <Button type="submit" className="flex-1">
-                      Add
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => setShowAddModal(false)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
+          {/* QR Scanner */}
+          <QRScanner
+            isOpen={showQRScanner}
+            onScan={handleQRScan}
+            onClose={() => setShowQRScanner(false)}
+          />
+
+          {/* Vehicle Registration Modal */}
+          <VehicleRegistrationModal
+            isOpen={showRegistrationModal}
+            vehicleData={scannedVehicleData}
+            onClose={() => {
+              setShowRegistrationModal(false);
+              setScannedVehicleData(null);
+            }}
+            onRegister={handleVehicleRegistration}
+            isLoading={isLoading}
+          />
         </div>
       </div>
     </div>

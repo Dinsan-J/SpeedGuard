@@ -324,7 +324,7 @@ const UserDashboard = () => {
                 <Link to="/user/vehicles">
                   <Button variant="outline" size="sm">
                     <Car className="h-4 w-4 mr-2" />
-                    Add Vehicle
+                    Connect Vehicle
                   </Button>
                 </Link>
               </div>
@@ -416,7 +416,7 @@ const UserDashboard = () => {
                     <Link to="/user/vehicles">
                       <Button size="sm" className="shadow-glow-primary">
                         <Car className="h-4 w-4 mr-2" />
-                        Add Your First Vehicle
+                        Connect Your First Vehicle
                       </Button>
                     </Link>
                   </div>

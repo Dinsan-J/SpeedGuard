@@ -191,4 +191,134 @@ router.get("/active-iot-vehicles", async (req, res) => {
   }
 });
 
+// Check if device exists
+router.get("/check-device/:deviceId", async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+    
+    // Check if vehicle with this device ID exists
+    const vehicle = await Vehicle.findOne({ iotDeviceId: deviceId });
+    
+    res.json({ 
+      success: true, 
+      exists: !!vehicle,
+      vehicle: vehicle ? {
+        id: vehicle._id,
+        vehicleNumber: vehicle.vehicleNumber,
+        vehicleType: vehicle.vehicleType,
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year,
+        color: vehicle.color
+      } : null
+    });
+  } catch (err) {
+    console.error("Check device error:", err);
+    res.status(500).json({ success: false, message: "Error checking device" });
+  }
+});
+
+// Connect existing vehicle to user
+router.post("/connect", async (req, res) => {
+  try {
+    const { userId, deviceId } = req.body;
+    
+    // Find the user and their driver profile
+    const user = await User.findById(userId).populate('driverProfile');
+    if (!user || user.role !== 'driver' || !user.driverProfile) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "User must be a driver with a valid profile to connect vehicles" 
+      });
+    }
+    
+    // Find vehicle by device ID
+    const vehicle = await Vehicle.findOne({ iotDeviceId: deviceId });
+    if (!vehicle) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Vehicle with this device ID not found" 
+      });
+    }
+    
+    // Check if vehicle is already connected to another driver
+    if (vehicle.driverId && vehicle.driverId.toString() !== user.driverProfile._id.toString()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "This vehicle is already connected to another driver" 
+      });
+    }
+    
+    // Connect vehicle to driver
+    vehicle.driverId = user.driverProfile._id;
+    await vehicle.save();
+    
+    console.log(`✅ Vehicle connected: ${vehicle.vehicleNumber} to driver ${user.username}`);
+    
+    res.json({ success: true, vehicle });
+  } catch (err) {
+    console.error("Connect vehicle error:", err);
+    res.status(500).json({ success: false, message: "Error connecting vehicle" });
+  }
+});
+
+// Register new vehicle from QR scan
+router.post("/register", async (req, res) => {
+  try {
+    const { userId, vehicleData } = req.body;
+    
+    // Find the user and their driver profile
+    const user = await User.findById(userId).populate('driverProfile');
+    if (!user || user.role !== 'driver' || !user.driverProfile) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "User must be a driver with a valid profile to register vehicles" 
+      });
+    }
+    
+    // Check if vehicle number already exists
+    if (vehicleData.vehicleNumber) {
+      const existingVehicle = await Vehicle.findOne({ 
+        vehicleNumber: vehicleData.vehicleNumber.toUpperCase() 
+      });
+      if (existingVehicle) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vehicle with this number already exists" 
+        });
+      }
+    }
+    
+    // Check if IoT device ID is already in use
+    if (vehicleData.iotDeviceId) {
+      const existingDevice = await Vehicle.findOne({ iotDeviceId: vehicleData.iotDeviceId });
+      if (existingDevice) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "This IoT device is already registered to another vehicle" 
+        });
+      }
+    }
+    
+    // Create new vehicle
+    const vehicle = new Vehicle({ 
+      ...vehicleData, 
+      driverId: user.driverProfile._id,
+      vehicleNumber: vehicleData.vehicleNumber.toUpperCase(),
+      registrationDate: new Date(),
+      registrationExpiry: new Date(vehicleData.registrationExpiry),
+      insuranceExpiry: new Date(vehicleData.insuranceExpiry)
+    });
+    
+    await vehicle.save();
+    
+    console.log(`✅ Vehicle registered: ${vehicle.vehicleNumber} (${vehicle.vehicleType}) - Speed Limit: ${vehicle.speedLimit} km/h`);
+    
+    res.json({ success: true, vehicle });
+  } catch (err) {
+    console.error("Register vehicle error:", err);
+    res.status(500).json({ success: false, message: "Error registering vehicle" });
+  }
+});
+
 module.exports = router;
