@@ -42,6 +42,21 @@ exports.register = async (req, res) => {
       });
     }
 
+    // Validate role-specific required fields BEFORE creating user
+    if (role === 'driver' && !drivingLicenseNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required driver field: drivingLicenseNumber'
+      });
+    }
+
+    if (role === 'officer' && !policeIdNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required officer field: policeIdNumber'
+      });
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ 
       $or: [{ email: email.toLowerCase() }, { username }] 
@@ -73,15 +88,6 @@ exports.register = async (req, res) => {
     let profileData = null;
 
     if (role === 'driver') {
-      // Validate driver-specific required fields
-      if (!drivingLicenseNumber) {
-        await User.findByIdAndDelete(user._id); // Cleanup
-        return res.status(400).json({
-          success: false,
-          message: 'Missing required driver field: drivingLicenseNumber'
-        });
-      }
-
       // Check for duplicate license
       const existingDriver = await DriverProfile.findOne({
         drivingLicenseNumber: drivingLicenseNumber.toUpperCase()
@@ -121,15 +127,6 @@ exports.register = async (req, res) => {
       profileData = driverProfile;
 
     } else if (role === 'officer') {
-      // Validate officer-specific required fields
-      if (!policeIdNumber) {
-        await User.findByIdAndDelete(user._id); // Cleanup
-        return res.status(400).json({
-          success: false,
-          message: 'Missing required officer field: policeIdNumber'
-        });
-      }
-
       // Check for duplicate police ID
       const existingOfficer = await OfficerProfile.findOne({ 
         policeIdNumber: policeIdNumber.toUpperCase() 
