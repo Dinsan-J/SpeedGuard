@@ -108,27 +108,40 @@ violationSchema.pre('save', function(next) {
     this.speedOverLimit = Math.max(0, this.speed - this.appliedSpeedLimit);
   }
   
-  // Determine severity level and merit points
-  if (this.speedOverLimit <= 10) {
+  // Determine severity level and base merit points
+  let baseMeritPoints = 0;
+  if (this.speedOverLimit <= 0) {
     this.severityLevel = 'minor';
-    this.meritPointsDeducted = 5;
+    baseMeritPoints = 0;
+    this.requiresFine = false;
+    this.baseFine = 1000;
+  } else if (this.speedOverLimit <= 10) {
+    this.severityLevel = 'minor';
+    baseMeritPoints = 5;
     this.requiresFine = false;
     this.baseFine = 1000;
   } else if (this.speedOverLimit <= 20) {
     this.severityLevel = 'moderate';
-    this.meritPointsDeducted = 10;
+    baseMeritPoints = 10;
     this.requiresFine = false;
     this.baseFine = 2000;
   } else if (this.speedOverLimit <= 30) {
     this.severityLevel = 'serious';
-    this.meritPointsDeducted = 20;
+    baseMeritPoints = 20;
     this.requiresFine = false;
     this.baseFine = 5000;
   } else {
     this.severityLevel = 'severe';
-    this.meritPointsDeducted = 30;
+    baseMeritPoints = 30;
     this.requiresFine = true;
     this.baseFine = 10000;
+  }
+  
+  // Apply risk multiplier to merit points for high risk violations
+  if (this.riskLevel === 'high' && this.riskScore > 0.6) {
+    this.meritPointsDeducted = Math.round(baseMeritPoints * 1.5); // 50% increase for high risk
+  } else {
+    this.meritPointsDeducted = baseMeritPoints;
   }
   
   // Calculate final fine

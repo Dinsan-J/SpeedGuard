@@ -140,8 +140,8 @@ exports.receiveIoTData = async (req, res) => {
             description: `${factor}: ${(weight * 100).toFixed(1)}%`
           })) : [],
         
-        // Merit points (automatically applied)
-        meritPointsDeducted: violationAnalysis.meritPointsDeduction || 5,
+        // Merit points (let the model calculate automatically based on speedOverLimit)
+        // meritPointsDeducted will be calculated by the model's pre-save middleware
         driverConfirmed: true, // Automatically confirmed
         meritPointsApplied: true, // Automatically applied
         
@@ -152,8 +152,8 @@ exports.receiveIoTData = async (req, res) => {
 
       await violation.save();
 
-      // Automatically apply merit points to the user
-      if (vehicle.owner && violationAnalysis.meritPointsDeduction) {
+      // Automatically apply merit points to the user (use the violation's calculated merit points)
+      if (vehicle.owner && violation.meritPointsDeducted > 0) {
         const User = require('../models/User');
         const user = await User.findById(vehicle.owner._id);
         
@@ -163,7 +163,8 @@ exports.receiveIoTData = async (req, res) => {
           
           console.log(`🎯 Merit points automatically applied:`);
           console.log(`   Driver: ${user.username}`);
-          console.log(`   Points deducted: ${result.pointsDeducted}`);
+          console.log(`   Points deducted: ${violation.meritPointsDeducted}`);
+          console.log(`   Speed over limit: ${speedOverLimit} km/h`);
           console.log(`   New total: ${result.newTotal}`);
           console.log(`   Status: ${user.drivingStatus}`);
         }
@@ -192,7 +193,7 @@ exports.receiveIoTData = async (req, res) => {
       console.log(`   Zone multiplier: ${violationAnalysis.geofencing.multiplier}x`);
       console.log(`   Risk multiplier: ${violationAnalysis.riskAssessment?.riskMultiplier || 1.0}x`);
       console.log(`🤖 ML Risk Assessment: ${violationAnalysis.riskAssessment?.riskLevel || 'medium'} (${((violationAnalysis.riskAssessment?.riskScore || 0.3) * 100).toFixed(1)}%)`);
-      console.log(`🎯 Merit points to deduct: ${violationAnalysis.meritPointsDeduction || 5}`);
+      console.log(`🎯 Merit points deducted: ${violation.meritPointsDeducted} (calculated by model)`);
       
       if (violationAnalysis.geofencing.isInZone) {
         console.log(`📍 Violation in sensitive zone: ${violationAnalysis.geofencing.zoneName} (${violationAnalysis.geofencing.zoneType})`);

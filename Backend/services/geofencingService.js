@@ -224,10 +224,12 @@ class GeofencingService {
       const zoneAdjustedFine = Math.round(baseFine * geofencing.multiplier);
       const finalFine = Math.round(zoneAdjustedFine * riskAssessment.riskMultiplier);
 
-      // Calculate merit points deduction
+      // Calculate merit points deduction with speed over limit
+      const speedOverLimit = Math.max(0, actualSpeed - speedLimit);
       const meritPointsDeduction = mlRiskService.calculateMeritPointsDeduction(
         riskAssessment.riskScore, 
-        'speed'
+        'speed',
+        speedOverLimit
       );
 
       return {

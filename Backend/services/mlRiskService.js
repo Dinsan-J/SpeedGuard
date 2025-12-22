@@ -235,19 +235,40 @@ class MLRiskService {
   }
 
   /**
-   * Calculate merit points deduction based on risk
+   * Calculate merit points deduction based on speed violation and risk
    */
-  calculateMeritPointsDeduction(riskScore, violationType = 'speed') {
-    const baseDeduction = {
-      'speed': 5,
-      'reckless': 15,
-      'dangerous': 25
-    };
+  calculateMeritPointsDeduction(riskScore, violationType = 'speed', speedOverLimit = 0) {
+    let baseDeduction = 0;
     
-    const base = baseDeduction[violationType] || 5;
-    const riskMultiplier = 1 + (riskScore * 2); // 1x to 3x based on risk
+    if (violationType === 'speed') {
+      // Calculate base merit points based on speed over limit (consistent with database logic)
+      if (speedOverLimit <= 0) {
+        baseDeduction = 0;
+      } else if (speedOverLimit <= 10) {
+        baseDeduction = 5;
+      } else if (speedOverLimit <= 20) {
+        baseDeduction = 10;
+      } else if (speedOverLimit <= 30) {
+        baseDeduction = 20;
+      } else {
+        baseDeduction = 30;
+      }
+    } else {
+      // For other violation types
+      const otherDeductions = {
+        'reckless': 15,
+        'dangerous': 25
+      };
+      baseDeduction = otherDeductions[violationType] || 5;
+    }
     
-    return Math.round(base * riskMultiplier);
+    // Apply risk multiplier only for high risk (riskScore > 0.6)
+    let finalDeduction = baseDeduction;
+    if (riskScore > 0.6) {
+      finalDeduction = Math.round(baseDeduction * 1.5); // 50% increase for high risk
+    }
+    
+    return finalDeduction;
   }
 
   /**
