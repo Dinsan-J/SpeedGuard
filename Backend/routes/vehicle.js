@@ -46,7 +46,10 @@ router.post("/add", async (req, res) => {
     const vehicle = new Vehicle({ 
       ...vehicleData, 
       driverId: user.driverProfile._id,
-      vehicleNumber: vehicleData.vehicleNumber.toUpperCase()
+      vehicleNumber: vehicleData.vehicleNumber.toUpperCase(),
+      registrationDate: new Date(),
+      registrationExpiry: new Date(vehicleData.registrationExpiry),
+      insuranceExpiry: new Date(vehicleData.insuranceExpiry)
     });
     
     await vehicle.save();

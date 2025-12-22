@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Scan,
+  Plus,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import QRScanner from "@/components/QRScanner";
@@ -21,8 +22,19 @@ const UserVehicles = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
   const [scannedVehicleData, setScannedVehicleData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [newVehicle, setNewVehicle] = useState({
+    vehicleNumber: "",
+    vehicleType: "",
+    make: "",
+    model: "",
+    year: "",
+    color: "",
+    registrationExpiry: "",
+    insuranceExpiry: "",
+  });
 
   const mockUser = {
     id: "64f8c2e2a1b2c3d4e5f6a7b8", // <-- Replace with a real MongoDB ObjectId
@@ -212,6 +224,60 @@ const UserVehicles = () => {
     }
   };
 
+  // Add vehicle manually (for first vehicle)
+  const handleAddVehicle = async (vehicleData: any) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(
+        "https://speedguard-gz70.onrender.com/api/vehicle/add",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ 
+            userId: mockUser.id, 
+            vehicleData 
+          }),
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Vehicle Added",
+          description: "Your vehicle has been added successfully.",
+        });
+        setShowAddVehicleModal(false);
+        setNewVehicle({
+          vehicleNumber: "",
+          vehicleType: "",
+          make: "",
+          model: "",
+          year: "",
+          color: "",
+          registrationExpiry: "",
+          insuranceExpiry: "",
+        });
+        fetchVehicles(); // Refresh vehicle list
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to add vehicle.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Network error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDeleteVehicle = async (vehicleId) => {
     try {
       const response = await fetch(
@@ -282,13 +348,34 @@ const UserVehicles = () => {
                 Manage your registered vehicles and view their status
               </p>
             </div>
-            <Button
-              className="shadow-glow-primary"
-              onClick={() => setShowQRScanner(true)}
-            >
-              <Scan className="h-4 w-4 mr-2" />
-              Connect Vehicle
-            </Button>
+            <div className="flex gap-2">
+              {vehicles.length === 0 ? (
+                <Button
+                  className="shadow-glow-primary"
+                  onClick={() => setShowAddVehicleModal(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Vehicle
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddVehicleModal(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Vehicle
+                  </Button>
+                  <Button
+                    className="shadow-glow-primary"
+                    onClick={() => setShowQRScanner(true)}
+                  >
+                    <Scan className="h-4 w-4 mr-2" />
+                    Connect Vehicle
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -480,14 +567,14 @@ const UserVehicles = () => {
                   No vehicles registered
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Connect your first vehicle by scanning its QR code
+                  Add your first vehicle to start managing it with SpeedGuard
                 </p>
                 <Button 
                   className="shadow-glow-primary"
-                  onClick={() => setShowQRScanner(true)}
+                  onClick={() => setShowAddVehicleModal(true)}
                 >
-                  <Scan className="h-4 w-4 mr-2" />
-                  Connect Your First Vehicle
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Vehicle
                 </Button>
               </CardContent>
             </Card>
@@ -511,6 +598,207 @@ const UserVehicles = () => {
             onRegister={handleVehicleRegistration}
             isLoading={isLoading}
           />
+
+          {/* Manual Add Vehicle Modal */}
+          {showAddVehicleModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-black flex items-center gap-2">
+                    <Car className="h-5 w-5" />
+                    Add Vehicle
+                  </h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowAddVehicleModal(false)}
+                    className="text-black hover:bg-gray-100"
+                  >
+                    ×
+                  </Button>
+                </div>
+                
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    await handleAddVehicle(newVehicle);
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-2">
+                    <label className="block text-black font-medium text-sm">
+                      Vehicle Number
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Vehicle Number (e.g., ABC-1234)"
+                      value={newVehicle.vehicleNumber}
+                      onChange={(e) =>
+                        setNewVehicle({
+                          ...newVehicle,
+                          vehicleNumber: e.target.value,
+                        })
+                      }
+                      className="w-full border rounded px-3 py-2 text-black placeholder:text-gray-400"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-black font-medium text-sm">
+                      Vehicle Type
+                    </label>
+                    <select
+                      value={newVehicle.vehicleType}
+                      onChange={(e) =>
+                        setNewVehicle({
+                          ...newVehicle,
+                          vehicleType: e.target.value,
+                        })
+                      }
+                      className="w-full border rounded px-3 py-2 text-black"
+                      required
+                    >
+                      <option value="">Select Vehicle Type</option>
+                      <option value="motorcycle">Motorcycle (70 km/h limit)</option>
+                      <option value="light_vehicle">Light Vehicle - Car, Van, Jeep (70 km/h limit)</option>
+                      <option value="three_wheeler">Three-Wheeler (50 km/h limit)</option>
+                      <option value="heavy_vehicle">Heavy Vehicle - Bus, Lorry (50 km/h limit)</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-black font-medium text-sm">
+                      Make
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Make (e.g., Toyota)"
+                      value={newVehicle.make}
+                      onChange={(e) =>
+                        setNewVehicle({ ...newVehicle, make: e.target.value })
+                      }
+                      className="w-full border rounded px-3 py-2 text-black placeholder:text-gray-400"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-black font-medium text-sm">
+                      Model
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Model (e.g., Corolla)"
+                      value={newVehicle.model}
+                      onChange={(e) =>
+                        setNewVehicle({ ...newVehicle, model: e.target.value })
+                      }
+                      className="w-full border rounded px-3 py-2 text-black placeholder:text-gray-400"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-black font-medium text-sm">
+                        Year
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="2020"
+                        value={newVehicle.year}
+                        onChange={(e) =>
+                          setNewVehicle({ ...newVehicle, year: e.target.value })
+                        }
+                        className="w-full border rounded px-3 py-2 text-black placeholder:text-gray-400"
+                        min="1900"
+                        max={new Date().getFullYear() + 1}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-black font-medium text-sm">
+                        Color
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="White"
+                        value={newVehicle.color}
+                        onChange={(e) =>
+                          setNewVehicle({ ...newVehicle, color: e.target.value })
+                        }
+                        className="w-full border rounded px-3 py-2 text-black placeholder:text-gray-400"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-black font-medium text-sm">
+                      Registration Expiry
+                    </label>
+                    <input
+                      type="date"
+                      value={newVehicle.registrationExpiry}
+                      onChange={(e) =>
+                        setNewVehicle({
+                          ...newVehicle,
+                          registrationExpiry: e.target.value,
+                        })
+                      }
+                      className="w-full border rounded px-3 py-2 text-black"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-black font-medium text-sm">
+                      Insurance Expiry
+                    </label>
+                    <input
+                      type="date"
+                      value={newVehicle.insuranceExpiry}
+                      onChange={(e) =>
+                        setNewVehicle({
+                          ...newVehicle,
+                          insuranceExpiry: e.target.value,
+                        })
+                      }
+                      className="w-full border rounded px-3 py-2 text-black"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      type="submit" 
+                      className="flex-1"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          Adding...
+                        </div>
+                      ) : (
+                        'Add Vehicle'
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setShowAddVehicleModal(false)}
+                      disabled={isLoading}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
