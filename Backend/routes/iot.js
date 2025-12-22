@@ -1,11 +1,13 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const iotController = require("../controllers/iotController");
+const iotDataController = require('../controllers/iotDataController');
+const auth = require('../middleware/auth');
 
-// POST /api/iot/data - Receive data from IoT device
-router.post("/data", iotController.receiveIoTData);
+// IoT Data Ingestion Routes (No auth required for ESP32 devices)
+router.post('/data', iotDataController.ingestIoTData);
+router.post('/heartbeat', iotDataController.deviceHeartbeat);
 
-// GET /api/iot/vehicle/:vehicleId - Get real-time vehicle data
-router.get("/vehicle/:vehicleId", iotController.getVehicleRealTimeData);
+// Device Status Routes (Auth required)
+router.get('/device/:deviceId/status', auth, iotDataController.getDeviceStatus);
 
 module.exports = router;
