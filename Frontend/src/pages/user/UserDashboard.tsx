@@ -267,14 +267,14 @@ const UserDashboard = () => {
           <Card className="p-6 bg-gradient-card border-border/50 hover:border-warning/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pending Fines</p>
+                <p className="text-sm text-muted-foreground">Merit Points Lost</p>
                 {isLoadingViolations ? (
                   <div className="flex items-center space-x-2">
                     <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-warning"></div>
                   </div>
                 ) : (
                   <p className="text-3xl font-bold text-warning">
-                    {stats.pendingFines}
+                    {filteredViolations.reduce((sum, v) => sum + (v.meritPointsDeducted || 0), 0)}
                   </p>
                 )}
               </div>
@@ -283,30 +283,30 @@ const UserDashboard = () => {
               </div>
             </div>
             <div className="mt-4">
-              <p className="text-xs text-muted-foreground">Requires payment</p>
+              <p className="text-xs text-muted-foreground">Points deducted from violations</p>
             </div>
           </Card>
 
           <Card className="p-6 bg-gradient-card border-border/50 hover:border-primary/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Overdue Fines</p>
+                <p className="text-sm text-muted-foreground">License Status</p>
                 {isLoadingViolations ? (
                   <div className="flex items-center space-x-2">
                     <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
                   </div>
                 ) : (
-                  <p className="text-3xl font-bold text-primary">
-                    {stats.overdueFines}
+                  <p className="text-3xl font-bold text-success">
+                    ACTIVE
                   </p>
                 )}
               </div>
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <XCircle className="h-6 w-6 text-primary" />
+              <div className="p-3 bg-success/10 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-success" />
               </div>
             </div>
             <div className="mt-4">
-              <p className="text-xs text-primary">Immediate action required</p>
+              <p className="text-xs text-success">License in good standing</p>
             </div>
           </Card>
 
@@ -517,7 +517,7 @@ const UserDashboard = () => {
                               </span>
                             </div>
                             <div className="text-success/80 mt-1">
-                              -{violation.meritPointsDeducted} merit points deducted • Fine: LKR {violation.finalFine}
+                              -{violation.meritPointsDeducted} merit points deducted automatically
                             </div>
                           </div>
                         )}
@@ -601,56 +601,47 @@ const UserDashboard = () => {
                                 </span>
                               </div>
 
-                              {/* Enhanced Fine Breakdown */}
-                              {(violation.baseFine || violation.zoneMultiplier || violation.riskMultiplier) && (
+                              {/* Merit Points Impact */}
+                              {violation.riskLevel && (
                                 <div className="mt-2 text-xs text-muted-foreground space-y-1">
-                                  <div>
-                                    💰 Base: LKR {(violation.baseFine || 2000).toLocaleString()} 
-                                    × {violation.zoneMultiplier || 1}x (zone)
-                                    × {violation.riskMultiplier || 1.0}x (risk)
-                                    = LKR {fine.toLocaleString()}
+                                  <div className="flex items-center gap-1">
+                                    <span>🎯 Merit Points Impact:</span>
+                                    <Badge 
+                                      variant={
+                                        violation.riskLevel === 'high' ? 'destructive' : 
+                                        violation.riskLevel === 'medium' ? 'secondary' : 'outline'
+                                      }
+                                      className="text-xs"
+                                    >
+                                      {/* Normalize risk level display */}
+                                      {['low', 'medium', 'high'].includes(violation.riskLevel?.toLowerCase()) 
+                                        ? violation.riskLevel.toUpperCase() 
+                                        : 'MEDIUM'} RISK
+                                    </Badge>
+                                    {violation.meritPointsDeducted && (
+                                      <span className="text-destructive font-medium">
+                                        -{violation.meritPointsDeducted} points
+                                      </span>
+                                    )}
                                   </div>
-                                  {violation.riskLevel && (
-                                    <div className="flex items-center gap-1">
-                                      <span>🤖 ML Risk:</span>
-                                      <Badge 
-                                        variant={
-                                          violation.riskLevel === 'high' ? 'destructive' : 
-                                          violation.riskLevel === 'medium' ? 'secondary' : 'outline'
-                                        }
-                                        className="text-xs"
-                                      >
-                                        {/* Normalize risk level display */}
-                                        {['low', 'medium', 'high'].includes(violation.riskLevel?.toLowerCase()) 
-                                          ? violation.riskLevel.toUpperCase() 
-                                          : 'MEDIUM'}
-                                      </Badge>
-                                      {violation.meritPointsDeducted && (
-                                        <span className="text-destructive">
-                                          -{violation.meritPointsDeducted} merit points
-                                        </span>
-                                      )}
-                                    </div>
-                                  )}
+                                  <div className="text-muted-foreground">
+                                    Speed violation: {violation.speed - (violation.speedLimit || 70)} km/h over limit
+                                    {violation.riskLevel === 'high' ? ' • High risk = +50% penalty' : ''}
+                                  </div>
                                 </div>
                               )}
                             </div>
                           </div>
 
-                          {/* Fine Amount and Pay Button - Responsive */}
+                          {/* Merit Points and License Status */}
                           <div className="flex items-center justify-between lg:flex-col lg:items-end lg:text-right lg:ml-4 flex-shrink-0">
-                            <div className="text-xl lg:text-2xl font-bold text-primary mb-0 lg:mb-1">
-                              LKR {fine.toLocaleString()}
+                            <div className="text-xl lg:text-2xl font-bold text-destructive mb-0 lg:mb-1">
+                              -{violation.meritPointsDeducted || 0} Points
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs whitespace-nowrap"
-                            >
-                              <CreditCard className="h-3 w-3 mr-1" />
-                              <span className="hidden sm:inline">Pay Now</span>
-                              <span className="sm:hidden">Pay</span>
-                            </Button>
+                            <div className="text-xs text-muted-foreground text-center">
+                              <span className="hidden sm:inline">Merit Points Deducted</span>
+                              <span className="sm:hidden">Points</span>
+                            </div>
                           </div>
                         </div>
                       </div>
