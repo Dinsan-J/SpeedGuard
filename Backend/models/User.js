@@ -64,13 +64,11 @@ const userSchema = new mongoose.Schema({
   // Profile References (populated based on role)
   driverProfile: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: "DriverProfile",
-    required: function() { return this.role === 'driver'; }
+    ref: "DriverProfile"
   },
   officerProfile: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: "OfficerProfile",
-    required: function() { return this.role === 'officer'; }
+    ref: "OfficerProfile"
   },
   
   // Timestamps
