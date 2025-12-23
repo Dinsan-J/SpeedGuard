@@ -14,7 +14,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "user" as "officer" | "user",
+    role: "driver" as "officer" | "driver", // Changed from "user" to "driver"
   });
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -37,25 +37,26 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Extract user info from the response
-        const user = data.user || data; // fallback if your API returns user at root
+        // Store user data and token
         localStorage.setItem(
           "user",
           JSON.stringify({
-            id: user.id,
-            name: user.name,
-            role: user.role,
+            id: data.user.id,
+            username: data.user.username,
+            email: data.user.email,
+            role: data.user.role,
+            phoneNumber: data.user.phoneNumber
           })
         );
         localStorage.setItem("token", data.token);
 
         toast({
           title: "Login Successful",
-          description: `Welcome back, ${user.name || formData.email}!`,
+          description: `Welcome back, ${data.user.username}!`,
         });
 
         // Redirect based on role
-        if (user.role === "officer") {
+        if (data.user.role === "officer") {
           navigate("/officer/dashboard");
         } else {
           navigate("/user/dashboard");
@@ -128,10 +129,10 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() =>
-                      setFormData((prev) => ({ ...prev, role: "user" }))
+                      setFormData((prev) => ({ ...prev, role: "driver" }))
                     }
                     className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${
-                      formData.role === "user"
+                      formData.role === "driver"
                         ? "border-secondary bg-secondary/10 text-secondary"
                         : "border-border bg-accent/20 hover:border-secondary/50"
                     }`}

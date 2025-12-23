@@ -77,7 +77,11 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password, role } = req.body;
   try {
-    const user = await User.findOne({ email, role });
+    // Find user with populated profile
+    const user = await User.findOne({ email, role })
+      .populate('driverProfile')
+      .populate('officerProfile');
+      
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -90,17 +94,32 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    //gfgfgf
     // Set JWT as HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // must be true for HTTPS
+      secure: process.env.NODE_ENV === 'production', // Only secure in production
       sameSite: "strict",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    res.json({ role: user.role });
+    // Return user data with profile information
+    const responseData = {
+      success: true,
+      message: "Login successful",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        phoneNumber: user.phoneNumber
+      },
+      token, // Also include token in response for frontend storage
+      profile: user.role === 'driver' ? user.driverProfile : user.officerProfile
+    };
+
+    res.json(responseData);
   } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({ message: "Server error" });
   }
 };
