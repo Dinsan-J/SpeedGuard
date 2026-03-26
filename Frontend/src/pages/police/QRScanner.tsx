@@ -98,10 +98,10 @@ const QRScanner = () => {
 
     setLoading(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "";
       const response = await fetch(`${API_URL}/api/police/test/scan/${encodeURIComponent(vehicleId)}`);
       const data = await response.json();
-      
+
       if (data.success) {
         setScanResult(data.data);
         // Pre-fill driver license if recent driver found
@@ -128,7 +128,7 @@ const QRScanner = () => {
 
     setConfirming(violationId);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "";
       const response = await fetch(`${API_URL}/api/police/test/violations/${violationId}/quick-confirm`, {
         method: 'POST',
         headers: {
@@ -141,23 +141,23 @@ const QRScanner = () => {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         // Remove confirmed violation from pending list
         setScanResult(prev => prev ? {
           ...prev,
           pendingViolations: prev.pendingViolations.filter(v => v._id !== violationId)
         } : null);
-        
+
         const successMessage = `✅ VIOLATION CONFIRMED!\n\n` +
           `👤 Driver: ${data.driver?.fullName || data.driver?.name || driverLicenseInput}\n` +
           `🎯 Merit points deducted: ${data.meritPointsDeducted || 'N/A'}\n` +
           `📊 New merit points: ${data.driver?.meritPoints || 'N/A'}\n` +
           `📈 Driver status: ${data.driver?.status?.toUpperCase() || 'N/A'}\n\n` +
           `🚨 Violation has been officially confirmed and penalties applied!`;
-        
+
         alert(successMessage);
-        
+
         // Clear the license input for next violation
         setDriverLicenseInput('');
       } else {
@@ -241,8 +241,8 @@ const QRScanner = () => {
                   className="pl-10 text-lg"
                 />
               </div>
-              <Button 
-                onClick={scanVehicle} 
+              <Button
+                onClick={scanVehicle}
                 disabled={loading || !vehicleId.trim()}
                 size="lg"
                 className="px-8"
@@ -288,7 +288,7 @@ const QRScanner = () => {
                     <div><span className="text-muted-foreground">Year:</span> {scanResult.vehicle.year}</div>
                     <div><span className="text-muted-foreground">Color:</span> {scanResult.vehicle.color}</div>
                   </div>
-                  
+
                   {scanResult.vehicle.iotDeviceId && (
                     <div className="mt-3 pt-3 border-t border-primary/20">
                       <div className="flex items-center gap-2 text-sm">
@@ -333,7 +333,7 @@ const QRScanner = () => {
                       <Shield className="h-4 w-4 text-blue-600" />
                       Recent Driver Merit Points
                     </h4>
-                    
+
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
@@ -350,8 +350,8 @@ const QRScanner = () => {
                             {scanResult.recentDriver.meritPoints}/100
                           </span>
                         </div>
-                        <Progress 
-                          value={scanResult.recentDriver.meritPoints} 
+                        <Progress
+                          value={scanResult.recentDriver.meritPoints}
                           className="h-2"
                         />
                       </div>
@@ -427,7 +427,7 @@ const QRScanner = () => {
                             <Search className="h-3 w-3" />
                           </Button>
                         </div>
-                        
+
                         {/* Quick License Suggestions */}
                         {scanResult.recentDriver && (
                           <div className="flex flex-wrap gap-2">
@@ -441,7 +441,7 @@ const QRScanner = () => {
                             </Button>
                           </div>
                         )}
-                        
+
                         <p className="text-xs text-muted-foreground">
                           💡 Enter the driver's license ID to confirm violations and apply merit point penalties
                         </p>
@@ -492,7 +492,7 @@ const QRScanner = () => {
                                     alert('⚠️ Please enter driver license ID first');
                                     return;
                                   }
-                                  
+
                                   const confirmMessage = `🚨 CONFIRM VIOLATION\n\n` +
                                     `Driver: ${driverLicenseInput}\n` +
                                     `Speed: ${violation.speed} km/h (Limit: ${violation.speedLimit} km/h)\n` +
@@ -501,7 +501,7 @@ const QRScanner = () => {
                                     `Risk Level: ${violation.riskLevel.toUpperCase()}\n\n` +
                                     `⚠️ This action cannot be undone!\n\n` +
                                     `Confirm violation and apply penalties?`;
-                                  
+
                                   if (window.confirm(confirmMessage)) {
                                     quickConfirmViolation(violation._id);
                                   }
@@ -522,7 +522,7 @@ const QRScanner = () => {
                                   </>
                                 )}
                               </Button>
-                              
+
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -536,10 +536,10 @@ const QRScanner = () => {
                                     `Base Fine: LKR 2,000\n` +
                                     `Final Fine: LKR ${violation.finalFine.toLocaleString()}\n` +
                                     `Merit Points: -${violation.meritPointsDeducted}\n` +
-                                    (violation.sensitiveZone?.isInZone ? 
-                                      `\n🚨 SENSITIVE ZONE:\n${violation.sensitiveZone.zoneName} (${violation.sensitiveZone.zoneType})` : 
+                                    (violation.sensitiveZone?.isInZone ?
+                                      `\n🚨 SENSITIVE ZONE:\n${violation.sensitiveZone.zoneName} (${violation.sensitiveZone.zoneType})` :
                                       '\n✅ Normal road violation');
-                                  
+
                                   alert(details);
                                 }}
                                 className="px-3"

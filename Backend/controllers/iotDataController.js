@@ -82,10 +82,38 @@ exports.ingestIoTData = async (req, res) => {
     }
 
     console.log(`🚗 Vehicle found: ${vehicle.vehicleNumber} (${vehicle.vehicleType})`);
-    console.log(`👤 Driver: ${vehicle.driverId.fullName} (License: ${vehicle.driverId.licenseNumber})`);
+
+    // `driverId` may not be populated depending on how the vehicle was stored.
+    // For online-status we can still proceed; for violation creation we need driver data.
+    let driver = vehicle.driverId;
+    if (!driver || !driver.licenseNumber) {
+      if (vehicle.driverId) {
+        driver = await Driver.findById(vehicle.driverId);
+      } else {
+        driver = null;
+      }
+    }
+
+    if (driver) {
+      console.log(`👤 Driver: ${driver.fullName} (License: ${driver.licenseNumber})`);
+    } else {
+      console.log(`⚠️  No driver attached to vehicle ${vehicle.vehicleNumber}. Skipping violation creation.`);
+    }
 
     // Step 4: Update vehicle location
     await vehicle.updateLocation(latitude, longitude, speed);
+
+    // Emit live speed to frontend dashboards (used by LiveSpeedometer)
+    const io = req.app.get("socketio");
+    if (io) {
+      io.emit("live-speed", {
+        deviceId: device.deviceId,
+        vehicleId: vehicle._id,
+        speed,
+        timestamp,
+        location: { lat: latitude, lng: longitude },
+      });
+    }
 
     // Step 5: Check for speed violation
     const speedLimit = vehicle.speedLimit;
@@ -105,6 +133,21 @@ exports.ingestIoTData = async (req, res) => {
           speedLimit,
           isViolation: false
         }
+      });
+    }
+
+    // If no driver exists, we can't create a Violation record (schema requires driverId fields).
+    if (!driver) {
+      return res.status(200).json({
+        success: true,
+        message: 'Device data processed, but no driver attached to vehicle',
+        data: {
+          deviceId,
+          vehicleNumber: vehicle.vehicleNumber,
+          speed,
+          speedLimit,
+          isViolation,
+        },
       });
     }
 
@@ -135,10 +178,10 @@ exports.ingestIoTData = async (req, res) => {
     };
 
     const driverData = {
-      licenseNumber: vehicle.driverId.licenseNumber,
-      meritPoints: vehicle.driverId.meritPoints,
-      totalViolations: vehicle.driverId.totalViolations,
-      drivingStatus: vehicle.driverId.drivingStatus
+      licenseNumber: driver.licenseNumber,
+      meritPoints: driver.meritPoints,
+      totalViolations: driver.totalViolations,
+      drivingStatus: driver.drivingStatus
     };
 
     const riskAssessment = await MLRiskService.calculateRiskScore(violationData, driverData);
@@ -150,7 +193,7 @@ exports.ingestIoTData = async (req, res) => {
     // Step 8: Create violation record (DO NOT apply merit points automatically)
     const violation = new Violation({
       vehicleId: vehicle._id,
-      driverId: vehicle.driverId._id,
+      driverId: driver._id,
       deviceId: device._id,
       location: {
         latitude,
@@ -193,7 +236,7 @@ exports.ingestIoTData = async (req, res) => {
         violationId: violation._id,
         deviceId,
         vehicleNumber: vehicle.vehicleNumber,
-        driverLicense: vehicle.driverId.licenseNumber,
+        driverLicense: driver.licenseNumber,
         speed,
         speedLimit,
         speedOverLimit: speed - speedLimit,
@@ -222,7 +265,7 @@ exports.ingestIoTData = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to process IoT data',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: error && error.message ? error.message : String(error)
     });
   }
 };
@@ -271,6 +314,90 @@ exports.getDeviceStatus = async (req, res) => {
 };
 
 /**
+ * Public device status endpoint (no auth)
+ * Useful for debugging IoT integration.
+ */
+exports.getDeviceStatusPublic = async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+
+    const device = await IoTDevice.findOne({ deviceId: deviceId.toUpperCase() })
+      .populate('assignedVehicleId');
+
+    if (!device) {
+      return res.status(404).json({
+        success: false,
+        message: 'Device not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        deviceId: device.deviceId,
+        status: device.status,
+        isOnline: device.isOnline,
+        lastSeen: device.lastSeen,
+        lastHeartbeat: device.lastHeartbeat,
+        assignedVehicle: device.assignedVehicleId
+          ? {
+              vehicleNumber: device.assignedVehicleId.vehicleNumber,
+              vehicleType: device.assignedVehicleId.vehicleType,
+              speedLimit: device.assignedVehicleId.speedLimit,
+            }
+          : null,
+        lastKnownLocation: device.lastKnownLocation,
+        metrics: device.metrics,
+      },
+    });
+  } catch (error) {
+    console.error('Error getting device public status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get device status',
+    });
+  }
+};
+
+/**
+ * Public debug endpoint: list devices currently in Mongo.
+ * This is useful to verify the real deviceId + heartbeat updates.
+ */
+exports.listDevicesPublic = async (req, res) => {
+  try {
+    const devices = await IoTDevice.find({})
+      .populate("assignedVehicleId", "vehicleNumber vehicleType")
+      .select("deviceId status isOnline lastHeartbeat assignedVehicleId createdAt updatedAt")
+      .sort({ updatedAt: -1 })
+      .limit(50);
+
+    res.json({
+      success: true,
+      data: devices.map((d) => ({
+        id: d._id,
+        deviceId: d.deviceId,
+        status: d.status,
+        isOnline: d.isOnline,
+        lastHeartbeat: d.lastHeartbeat,
+        assignedVehicleId: d.assignedVehicleId
+          ? {
+              vehicleNumber: d.assignedVehicleId.vehicleNumber,
+              vehicleType: d.assignedVehicleId.vehicleType,
+              vehicleId: d.assignedVehicleId._id,
+            }
+          : null,
+      })),
+    });
+  } catch (error) {
+    console.error("Error listing devices public:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to list devices",
+    });
+  }
+};
+
+/**
  * Device heartbeat endpoint
  */
 exports.deviceHeartbeat = async (req, res) => {
@@ -297,6 +424,17 @@ exports.deviceHeartbeat = async (req, res) => {
     device.lastHeartbeat = new Date();
     device.lastSeen = new Date();
     await device.save();
+
+    console.log(`💓 Heartbeat received: ${device.deviceId} at ${device.lastHeartbeat.toISOString()}`);
+
+    // Emit heartbeat event for dashboards
+    const io = req.app.get("socketio");
+    if (io) {
+      io.emit("iot-heartbeat", {
+        deviceId: device.deviceId,
+        timestamp: device.lastHeartbeat.toISOString(),
+      });
+    }
 
     res.json({
       success: true,

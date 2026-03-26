@@ -66,10 +66,10 @@ const PoliceDashboard = () => {
 
   const fetchPendingViolations = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "";
       const response = await fetch(`${API_URL}/api/police/violations/pending`);
       const data = await response.json();
-      
+
       if (data.success) {
         setPendingViolations(data.data);
       }
@@ -87,10 +87,10 @@ const PoliceDashboard = () => {
     }
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "";
       const response = await fetch(`${API_URL}/api/police/drivers/search?q=${encodeURIComponent(searchTerm)}`);
       const data = await response.json();
-      
+
       if (data.success) {
         setSearchResults(data.data);
       }
@@ -104,17 +104,17 @@ const PoliceDashboard = () => {
 
     setConfirming(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
-      
+      const API_URL = import.meta.env.VITE_API_URL || "";
+
       // For demo purposes, we'll simulate the confirmation since the backend might need authentication
       // In production, you would use proper JWT authentication
-      
+
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // For now, we'll just show success and remove from pending list
       // In production, this would make the actual API call with proper auth headers
-      
+
       console.log('Confirming driver:', {
         violationId: selectedViolation._id,
         drivingLicenseId: selectedDriver.licenseId,
@@ -129,7 +129,7 @@ const PoliceDashboard = () => {
       setSelectedDriver(null);
       setDriverSearch("");
       setSearchResults([]);
-      
+
       alert(`✅ Driver Confirmed Successfully!
       
 Driver: ${selectedDriver.name} (${selectedDriver.licenseId})
@@ -206,7 +206,7 @@ The violation has been officially confirmed and penalties have been applied to t
             <Badge variant="outline" className="text-lg px-4 py-2">
               {pendingViolations.length} Pending Confirmations
             </Badge>
-            <Button 
+            <Button
               onClick={() => window.location.href = '/police/qr-scanner'}
               className="bg-primary hover:bg-primary/90"
             >
@@ -235,11 +235,10 @@ The violation has been officially confirmed and penalties have been applied to t
                 pendingViolations.map((violation) => (
                   <div
                     key={violation._id}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                      selectedViolation?._id === violation._id
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedViolation?._id === violation._id
                         ? 'border-primary bg-primary/10'
                         : 'border-border hover:border-primary/50'
-                    }`}
+                      }`}
                     onClick={() => setSelectedViolation(violation)}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -249,20 +248,20 @@ The violation has been officially confirmed and penalties have been applied to t
                       </div>
                       {getRiskBadge(violation.riskLevel)}
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                       <div>Speed: {violation.speed} km/h</div>
                       <div>Limit: {violation.speedLimit} km/h</div>
                       <div>Fine: LKR {violation.finalFine.toLocaleString()}</div>
                       <div>Merit: -{violation.meritPointsDeducted} pts</div>
                     </div>
-                    
+
                     {violation.sensitiveZone?.isInZone && (
                       <div className="mt-2 text-xs text-destructive">
                         🚨 {violation.sensitiveZone.zoneName} ({violation.sensitiveZone.zoneType})
                       </div>
                     )}
-                    
+
                     <div className="mt-2 text-xs text-muted-foreground">
                       {new Date(violation.timestamp).toLocaleString()}
                     </div>
@@ -328,11 +327,10 @@ The violation has been officially confirmed and penalties have been applied to t
                         {searchResults.map((driver) => (
                           <div
                             key={driver.licenseId}
-                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                              selectedDriver?.licenseId === driver.licenseId
+                            className={`p-3 border rounded-lg cursor-pointer transition-all ${selectedDriver?.licenseId === driver.licenseId
                                 ? 'border-primary bg-primary/10'
                                 : 'border-border hover:border-primary/50'
-                            }`}
+                              }`}
                             onClick={() => setSelectedDriver(driver)}
                           >
                             <div className="flex items-center justify-between">

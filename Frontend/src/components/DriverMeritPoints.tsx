@@ -43,12 +43,12 @@ const DriverMeritPoints = ({ userId, className = "" }: DriverMeritPointsProps) =
   useEffect(() => {
     const fetchDriverData = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "";
         const response = await fetch(`${API_URL}/api/merit-points/status`, {
           credentials: 'include'
         });
         const data = await response.json();
-        
+
         if (data.success) {
           setDriverData(data.data);
         } else {
@@ -170,10 +170,10 @@ const DriverMeritPoints = ({ userId, className = "" }: DriverMeritPointsProps) =
               {driverData.meritPoints}/100
             </span>
           </div>
-          <Progress 
-            value={driverData.meritPoints} 
+          <Progress
+            value={driverData.meritPoints}
             className="h-3"
-            // className={`h-3 ${getProgressColor(driverData.meritPoints)}`}
+          // className={`h-3 ${getProgressColor(driverData.meritPoints)}`}
           />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Suspended (0)</span>
@@ -203,7 +203,7 @@ const DriverMeritPoints = ({ userId, className = "" }: DriverMeritPointsProps) =
             </div>
             <p className="text-lg font-bold">{driverData.totalViolations}</p>
             <p className="text-xs text-muted-foreground">
-              {driverData.lastViolationDate 
+              {driverData.lastViolationDate
                 ? `Last: ${new Date(driverData.lastViolationDate).toLocaleDateString()}`
                 : 'No violations recorded'
               }

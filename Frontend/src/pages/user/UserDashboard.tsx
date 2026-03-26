@@ -44,6 +44,8 @@ interface Vehicle {
   lastViolation?: string;
   qrCode?: string;
   iotDeviceId?: string;
+  iotOnline?: boolean;
+  iotLastHeartbeat?: string | null;
   currentSpeed?: number;
   currentLocation?: {
     lat: number;
@@ -68,7 +70,7 @@ interface Violation {
   status?: string;
   driverConfirmed?: boolean;
   drivingLicenseId?: string;
-  
+
   // Geofencing data
   sensitiveZone?: {
     isInZone: boolean;
@@ -77,7 +79,7 @@ interface Violation {
     distanceFromZone?: number;
     zoneRadius?: number;
   };
-  
+
   // ML Risk Assessment
   riskScore?: number;
   riskLevel?: 'low' | 'medium' | 'high';
@@ -86,11 +88,11 @@ interface Violation {
     weight: number;
     description: string;
   }>;
-  
+
   // Merit Points
   meritPointsDeducted?: number;
   meritPointsApplied?: boolean;
-  
+
   // Fine breakdown
   fineBreakdown?: {
     base: number;
@@ -112,12 +114,14 @@ const UserDashboard = () => {
     lat: number;
     lng: number;
   } | null>(null);
-  const userId = "64f8c2e2a1b2c3d4e5f6a7b8"; // Use your real user id
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = user.id;
 
   useEffect(() => {
     const fetchVehicles = async () => {
+      const API_URL = import.meta.env.VITE_API_URL || "";
       const response = await fetch(
-        `https://speedguard-gz70.onrender.com/api/vehicle/user/${userId}`,
+        `${API_URL}/api/vehicle/user/${userId}`,
         { credentials: "include" }
       );
       const data = await response.json();
@@ -132,22 +136,25 @@ const UserDashboard = () => {
     fetchVehicles();
   }, []);
 
+  const selectedVehicle = selectedVehicleId
+    ? vehicles.find((v) => v._id === selectedVehicleId) || null
+    : null;
+
   useEffect(() => {
     const fetchViolations = async () => {
       setIsLoadingViolations(true);
-      const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
-      
+      const API_URL = import.meta.env.VITE_API_URL || "";
+
       try {
         const response = await fetch(`${API_URL}/api/violation`);
         const data = await response.json();
-        
+
         if (data.success) {
           // Use the fine from geofencing service, fallback to calculation if needed
           const violationsWithFines = data.violations.map((v: Violation) => {
             const calculatedFine = v.fine || (v.baseFine || 2000) * (v.zoneMultiplier || 1);
             return { ...v, predictedFine: calculatedFine };
           });
-          
           setViolations(violationsWithFines);
           setIsLoadingViolations(false);
         } else {
@@ -159,20 +166,33 @@ const UserDashboard = () => {
       }
     };
     fetchViolations();
-  }, []);
+  }, [vehicles.length]);
 
   // Filter violations by selected vehicle and speed > 70
   const filteredViolations = violations.filter((v) => {
-    const matchesVehicle = selectedVehicleId ? v.vehicleId === vehicles.find(vehicle => vehicle._id === selectedVehicleId)?.plateNumber : true;
+    if (vehicles.length === 0) return false;
+    const userVehicleNumbers = vehicles.map((vehicle) => vehicle.plateNumber);
+    const belongsToUserVehicle = userVehicleNumbers.includes(v.vehicleId);
+    const matchesVehicle = selectedVehicleId
+      ? v.vehicleId === vehicles.find((vehicle) => vehicle._id === selectedVehicleId)?.plateNumber
+      : belongsToUserVehicle;
     return v.speed > 70 && matchesVehicle;
   });
 
   const stats = {
     totalViolations: filteredViolations.length,
-    pendingFines: filteredViolations.length,
-    overdueFines: 0,
-    totalFines: filteredViolations.reduce((sum, v) => sum + (v.predictedFine || 0), 0),
-    unpaidFines: filteredViolations.reduce((sum, v) => sum + (v.predictedFine || 0), 0),
+    pendingFines: filteredViolations.filter(
+      (v) => (v.status || "pending") === "pending"
+    ).length,
+    overdueFines: filteredViolations.filter((v) => v.status === "overdue").length,
+    totalFines: filteredViolations.reduce(
+      (sum, v) => sum + (v.predictedFine || v.fine || 0),
+      0
+    ),
+    unpaidFines: filteredViolations.reduce(
+      (sum, v) => sum + (v.predictedFine || v.fine || 0),
+      0
+    ),
   };
 
   const getStatusIcon = (status: string) => {
@@ -311,7 +331,11 @@ const UserDashboard = () => {
             </div>
           </Card>
 
-          <LiveSpeedometer />
+          <LiveSpeedometer
+            initialOnline={selectedVehicle?.iotOnline}
+            initialLastHeartbeat={selectedVehicle?.iotLastHeartbeat}
+            initialSpeed={selectedVehicle?.currentSpeed}
+          />
         </div>
 
         {/* My Vehicles & Recent Violations */}
@@ -334,29 +358,45 @@ const UserDashboard = () => {
                   vehicles.map((vehicle) => (
                     <div
                       key={vehicle._id}
-                      className={`p-4 rounded-lg border transition-all duration-200 ${
-                        selectedVehicleId === vehicle._id
-                          ? "border-primary bg-primary/10 shadow-lg"
-                          : "border-border/50 bg-accent/20 hover:border-primary/50"
-                      }`}
+                      className={`p-4 rounded-lg border transition-all duration-200 ${selectedVehicleId === vehicle._id
+                        ? "border-primary bg-primary/10 shadow-lg"
+                        : "border-border/50 bg-accent/20 hover:border-primary/50"
+                        }`}
                     >
-                      <div 
+                      <div
                         className="flex items-center space-x-3 cursor-pointer"
                         onClick={() => setSelectedVehicleId(vehicle._id)}
                       >
-                        <div className={`p-2 rounded-lg ${
-                          selectedVehicleId === vehicle._id ? "bg-primary/20" : "bg-info/10"
-                        }`}>
-                          <Car className={`h-5 w-5 ${
-                            selectedVehicleId === vehicle._id ? "text-primary" : "text-info"
-                          }`} />
+                        <div className={`p-2 rounded-lg ${selectedVehicleId === vehicle._id ? "bg-primary/20" : "bg-info/10"
+                          }`}>
+                          <Car className={`h-5 w-5 ${selectedVehicleId === vehicle._id ? "text-primary" : "text-info"
+                            }`} />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <div className="font-bold">{vehicle.plateNumber}</div>
                             {vehicle.iotDeviceId && (
-                              <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/30">
-                                IoT Connected
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${
+                                  vehicle.iotLastHeartbeat
+                                    ? Date.now() -
+                                      new Date(vehicle.iotLastHeartbeat).getTime() <
+                                      2 * 60 * 1000
+                                    : vehicle.iotOnline
+                                    ? "bg-success/10 text-success border-success/30"
+                                    : "bg-warning/10 text-warning border-warning/20"
+                                }`}
+                              >
+                                {vehicle.iotLastHeartbeat
+                                  ? Date.now() -
+                                    new Date(vehicle.iotLastHeartbeat).getTime() <
+                                    2 * 60 * 1000
+                                    ? "IoT Online"
+                                    : "IoT Offline"
+                                  : vehicle.iotOnline
+                                    ? "IoT Online"
+                                    : "IoT Offline"}
                               </Badge>
                             )}
                           </div>
@@ -366,6 +406,15 @@ const UserDashboard = () => {
                           {vehicle.iotDeviceId && (
                             <div className="text-xs text-muted-foreground mt-1">
                               Device: {vehicle.iotDeviceId}
+                            </div>
+                          )}
+                          {vehicle.iotLastHeartbeat && (
+                            <div className="text-[11px] text-muted-foreground mt-1">
+                              Last signal:{" "}
+                              {new Date(vehicle.iotLastHeartbeat).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </div>
                           )}
                         </div>
@@ -458,7 +507,7 @@ const UserDashboard = () => {
                   <div className="text-center py-8">
                     <CheckCircle className="h-12 w-12 text-success mx-auto mb-3" />
                     <p className="text-muted-foreground">
-                      {selectedVehicleId 
+                      {selectedVehicleId
                         ? `No violations found for ${vehicles.find(v => v._id === selectedVehicleId)?.plateNumber || 'selected vehicle'}`
                         : "No violations found"
                       }
@@ -466,203 +515,202 @@ const UserDashboard = () => {
                   </div>
                 ) : (
                   filteredViolations
-                  .map((violation) => {
-                    const limit = violation.speedLimit || 70;
-                    const excess = violation.speed - limit;
-                    // Use geofencing fine if available, otherwise calculate fallback
-                    const fine = violation.fine || violation.predictedFine || (2000 * (violation.zoneMultiplier || 1));
+                    .map((violation) => {
+                      const limit = violation.speedLimit || 70;
+                      const excess = violation.speed - limit;
+                      // Use geofencing fine if available, otherwise calculate fallback
+                      const fine = violation.fine || violation.predictedFine || (2000 * (violation.zoneMultiplier || 1));
 
-                    return (
-                      <div
-                        key={violation._id}
-                        className={`p-4 rounded-lg border transition-all duration-300 ${
-                          violation.sensitiveZone?.isInZone 
-                            ? "border-destructive/50 bg-destructive/5" 
+                      return (
+                        <div
+                          key={violation._id}
+                          className={`p-4 rounded-lg border transition-all duration-300 ${violation.sensitiveZone?.isInZone
+                            ? "border-destructive/50 bg-destructive/5"
                             : "border-warning/50 bg-warning/5"
-                        }`}
-                      >
-                        {/* ML Risk Assessment Alert */}
-                        {violation.riskLevel === 'high' && (
-                          <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs">
-                            <div className="flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3 text-destructive" />
-                              <span className="font-medium text-destructive">
-                                🤖 HIGH RISK VIOLATION
-                              </span>
-                              <Badge variant="destructive" className="text-xs ml-2">
-                                {Math.round((violation.riskScore || 0) * 100)}% Risk
-                              </Badge>
-                            </div>
-                            <div className="text-destructive/80 mt-1">
-                              Merit Points: -{violation.meritPointsDeducted || 0} • Risk Multiplier: {violation.riskMultiplier || 1.0}x
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Sensitive Zone Alert */}
-                        {violation.sensitiveZone?.isInZone && (
-                          <div className="mb-3 p-2 bg-warning/10 border border-warning/20 rounded text-xs">
-                            <div className="flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3 text-warning" />
-                              <span className="font-medium text-warning">
-                                🚨 SENSITIVE ZONE: {violation.sensitiveZone.zoneName}
-                              </span>
-                            </div>
-                            <div className="text-warning/80 mt-1">
-                              {violation.sensitiveZone.zoneType} • {Math.round(violation.sensitiveZone.distanceFromZone || 0)}m from center • {violation.zoneMultiplier}x zone multiplier
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Merit Points Applied Status */}
-                        {violation.meritPointsApplied && (
-                          <div className="mb-3 p-2 bg-success/10 border border-success/20 rounded text-xs">
-                            <div className="flex items-center gap-1">
-                              <CheckCircle className="h-3 w-3 text-success" />
-                              <span className="font-medium text-success">
-                                ✅ MERIT POINTS APPLIED AUTOMATICALLY
-                              </span>
-                            </div>
-                            <div className="text-success/80 mt-1">
-                              -{violation.meritPointsDeducted} merit points deducted
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Mobile and Desktop Layout */}
-                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
-                          {/* Main Content */}
-                          <div className="flex items-start space-x-3 lg:space-x-4 flex-1">
-                            {/* Map Pin Icon */}
-                            <div className="p-2 bg-accent/30 rounded-lg flex-shrink-0">
-                              <button
-                                onClick={() => {
-                                  setMapLocation(violation.location);
-                                  setMapOpen(true);
-                                }}
-                                className="focus:outline-none"
-                                title="View Location"
-                              >
-                                <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
-                              </button>
-                            </div>
-
-                            {/* Violation Details */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center space-x-2 mb-2">
-                                <span className="font-semibold text-sm lg:text-base">
-                                  Speed Violation
+                            }`}
+                        >
+                          {/* ML Risk Assessment Alert */}
+                          {violation.riskLevel === 'high' && (
+                            <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs">
+                              <div className="flex items-center gap-1">
+                                <AlertTriangle className="h-3 w-3 text-destructive" />
+                                <span className="font-medium text-destructive">
+                                  🤖 HIGH RISK VIOLATION
                                 </span>
-                                {violation.sensitiveZone?.isInZone && (
-                                  <Badge variant="destructive" className="text-xs">
-                                    {violation.sensitiveZone.zoneType}
-                                  </Badge>
-                                )}
+                                <Badge variant="destructive" className="text-xs ml-2">
+                                  {Math.round((violation.riskScore || 0) * 100)}% Risk
+                                </Badge>
                               </div>
-
-                              {/* Date and Location - Responsive Grid */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-4 text-xs lg:text-sm text-muted-foreground mb-3">
-                                <div className="flex items-center">
-                                  <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
-                                  <span className="truncate">
-                                    {new Date(
-                                      violation.timestamp
-                                    ).toLocaleDateString()}{" "}
-                                    at{" "}
-                                    {new Date(
-                                      violation.timestamp
-                                    ).toLocaleTimeString([], {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                                  </span>
-                                </div>
-                                <div className="flex items-center">
-                                  <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
-                                  <span className="truncate">
-                                    {violation.location.lat.toFixed(4)},{" "}
-                                    {violation.location.lng.toFixed(4)}
-                                  </span>
-                                </div>
+                              <div className="text-destructive/80 mt-1">
+                                Merit Points: -{violation.meritPointsDeducted || 0} • Risk Multiplier: {violation.riskMultiplier || 1.0}x
                               </div>
+                            </div>
+                          )}
 
-                              {/* Speed Details - Responsive Layout */}
-                              <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm">
-                                <span className="bg-primary/10 px-2 py-1 rounded">
-                                  🚗 Speed:{" "}
-                                  <strong className="text-primary">
-                                    {violation.speed} km/h
-                                  </strong>
-                                </span>
-                                <span className="bg-muted/50 px-2 py-1 rounded">
-                                  🚦 Limit: <strong>{limit} km/h</strong>
-                                  <span className="text-xs ml-1">
-                                    ({violation.sensitiveZone?.isInZone ? 'Sensitive' : 'Normal'})
-                                  </span>
-                                </span>
-                                <span className="bg-warning/10 px-2 py-1 rounded">
-                                  📊 Excess:{" "}
-                                  <strong className="text-warning">
-                                    +{excess} km/h
-                                  </strong>
+                          {/* Sensitive Zone Alert */}
+                          {violation.sensitiveZone?.isInZone && (
+                            <div className="mb-3 p-2 bg-warning/10 border border-warning/20 rounded text-xs">
+                              <div className="flex items-center gap-1">
+                                <AlertTriangle className="h-3 w-3 text-warning" />
+                                <span className="font-medium text-warning">
+                                  🚨 SENSITIVE ZONE: {violation.sensitiveZone.zoneName}
                                 </span>
                               </div>
+                              <div className="text-warning/80 mt-1">
+                                {violation.sensitiveZone.zoneType} • {Math.round(violation.sensitiveZone.distanceFromZone || 0)}m from center • {violation.zoneMultiplier}x zone multiplier
+                              </div>
+                            </div>
+                          )}
 
-                              {/* Enhanced Fine Breakdown */}
-                              {(violation.baseFine || violation.zoneMultiplier || violation.riskMultiplier) && (
-                                <div className="mt-2 text-xs text-muted-foreground space-y-1">
-                                  <div>
-                                    💰 Base: LKR {(violation.baseFine || 2000).toLocaleString()} 
-                                    × {violation.zoneMultiplier || 1}x (zone)
-                                    × {violation.riskMultiplier || 1.0}x (risk)
-                                    = LKR {fine.toLocaleString()}
-                                  </div>
-                                  {violation.riskLevel && (
-                                    <div className="flex items-center gap-1">
-                                      <span>🤖 ML Risk:</span>
-                                      <Badge 
-                                        variant={
-                                          violation.riskLevel === 'high' ? 'destructive' : 
-                                          violation.riskLevel === 'medium' ? 'secondary' : 'outline'
-                                        }
-                                        className="text-xs"
-                                      >
-                                        {/* Normalize risk level display */}
-                                        {['low', 'medium', 'high'].includes(violation.riskLevel?.toLowerCase()) 
-                                          ? violation.riskLevel.toUpperCase() 
-                                          : 'MEDIUM'}
-                                      </Badge>
-                                      {violation.meritPointsDeducted && (
-                                        <span className="text-destructive">
-                                          -{violation.meritPointsDeducted} merit points
-                                        </span>
-                                      )}
-                                    </div>
+                          {/* Merit Points Applied Status */}
+                          {violation.meritPointsApplied && (
+                            <div className="mb-3 p-2 bg-success/10 border border-success/20 rounded text-xs">
+                              <div className="flex items-center gap-1">
+                                <CheckCircle className="h-3 w-3 text-success" />
+                                <span className="font-medium text-success">
+                                  ✅ MERIT POINTS APPLIED AUTOMATICALLY
+                                </span>
+                              </div>
+                              <div className="text-success/80 mt-1">
+                                -{violation.meritPointsDeducted} merit points deducted
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Mobile and Desktop Layout */}
+                          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
+                            {/* Main Content */}
+                            <div className="flex items-start space-x-3 lg:space-x-4 flex-1">
+                              {/* Map Pin Icon */}
+                              <div className="p-2 bg-accent/30 rounded-lg flex-shrink-0">
+                                <button
+                                  onClick={() => {
+                                    setMapLocation(violation.location);
+                                    setMapOpen(true);
+                                  }}
+                                  className="focus:outline-none"
+                                  title="View Location"
+                                >
+                                  <MapPin className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
+                                </button>
+                              </div>
+
+                              {/* Violation Details */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="font-semibold text-sm lg:text-base">
+                                    Speed Violation
+                                  </span>
+                                  {violation.sensitiveZone?.isInZone && (
+                                    <Badge variant="destructive" className="text-xs">
+                                      {violation.sensitiveZone.zoneType}
+                                    </Badge>
                                   )}
                                 </div>
-                              )}
-                            </div>
-                          </div>
 
-                          {/* Fine Amount and Pay Button - Responsive */}
-                          <div className="flex items-center justify-between lg:flex-col lg:items-end lg:text-right lg:ml-4 flex-shrink-0">
-                            <div className="text-xl lg:text-2xl font-bold text-primary mb-0 lg:mb-1">
-                              LKR {fine.toLocaleString()}
+                                {/* Date and Location - Responsive Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-4 text-xs lg:text-sm text-muted-foreground mb-3">
+                                  <div className="flex items-center">
+                                    <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
+                                    <span className="truncate">
+                                      {new Date(
+                                        violation.timestamp
+                                      ).toLocaleDateString()}{" "}
+                                      at{" "}
+                                      {new Date(
+                                        violation.timestamp
+                                      ).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                                    <span className="truncate">
+                                      {violation.location.lat.toFixed(4)},{" "}
+                                      {violation.location.lng.toFixed(4)}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Speed Details - Responsive Layout */}
+                                <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm">
+                                  <span className="bg-primary/10 px-2 py-1 rounded">
+                                    🚗 Speed:{" "}
+                                    <strong className="text-primary">
+                                      {violation.speed} km/h
+                                    </strong>
+                                  </span>
+                                  <span className="bg-muted/50 px-2 py-1 rounded">
+                                    🚦 Limit: <strong>{limit} km/h</strong>
+                                    <span className="text-xs ml-1">
+                                      ({violation.sensitiveZone?.isInZone ? 'Sensitive' : 'Normal'})
+                                    </span>
+                                  </span>
+                                  <span className="bg-warning/10 px-2 py-1 rounded">
+                                    📊 Excess:{" "}
+                                    <strong className="text-warning">
+                                      +{excess} km/h
+                                    </strong>
+                                  </span>
+                                </div>
+
+                                {/* Enhanced Fine Breakdown */}
+                                {(violation.baseFine || violation.zoneMultiplier || violation.riskMultiplier) && (
+                                  <div className="mt-2 text-xs text-muted-foreground space-y-1">
+                                    <div>
+                                      💰 Base: LKR {(violation.baseFine || 2000).toLocaleString()}
+                                      × {violation.zoneMultiplier || 1}x (zone)
+                                      × {violation.riskMultiplier || 1.0}x (risk)
+                                      = LKR {fine.toLocaleString()}
+                                    </div>
+                                    {violation.riskLevel && (
+                                      <div className="flex items-center gap-1">
+                                        <span>🤖 ML Risk:</span>
+                                        <Badge
+                                          variant={
+                                            violation.riskLevel === 'high' ? 'destructive' :
+                                              violation.riskLevel === 'medium' ? 'secondary' : 'outline'
+                                          }
+                                          className="text-xs"
+                                        >
+                                          {/* Normalize risk level display */}
+                                          {['low', 'medium', 'high'].includes(violation.riskLevel?.toLowerCase())
+                                            ? violation.riskLevel.toUpperCase()
+                                            : 'MEDIUM'}
+                                        </Badge>
+                                        {violation.meritPointsDeducted && (
+                                          <span className="text-destructive">
+                                            -{violation.meritPointsDeducted} merit points
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs whitespace-nowrap"
-                            >
-                              <CreditCard className="h-3 w-3 mr-1" />
-                              <span className="hidden sm:inline">Pay Now</span>
-                              <span className="sm:hidden">Pay</span>
-                            </Button>
+
+                            {/* Fine Amount and Pay Button - Responsive */}
+                            <div className="flex items-center justify-between lg:flex-col lg:items-end lg:text-right lg:ml-4 flex-shrink-0">
+                              <div className="text-xl lg:text-2xl font-bold text-primary mb-0 lg:mb-1">
+                                LKR {fine.toLocaleString()}
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs whitespace-nowrap"
+                              >
+                                <CreditCard className="h-3 w-3 mr-1" />
+                                <span className="hidden sm:inline">Pay Now</span>
+                                <span className="sm:hidden">Pay</span>
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })
+                      );
+                    })
                 )}
               </div>
             </Card>

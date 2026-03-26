@@ -34,10 +34,11 @@ const UserVehicles = () => {
     color: "",
   });
 
+  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const mockUser = {
-    id: "64f8c2e2a1b2c3d4e5f6a7b8", // <-- Replace with a real MongoDB ObjectId
-    name: "John Smith",
-    role: "user" as const,
+    id: storedUser.id || "",
+    name: storedUser.username || "User",
+    role: storedUser.role || "driver",
   };
 
   const getStatusBadge = (status: string) => {
@@ -101,15 +102,16 @@ const UserVehicles = () => {
   const handleQRScan = async (qrData: string) => {
     try {
       const vehicleData = JSON.parse(qrData);
-      
+
       // Check if this device is already registered
+      const API_URL = import.meta.env.VITE_API_URL || "";
       const response = await fetch(
-        `https://speedguard-gz70.onrender.com/api/vehicle/check-device/${vehicleData.deviceId}`,
+        `${API_URL}/api/vehicle/check-device/${vehicleData.deviceId}`,
         { credentials: "include" }
       );
-      
+
       const data = await response.json();
-      
+
       if (data.exists) {
         // Vehicle already exists, connect it to this user
         await connectExistingVehicle(vehicleData.deviceId);
@@ -132,23 +134,24 @@ const UserVehicles = () => {
 
   // Connect existing vehicle to user
   const connectExistingVehicle = async (deviceId: string) => {
+    const API_URL = import.meta.env.VITE_API_URL || "";
     try {
       setIsLoading(true);
       const response = await fetch(
-        "https://speedguard-gz70.onrender.com/api/vehicle/connect",
+        `${API_URL}/api/vehicle/connect`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ 
-            userId: mockUser.id, 
-            deviceId 
+          body: JSON.stringify({
+            userId: mockUser.id,
+            deviceId
           }),
         }
       );
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         toast({
           title: "Vehicle Connected",
@@ -176,16 +179,17 @@ const UserVehicles = () => {
 
   // Register new vehicle
   const handleVehicleRegistration = async (vehicleData: any) => {
+    const API_URL = import.meta.env.VITE_API_URL || "";
     try {
       setIsLoading(true);
       const response = await fetch(
-        "https://speedguard-gz70.onrender.com/api/vehicle/register",
+        `${API_URL}/api/vehicle/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ 
-            userId: mockUser.id, 
+          body: JSON.stringify({
+            userId: mockUser.id,
             vehicleData: {
               ...vehicleData,
               iotDeviceId: scannedVehicleData?.deviceId
@@ -193,9 +197,9 @@ const UserVehicles = () => {
           }),
         }
       );
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         toast({
           title: "Vehicle Registered",
@@ -224,23 +228,24 @@ const UserVehicles = () => {
 
   // Add vehicle manually (for first vehicle)
   const handleAddVehicle = async (vehicleData: any) => {
+    const API_URL = import.meta.env.VITE_API_URL || "";
     try {
       setIsLoading(true);
       const response = await fetch(
-        "https://speedguard-gz70.onrender.com/api/vehicle/add",
+        `${API_URL}/api/vehicle/add`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ 
-            userId: mockUser.id, 
-            vehicleData 
+          body: JSON.stringify({
+            userId: mockUser.id,
+            vehicleData
           }),
         }
       );
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         toast({
           title: "Vehicle Added",
@@ -275,9 +280,10 @@ const UserVehicles = () => {
   };
 
   const handleDeleteVehicle = async (vehicleId) => {
+    const API_URL = import.meta.env.VITE_API_URL || "";
     try {
       const response = await fetch(
-        `https://speedguard-gz70.onrender.com/api/vehicle/delete/${vehicleId}`,
+        `${API_URL}/api/vehicle/delete/${vehicleId}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -305,9 +311,10 @@ const UserVehicles = () => {
   };
 
   const fetchVehicles = async () => {
+    const API_URL = import.meta.env.VITE_API_URL || "";
     try {
       const response = await fetch(
-        `https://speedguard-gz70.onrender.com/api/vehicle/user/${mockUser.id}`,
+        `${API_URL}/api/vehicle/user/${mockUser.id}`,
         { credentials: "include" }
       );
       const data = await response.json();
@@ -441,13 +448,12 @@ const UserVehicles = () => {
                   <div className="flex justify-between items-center p-2 bg-accent/5 rounded">
                     <span className="text-sm">Registration</span>
                     <span
-                      className={`text-sm font-medium ${
-                        isExpired(vehicle.registrationExpiry)
-                          ? "text-destructive"
-                          : isExpiringWithin30Days(vehicle.registrationExpiry)
+                      className={`text-sm font-medium ${isExpired(vehicle.registrationExpiry)
+                        ? "text-destructive"
+                        : isExpiringWithin30Days(vehicle.registrationExpiry)
                           ? "text-warning"
                           : "text-success"
-                      }`}
+                        }`}
                     >
                       {vehicle.registrationExpiry}
                     </span>
@@ -455,13 +461,12 @@ const UserVehicles = () => {
                   <div className="flex justify-between items-center p-2 bg-accent/5 rounded">
                     <span className="text-sm">Insurance</span>
                     <span
-                      className={`text-sm font-medium ${
-                        isExpired(vehicle.insuranceExpiry)
-                          ? "text-destructive"
-                          : isExpiringWithin30Days(vehicle.insuranceExpiry)
+                      className={`text-sm font-medium ${isExpired(vehicle.insuranceExpiry)
+                        ? "text-destructive"
+                        : isExpiringWithin30Days(vehicle.insuranceExpiry)
                           ? "text-warning"
                           : "text-success"
-                      }`}
+                        }`}
                     >
                       {vehicle.insuranceExpiry}
                     </span>
@@ -521,18 +526,18 @@ const UserVehicles = () => {
                 {/* Warnings */}
                 {(isExpired(vehicle.registrationExpiry) ||
                   isExpired(vehicle.insuranceExpiry)) && (
-                  <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                    <div className="flex items-center gap-2 text-destructive">
-                      <AlertTriangle className="h-4 w-4" />
-                      <span className="text-sm font-medium">
-                        Expired Documents
-                      </span>
+                    <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                      <div className="flex items-center gap-2 text-destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          Expired Documents
+                        </span>
+                      </div>
+                      <p className="text-xs text-destructive/80 mt-1">
+                        Please renew your expired documents to avoid fines
+                      </p>
                     </div>
-                    <p className="text-xs text-destructive/80 mt-1">
-                      Please renew your expired documents to avoid fines
-                    </p>
-                  </div>
-                )}
+                  )}
 
                 {(isExpiringWithin30Days(vehicle.registrationExpiry) ||
                   isExpiringWithin30Days(vehicle.insuranceExpiry)) &&
@@ -565,7 +570,7 @@ const UserVehicles = () => {
                 <p className="text-muted-foreground mb-4">
                   Add your first vehicle to start managing it with SpeedGuard
                 </p>
-                <Button 
+                <Button
                   className="shadow-glow-primary"
                   onClick={() => setShowAddVehicleModal(true)}
                 >
@@ -604,16 +609,16 @@ const UserVehicles = () => {
                     <Car className="h-5 w-5" />
                     Add Vehicle
                   </h2>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setShowAddVehicleModal(false)}
                     className="text-black hover:bg-gray-100"
                   >
                     ×
                   </Button>
                 </div>
-                
+
                 <form
                   onSubmit={async (e) => {
                     e.preventDefault();
@@ -639,7 +644,7 @@ const UserVehicles = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="block text-black font-medium text-sm">
                       Vehicle Type
@@ -662,7 +667,7 @@ const UserVehicles = () => {
                       <option value="heavy_vehicle">Heavy Vehicle - Bus, Lorry (50 km/h limit)</option>
                     </select>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="block text-black font-medium text-sm">
                       Make
@@ -678,7 +683,7 @@ const UserVehicles = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="block text-black font-medium text-sm">
                       Model
@@ -694,7 +699,7 @@ const UserVehicles = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="block text-black font-medium text-sm">
@@ -729,10 +734,10 @@ const UserVehicles = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2 pt-4">
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       className="flex-1"
                       disabled={isLoading}
                     >

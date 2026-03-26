@@ -9,7 +9,7 @@ interface NavbarProps {
   user?: {
     id: string;
     name: string;
-    role: "officer" | "user";
+    role: "officer" | "driver";
   } | null;
   onLogout?: () => void;
 }
@@ -41,7 +41,7 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
   const getNavLinks = () => {
     if (!user || !user.role) return publicLinks;
     if (user.role === "officer") return officerLinks;
-    if (user.role === "user") return userLinks;
+    if (user.role === "driver") return userLinks;
     return publicLinks;
   };
 

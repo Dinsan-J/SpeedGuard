@@ -54,9 +54,10 @@ const OfficerQRSearch = () => {
 
             setQrInput(decoded.vehicleId);
 
+            const API_URL = import.meta.env.VITE_API_URL || "";
             // Fetch vehicle info from backend using plateNumber
             const response = await fetch(
-              `https://speedguard-gz70.onrender.com/api/vehicle/plate/${decoded.vehicleId}`
+              `${API_URL}/api/vehicle/plate/${decoded.vehicleId}`
             );
             const data = await response.json();
             if (data.success) {
@@ -145,11 +146,10 @@ const OfficerQRSearch = () => {
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-2xl font-bold">Vehicle Information</h3>
               <Badge
-                className={`px-3 py-1 ${
-                  vehicleData.status === "Active"
+                className={`px-3 py-1 ${vehicleData.status === "Active"
                     ? "bg-secondary/10 text-secondary"
                     : "bg-warning/10 text-warning"
-                }`}
+                  }`}
               >
                 {vehicleData.status || "Active"}
               </Badge>
@@ -203,7 +203,7 @@ const OfficerQRSearch = () => {
             <h3 className="text-2xl font-bold mb-4">Violation History</h3>
             <div className="space-y-4">
               {vehicleData.violations &&
-              vehicleData.violations.filter((v: any) => v.speed > 70).length >
+                vehicleData.violations.filter((v: any) => v.speed > 70).length >
                 0 ? (
                 vehicleData.violations
                   .filter((v: any) => v.speed > 70)

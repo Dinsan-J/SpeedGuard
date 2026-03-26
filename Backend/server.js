@@ -51,5 +51,15 @@ io.on("connection", (socket) => {
 app.set("socketio", io);
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
+
+// Serve frontend in production
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
+
+// Handle SPA routing - Express 5 compatible wildcard (Regex object)
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

@@ -57,7 +57,7 @@ const OfficerDashboard = () => {
       toast({
         title: "Logged Out",
         description: "You have been logged out successfully.",
-        variant: "success",
+        variant: "default",
       });
     navigate("/login");
   };
@@ -67,27 +67,29 @@ const OfficerDashboard = () => {
     const fetchVehicleData = async () => {
       try {
         setLoading(true);
-        
+
+        const API_URL = import.meta.env.VITE_API_URL || "";
+
         // Fetch vehicles with IoT devices
-        const vehicleResponse = await fetch('/api/vehicle/active-iot-vehicles', {
+        const vehicleResponse = await fetch(`${API_URL}/api/vehicle/active-iot-vehicles`, {
           credentials: 'include'
         });
-        
+
         if (vehicleResponse.ok) {
           const vehicles = await vehicleResponse.json();
           setLiveVehicles(vehicles);
         }
-        
+
         // Fetch dashboard statistics
-        const statsResponse = await fetch('/api/police/dashboard-stats', {
+        const statsResponse = await fetch(`${API_URL}/api/police/dashboard-stats`, {
           credentials: 'include'
         });
-        
+
         if (statsResponse.ok) {
           const dashboardStats = await statsResponse.json();
           setStats(dashboardStats);
         }
-        
+
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -96,10 +98,10 @@ const OfficerDashboard = () => {
     };
 
     fetchVehicleData();
-    
+
     // Refresh data every 30 seconds
     const interval = setInterval(fetchVehicleData, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -244,21 +246,19 @@ const OfficerDashboard = () => {
             return (
               <Link key={index} to={action.link}>
                 <Card
-                  className={`p-6 bg-gradient-card border transition-all duration-300 cursor-pointer group ${
-                    colorClasses[action.color as keyof typeof colorClasses]
-                  }`}
+                  className={`p-6 bg-gradient-card border transition-all duration-300 cursor-pointer group ${colorClasses[action.color as keyof typeof colorClasses]
+                    }`}
                 >
                   <div className="flex items-center space-x-4">
                     <div
-                      className={`p-3 rounded-lg transition-colors duration-300 ${
-                        action.color === "primary"
-                          ? "bg-primary/10 text-primary group-hover:bg-primary/20"
-                          : action.color === "secondary"
+                      className={`p-3 rounded-lg transition-colors duration-300 ${action.color === "primary"
+                        ? "bg-primary/10 text-primary group-hover:bg-primary/20"
+                        : action.color === "secondary"
                           ? "bg-secondary/10 text-secondary group-hover:bg-secondary/20"
                           : action.color === "warning"
-                          ? "bg-warning/10 text-warning group-hover:bg-warning/20"
-                          : "bg-info/10 text-info group-hover:bg-info/20"
-                      }`}
+                            ? "bg-warning/10 text-warning group-hover:bg-warning/20"
+                            : "bg-info/10 text-info group-hover:bg-info/20"
+                        }`}
                     >
                       {action.icon}
                     </div>
@@ -316,34 +316,31 @@ const OfficerDashboard = () => {
                 ) : (
                   liveVehicles.map((vehicle) => {
                     const isViolation = vehicle.currentSpeed > vehicle.speedLimit;
-                    const locationText = vehicle.currentLocation 
+                    const locationText = vehicle.currentLocation
                       ? `${vehicle.currentLocation.lat.toFixed(4)}, ${vehicle.currentLocation.lng.toFixed(4)}`
                       : 'Location unavailable';
-                    
+
                     return (
                       <div
                         key={vehicle._id}
-                        className={`p-4 rounded-lg border transition-all duration-300 ${
-                          isViolation
-                            ? "border-primary/50 bg-primary/5"
-                            : "border-border bg-accent/20"
-                        }`}
+                        className={`p-4 rounded-lg border transition-all duration-300 ${isViolation
+                          ? "border-primary/50 bg-primary/5"
+                          : "border-border bg-accent/20"
+                          }`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-4">
                             <div
-                              className={`p-2 rounded-lg ${
-                                isViolation
-                                  ? "bg-primary/20"
-                                  : "bg-secondary/20"
-                              }`}
+                              className={`p-2 rounded-lg ${isViolation
+                                ? "bg-primary/20"
+                                : "bg-secondary/20"
+                                }`}
                             >
                               <Car
-                                className={`h-5 w-5 ${
-                                  isViolation
-                                    ? "text-primary"
-                                    : "text-secondary"
-                                }`}
+                                className={`h-5 w-5 ${isViolation
+                                  ? "text-primary"
+                                  : "text-secondary"
+                                  }`}
                               />
                             </div>
                             <div>
@@ -378,11 +375,10 @@ const OfficerDashboard = () => {
                           </div>
                           <div className="text-right">
                             <div
-                              className={`text-2xl font-bold ${
-                                isViolation
-                                  ? "text-primary"
-                                  : "text-secondary"
-                              }`}
+                              className={`text-2xl font-bold ${isViolation
+                                ? "text-primary"
+                                : "text-secondary"
+                                }`}
                             >
                               {vehicle.currentSpeed || 0} km/h
                             </div>

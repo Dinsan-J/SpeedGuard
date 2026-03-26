@@ -177,16 +177,25 @@ vehicleSchema.methods.unassignIoTDevice = function() {
 
 // Method to update real-time location from IoT device
 vehicleSchema.methods.updateLocation = function(latitude, longitude, speed) {
-  this.currentLocation = {
-    latitude,
-    longitude,
-    timestamp: new Date()
-  };
-  this.currentSpeed = speed;
-  this.lastLocationUpdate = new Date();
-  this.isOnline = true;
-  
-  return this.save();
+  // Use updateOne to avoid Mongoose validation failures
+  // (IoT ingestion should not crash if an existing vehicle doc is incomplete/invalid).
+  const now = new Date();
+  return this.constructor.updateOne(
+    { _id: this._id },
+    {
+      $set: {
+        currentLocation: {
+          latitude,
+          longitude,
+          timestamp: now,
+        },
+        currentSpeed: speed,
+        lastLocationUpdate: now,
+        isOnline: true,
+      },
+    },
+    { runValidators: false }
+  );
 };
 
 // Method to record violation

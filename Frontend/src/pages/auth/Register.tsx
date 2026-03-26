@@ -36,8 +36,9 @@ const Register = () => {
     setIsLoading(true);
 
     try {
+      const API_URL = import.meta.env.VITE_API_URL || "";
       const response = await fetch(
-        "https://speedguard-gz70.onrender.com/api/auth/register", // <-- updated to Render backend
+        `${API_URL}/api/auth/register`, // <-- use relative path or env var
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -125,11 +126,10 @@ const Register = () => {
                     onClick={() =>
                       setFormData((prev) => ({ ...prev, role: "driver" }))
                     }
-                    className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${
-                      formData.role === "driver"
+                    className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${formData.role === "driver"
                         ? "border-secondary bg-secondary/10 text-secondary"
                         : "border-border bg-accent/20 hover:border-secondary/50"
-                    }`}
+                      }`}
                   >
                     <div className="text-center">
                       <div className="text-sm font-medium">Vehicle Owner</div>
@@ -144,11 +144,10 @@ const Register = () => {
                     onClick={() =>
                       setFormData((prev) => ({ ...prev, role: "officer" }))
                     }
-                    className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${
-                      formData.role === "officer"
+                    className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${formData.role === "officer"
                         ? "border-info bg-info/10 text-info"
                         : "border-border bg-accent/20 hover:border-info/50"
-                    }`}
+                      }`}
                   >
                     <div className="text-center">
                       <div className="text-sm font-medium">Traffic Officer</div>
@@ -248,7 +247,7 @@ const Register = () => {
                 <>
                   <div className="space-y-4">
                     <Label className="text-sm font-medium">Driver Information</Label>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="drivingLicenseNumber">Driving License Number</Label>
                       <Input

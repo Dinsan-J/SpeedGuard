@@ -24,8 +24,9 @@ const Login = () => {
     setIsLoading(true);
 
     try {
+      const API_URL = import.meta.env.VITE_API_URL || "";
       const response = await fetch(
-        "https://speedguard-gz70.onrender.com/api/auth/login",
+        `${API_URL}/api/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -131,11 +132,10 @@ const Login = () => {
                     onClick={() =>
                       setFormData((prev) => ({ ...prev, role: "driver" }))
                     }
-                    className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${
-                      formData.role === "driver"
+                    className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${formData.role === "driver"
                         ? "border-secondary bg-secondary/10 text-secondary"
                         : "border-border bg-accent/20 hover:border-secondary/50"
-                    }`}
+                      }`}
                   >
                     <div className="text-center">
                       <div className="text-sm font-medium">Vehicle Owner</div>
@@ -150,11 +150,10 @@ const Login = () => {
                     onClick={() =>
                       setFormData((prev) => ({ ...prev, role: "officer" }))
                     }
-                    className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${
-                      formData.role === "officer"
+                    className={`flex-1 p-3 rounded-lg border-2 transition-all duration-200 ${formData.role === "officer"
                         ? "border-info bg-info/10 text-info"
                         : "border-border bg-accent/20 hover:border-info/50"
-                    }`}
+                      }`}
                   >
                     <div className="text-center">
                       <div className="text-sm font-medium">Traffic Officer</div>

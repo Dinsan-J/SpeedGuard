@@ -40,13 +40,13 @@ interface Violation {
   status: string;
   zoneMultiplier?: number;
   riskMultiplier?: number;
-  
+
   // Driver Information
   drivingLicenseId?: string;
   driverConfirmed?: boolean;
   confirmedBy?: string;
   confirmationDate?: string;
-  
+
   // Geofencing
   sensitiveZone?: {
     isInZone: boolean;
@@ -55,7 +55,7 @@ interface Violation {
     distanceFromZone?: number;
     zoneRadius?: number;
   };
-  
+
   // ML Risk Assessment
   riskScore?: number;
   riskLevel?: 'low' | 'medium' | 'high';
@@ -64,11 +64,11 @@ interface Violation {
     weight: number;
     description: string;
   }>;
-  
+
   // Merit Points
   meritPointsDeducted?: number;
   meritPointsApplied?: boolean;
-  
+
   // Fine Breakdown
   fineBreakdown?: {
     base: number;
@@ -76,12 +76,12 @@ interface Violation {
     riskAdjustment: number;
     total: number;
   };
-  
+
   // Additional Context
   timeOfDay?: string;
   trafficDensity?: string;
   weatherConditions?: string;
-  
+
   // Legacy fields for compatibility
   plateNumber?: string;
   type?: string;
@@ -105,7 +105,7 @@ const UserViolations = () => {
   useEffect(() => {
     const fetchViolations = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://speedguard-gz70.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "";
         const response = await fetch(`${API_URL}/api/violation`);
         const data = await response.json();
         if (data.success) {
@@ -118,11 +118,10 @@ const UserViolations = () => {
             date: new Date(v.timestamp).toLocaleDateString(),
             time: new Date(v.timestamp).toLocaleTimeString(),
             severity: v.sensitiveZone?.isInZone ? "high" : "medium",
-            description: `Speed violation: ${v.speed} km/h in ${v.speedLimit || 70} km/h zone${
-              v.sensitiveZone?.isInZone 
-                ? ` (${v.sensitiveZone.zoneType}: ${v.sensitiveZone.zoneName})`
-                : ""
-            }`
+            description: `Speed violation: ${v.speed} km/h in ${v.speedLimit || 70} km/h zone${v.sensitiveZone?.isInZone
+              ? ` (${v.sensitiveZone.zoneType}: ${v.sensitiveZone.zoneName})`
+              : ""
+              }`
           }));
           setViolations(mappedViolations);
         }
@@ -139,7 +138,7 @@ const UserViolations = () => {
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       (violation.type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (violation.location || "")
+      (typeof violation.location === 'string' ? violation.location : JSON.stringify(violation.location) || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
     const matchesStatus =
@@ -331,11 +330,10 @@ const UserViolations = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2 rounded-full ${
-                        violation.sensitiveZone?.isInZone
-                          ? "bg-destructive/10"
-                          : "bg-warning/10"
-                      }`}
+                      className={`p-2 rounded-full ${violation.sensitiveZone?.isInZone
+                        ? "bg-destructive/10"
+                        : "bg-warning/10"
+                        }`}
                     >
                       {violation.sensitiveZone?.isInZone ? (
                         <Shield className="h-5 w-5 text-destructive" />
@@ -429,14 +427,14 @@ const UserViolations = () => {
                         <span className="text-sm">🤖</span>
                       </div>
                       <p className="text-sm font-medium text-purple-800">AI Risk Assessment</p>
-                      <Badge 
-                        variant={violation.riskLevel === 'high' ? 'destructive' : 
-                                violation.riskLevel === 'medium' ? 'secondary' : 'outline'}
+                      <Badge
+                        variant={violation.riskLevel === 'high' ? 'destructive' :
+                          violation.riskLevel === 'medium' ? 'secondary' : 'outline'}
                         className="ml-auto"
                       >
                         {/* Normalize risk level display */}
-                        {['low', 'medium', 'high'].includes(violation.riskLevel?.toLowerCase()) 
-                          ? violation.riskLevel.toUpperCase() 
+                        {['low', 'medium', 'high'].includes(violation.riskLevel?.toLowerCase())
+                          ? violation.riskLevel.toUpperCase()
                           : 'MEDIUM'} RISK
                       </Badge>
                     </div>
@@ -500,46 +498,42 @@ const UserViolations = () => {
                   {violation.fineBreakdown && (
                     <div className="mt-3 pt-3 border-t border-accent/20 text-xs text-muted-foreground">
                       <div className="flex justify-between items-center">
-                        <span>Calculation: LKR {violation.fineBreakdown.base.toLocaleString()} → 
-                        LKR {(violation.fineBreakdown.base + violation.fineBreakdown.zoneAdjustment).toLocaleString()} → 
-                        LKR {violation.fineBreakdown.total.toLocaleString()}</span>
+                        <span>Calculation: LKR {violation.fineBreakdown.base.toLocaleString()} →
+                          LKR {(violation.fineBreakdown.base + violation.fineBreakdown.zoneAdjustment).toLocaleString()} →
+                          LKR {violation.fineBreakdown.total.toLocaleString()}</span>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Merit Points Status */}
-                <div className={`p-4 border rounded-lg ${
-                  violation.meritPointsApplied 
-                    ? 'bg-success/10 border-success/20' 
-                    : 'bg-warning/10 border-warning/20'
-                }`}>
+                <div className={`p-4 border rounded-lg ${violation.meritPointsApplied
+                  ? 'bg-success/10 border-success/20'
+                  : 'bg-warning/10 border-warning/20'
+                  }`}>
                   <div className="flex items-center gap-2 mb-2">
                     {violation.meritPointsApplied ? (
                       <CheckCircle className="h-4 w-4 text-success" />
                     ) : (
                       <Clock className="h-4 w-4 text-warning" />
                     )}
-                    <p className={`text-sm font-medium ${
-                      violation.meritPointsApplied ? 'text-success' : 'text-warning'
-                    }`}>
+                    <p className={`text-sm font-medium ${violation.meritPointsApplied ? 'text-success' : 'text-warning'
+                      }`}>
                       🎯 Merit Points Status
                     </p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Status:</span>
-                      <span className={`ml-2 font-medium ${
-                        violation.meritPointsApplied ? 'text-success' : 'text-warning'
-                      }`}>
+                      <span className={`ml-2 font-medium ${violation.meritPointsApplied ? 'text-success' : 'text-warning'
+                        }`}>
                         {violation.meritPointsApplied ? 'AUTOMATICALLY APPLIED' : 'PROCESSING'}
                       </span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Points Deducted:</span>
-                      <span className={`ml-2 font-medium ${
-                        violation.meritPointsApplied ? 'text-destructive' : 'text-muted-foreground'
-                      }`}>
+                      <span className={`ml-2 font-medium ${violation.meritPointsApplied ? 'text-destructive' : 'text-muted-foreground'
+                        }`}>
                         {violation.meritPointsApplied ? `-${violation.meritPointsDeducted}` : 'Pending'}
                       </span>
                     </div>

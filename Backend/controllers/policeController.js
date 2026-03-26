@@ -1,6 +1,7 @@
 const policeConfirmationService = require('../services/policeConfirmationService');
 const Driver = require('../models/Driver');
 const Violation = require('../models/Violation');
+const IoTDevice = require('../models/IoTDevice');
 
 /**
  * Police Dashboard Controller
@@ -409,10 +410,14 @@ exports.getDashboardStats = async (req, res) => {
   try {
     const Vehicle = require('../models/Vehicle');
     
-    // Get active IoT devices count
-    const activeDevices = await Vehicle.countDocuments({ 
-      iotDeviceId: { $exists: true, $ne: null },
-      status: "active"
+    // Get active IoT devices count (exactly connected devices)
+    const ONLINE_TTL_MS = 2 * 60 * 1000; // consider "online" if we heard in last 2 minutes
+    const cutoff = new Date(Date.now() - ONLINE_TTL_MS);
+
+    const activeDevices = await IoTDevice.countDocuments({
+      assignedVehicleId: { $ne: null },
+      lastHeartbeat: { $gte: cutoff },
+      isOnline: true
     });
 
     // Get today's violations
