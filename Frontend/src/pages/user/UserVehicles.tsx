@@ -262,9 +262,18 @@ const UserVehicles = () => {
         });
         fetchVehicles(); // Refresh vehicle list
       } else {
+        const extra =
+          data?.error ||
+          (data?.keyValue
+            ? `Duplicate: ${Object.entries(data.keyValue)
+                .map(([k, v]) => `${k}=${String(v)}`)
+                .join(", ")}`
+            : "");
         toast({
           title: "Error",
-          description: data.message || "Failed to add vehicle.",
+          description: [data.message || "Failed to add vehicle.", extra]
+            .filter(Boolean)
+            .join(" — "),
           variant: "destructive",
         });
       }

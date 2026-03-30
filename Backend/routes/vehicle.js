@@ -155,6 +155,8 @@ router.post("/add", async (req, res) => {
         success: false,
         message: "Duplicate key error",
         error: err.message,
+        keyPattern: err.keyPattern,
+        keyValue: err.keyValue,
       });
     }
 
