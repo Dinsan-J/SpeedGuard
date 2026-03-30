@@ -24,30 +24,30 @@ const resolveDriverRef = (user) => {
 router.post("/add", async (req, res) => {
   try {
     const { userId, vehicleData } = req.body;
-    
+
     // Find the user and their driver profile
     const user = await User.findById(userId).populate('driverProfile');
     if (!user || user.role !== 'driver') {
-      return res.status(400).json({ 
-        success: false, 
-        message: "User must be a driver to add vehicles" 
+      return res.status(400).json({
+        success: false,
+        message: "User must be a driver to add vehicles"
       });
     }
     const driverRef = resolveDriverRef(user);
-    
+
     // Check if vehicle number already exists
     if (vehicleData.vehicleNumber) {
-      const existingVehicle = await Vehicle.findOne({ 
-        vehicleNumber: vehicleData.vehicleNumber.toUpperCase() 
+      const existingVehicle = await Vehicle.findOne({
+        vehicleNumber: vehicleData.vehicleNumber.toUpperCase()
       });
       if (existingVehicle) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Vehicle with this number already exists" 
+        return res.status(400).json({
+          success: false,
+          message: "Vehicle with this number already exists"
         });
       }
     }
-    
+
     // If iotDeviceId is provided, it's expected to be an IoTDevice.deviceId (ESP32 id string)
     let resolvedIoTDevice = null;
     const iotDeviceIdentifier = vehicleData?.iotDeviceId;
@@ -93,7 +93,7 @@ router.post("/add", async (req, res) => {
         ? new Date(vehicleData.insuranceExpiry)
         : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
     });
-    
+
     await vehicle.save();
 
     // If IoT device was provided, connect it to this newly created vehicle (one-to-one)
@@ -104,9 +104,9 @@ router.post("/add", async (req, res) => {
       resolvedIoTDevice.assignedBy = user._id;
       await resolvedIoTDevice.save();
     }
-    
+
     console.log(`✅ Vehicle added: ${vehicle.vehicleNumber} (${vehicle.vehicleType}) - Speed Limit: ${vehicle.speedLimit} km/h`);
-    
+
     res.json({ success: true, vehicle });
   } catch (err) {
     console.log("Add vehicle error:", err);
@@ -137,7 +137,7 @@ router.get("/user/:userId", async (req, res) => {
       return res.json({ success: true, vehicles: [] });
     }
     const driverRef = resolveDriverRef(user);
-    
+
     // Find vehicles by driver profile ID or fallback user ID
     const vehicles = await Vehicle.find({ driverId: driverRef });
 
@@ -152,12 +152,8 @@ router.get("/user/:userId", async (req, res) => {
         });
 
         if (iot) {
-          // Use timestamp-based online check instead of stale boolean.
-          // Render free tier sleeps the server, making iot.isOnline unreliable.
-          const ONLINE_TTL_MS = 10 * 60 * 1000; // 10 minutes (matches frontend)
-          const lastHb = iot.lastHeartbeat ? new Date(iot.lastHeartbeat).getTime() : 0;
           v.iotDeviceId = iot.deviceId; // frontend expects string deviceId
-          v.iotOnline = lastHb > 0 && (Date.now() - lastHb < ONLINE_TTL_MS);
+          v.iotOnline = !!iot.isOnline;
           v.iotLastHeartbeat = iot.lastHeartbeat;
         } else {
           v.iotOnline = false;
@@ -216,7 +212,7 @@ router.get("/plate/:plateNumber", async (req, res) => {
     }
     // Fetch violations for this vehicle
     const violations = await Violation.find({ vehicleId: vehicle.plateNumber });
-    
+
     // Calculate fine for each violation
     const violationsWithFines = violations.map(v => {
       const speedLimit = 70;
@@ -227,7 +223,7 @@ router.get("/plate/:plateNumber", async (req, res) => {
         fine: calculatedFine
       };
     });
-    
+
     res.json({ success: true, vehicle: { ...vehicle.toObject(), violations: violationsWithFines } });
   } catch (err) {
     console.error(err);
@@ -298,9 +294,9 @@ router.get("/active-iot-vehicles", async (req, res) => {
           currentSpeed: vehicle.currentSpeed,
           currentLocation: vehicle.currentLocation
             ? {
-                lat: vehicle.currentLocation.latitude,
-                lng: vehicle.currentLocation.longitude,
-              }
+              lat: vehicle.currentLocation.latitude,
+              lng: vehicle.currentLocation.longitude,
+            }
             : null,
           lastUpdated:
             vehicle.lastLocationUpdate ||
@@ -341,14 +337,14 @@ router.get("/check-device/:deviceId", async (req, res) => {
       exists: !!vehicle,
       vehicle: vehicle
         ? {
-            id: vehicle._id,
-            vehicleNumber: vehicle.vehicleNumber,
-            vehicleType: vehicle.vehicleType,
-            make: vehicle.make,
-            model: vehicle.model,
-            year: vehicle.year,
-            color: vehicle.color,
-          }
+          id: vehicle._id,
+          vehicleNumber: vehicle.vehicleNumber,
+          vehicleType: vehicle.vehicleType,
+          make: vehicle.make,
+          model: vehicle.model,
+          year: vehicle.year,
+          color: vehicle.color,
+        }
         : null,
     });
   } catch (err) {
@@ -361,13 +357,13 @@ router.get("/check-device/:deviceId", async (req, res) => {
 router.post("/connect", async (req, res) => {
   try {
     const { userId, deviceId } = req.body;
-    
+
     // Find the user and their driver profile
     const user = await User.findById(userId).populate('driverProfile');
     if (!user || user.role !== 'driver') {
-      return res.status(400).json({ 
-        success: false, 
-        message: "User must be a driver to connect vehicles" 
+      return res.status(400).json({
+        success: false,
+        message: "User must be a driver to connect vehicles"
       });
     }
     const driverRef = resolveDriverRef(user);
@@ -405,15 +401,15 @@ router.post("/connect", async (req, res) => {
       device.status = "assigned";
       await device.save();
     }
-    
+
     // Check if vehicle is already connected to another driver
     if (vehicle.driverId && vehicle.driverId.toString() !== driverRef.toString()) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "This vehicle is already connected to another driver" 
+      return res.status(400).json({
+        success: false,
+        message: "This vehicle is already connected to another driver"
       });
     }
-    
+
     // Connect vehicle to driver
     vehicle.driverId = driverRef;
     await vehicle.save();
@@ -421,9 +417,9 @@ router.post("/connect", async (req, res) => {
     // Mark device as active (it is still one-to-one with this vehicle)
     device.status = "active";
     await device.save();
-    
+
     console.log(`✅ Vehicle connected: ${vehicle.vehicleNumber} to driver ${user.username}`);
-    
+
     res.json({ success: true, vehicle });
   } catch (err) {
     console.error("Connect vehicle error:", err);
@@ -435,30 +431,30 @@ router.post("/connect", async (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     const { userId, vehicleData } = req.body;
-    
+
     // Find the user and their driver profile
     const user = await User.findById(userId).populate('driverProfile');
     if (!user || user.role !== 'driver') {
-      return res.status(400).json({ 
-        success: false, 
-        message: "User must be a driver to register vehicles" 
+      return res.status(400).json({
+        success: false,
+        message: "User must be a driver to register vehicles"
       });
     }
     const driverRef = resolveDriverRef(user);
-    
+
     // Check if vehicle number already exists
     if (vehicleData.vehicleNumber) {
-      const existingVehicle = await Vehicle.findOne({ 
-        vehicleNumber: vehicleData.vehicleNumber.toUpperCase() 
+      const existingVehicle = await Vehicle.findOne({
+        vehicleNumber: vehicleData.vehicleNumber.toUpperCase()
       });
       if (existingVehicle) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Vehicle with this number already exists" 
+        return res.status(400).json({
+          success: false,
+          message: "Vehicle with this number already exists"
         });
       }
     }
-    
+
     // If iotDeviceId is provided, it's expected to be an IoTDevice.deviceId (ESP32 id string)
     let resolvedIoTDevice = null;
     if (vehicleData.iotDeviceId) {
@@ -498,7 +494,7 @@ router.post("/register", async (req, res) => {
       registrationExpiry: new Date(vehicleData.registrationExpiry),
       insuranceExpiry: new Date(vehicleData.insuranceExpiry),
     });
-    
+
     await vehicle.save();
 
     // Connect IoT device to this newly created vehicle (one-to-one)
@@ -509,9 +505,9 @@ router.post("/register", async (req, res) => {
       resolvedIoTDevice.assignedBy = user._id;
       await resolvedIoTDevice.save();
     }
-    
+
     console.log(`✅ Vehicle registered: ${vehicle.vehicleNumber} (${vehicle.vehicleType}) - Speed Limit: ${vehicle.speedLimit} km/h`);
-    
+
     res.json({ success: true, vehicle });
   } catch (err) {
     console.error("Register vehicle error:", err);

@@ -382,7 +382,7 @@ const UserDashboard = () => {
                                   vehicle.iotLastHeartbeat
                                     ? Date.now() -
                                       new Date(vehicle.iotLastHeartbeat).getTime() <
-                                      2 * 60 * 1000
+                                      15 * 60 * 1000
                                     : vehicle.iotOnline
                                     ? "bg-success/10 text-success border-success/30"
                                     : "bg-warning/10 text-warning border-warning/20"
