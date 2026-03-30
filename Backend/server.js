@@ -1,4 +1,8 @@
-require("dotenv").config();
+const path = require("path");
+const dns = require("dns");
+// Reduce flaky `querySrv ENOTFOUND` on Windows/Node when resolving Atlas SRV records.
+dns.setDefaultResultOrder("ipv4first");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -25,11 +29,22 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// MongoDB connection
+// MongoDB connection (trim URI; allow MONGODB_URI alias)
+const mongoUri = (
+  process.env.MONGO_URI ||
+  process.env.MONGODB_URI ||
+  ""
+).trim();
+if (!mongoUri) {
+  console.error("❌ MONGO_URI is not set in Backend/.env");
+}
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(mongoUri, {
+    serverSelectionTimeoutMS: 20000,
+    family: 4,
+  })
   .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.log("❌ MongoDB connection error:", err));
+  .catch((err) => console.log("❌ MongoDB connection error:", err.message || err));
 
 // Routes
 app.use("/api/auth", require("./routes/auth"));
@@ -54,7 +69,6 @@ app.set("socketio", io);
 const PORT = process.env.PORT || 8080;
 
 // Serve frontend in production
-const path = require("path");
 app.use(express.static(path.join(__dirname, "public")));
 
 // Handle SPA routing - Express 5 compatible wildcard (Regex object)
@@ -62,4 +76,7 @@ app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// Listen on all interfaces so phones/ESP32 on LAN can reach this PC (not only 127.0.0.1).
+server.listen(PORT, "0.0.0.0", () =>
+  console.log(`🚀 Server running on port ${PORT} (0.0.0.0)`)
+);
