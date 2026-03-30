@@ -1,0 +1,10 @@
+Vehicles:
+68a9443d783aa288c9bac307 | undefined | undefined
+68a966ab24ff70132336c419 | undefined | undefined
+69233c54c1374e39916d52d7 | undefined | 
+692341304d242dac088d4b31 | undefined | 1
+693e820eefd7c4eaf5e6c562 | undefined | ESP32-QR-TEST
+69c2b6d31b145d28ed8b5eba | BHZ-9638 | null
+
+IoTs:
+69c209ef291049a225435506 | ESP32_MN42TKYH | 68a9443d783aa288c9bac307 | true
