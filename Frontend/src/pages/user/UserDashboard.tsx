@@ -442,7 +442,7 @@ const UserDashboard = () => {
                         {showQRVehicleId === vehicle._id && (
                           <div className="mt-3 p-3 bg-white rounded-lg flex flex-col items-center animate-fade-in">
                             <QRCode
-                              value={JSON.stringify({ vehicleId: vehicle.plateNumber })}
+                              value={JSON.stringify({ vehicleId: vehicle.plateNumber || (vehicle as any).vehicleNumber })}
                               size={120}
                               level="M"
                             />
