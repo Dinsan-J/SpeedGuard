@@ -151,12 +151,27 @@ router.post("/add", async (req, res) => {
     }
 
     if (err && err.code === 11000) {
+      const keyPattern = err.keyPattern || {};
+      const keyValue = err.keyValue || {};
+      const dupField =
+        Object.keys(keyPattern)[0] ||
+        Object.keys(keyValue)[0] ||
+        "unknown_field";
+
+      const dupValRaw = keyValue[dupField];
+      const dupVal =
+        dupValRaw === undefined || dupValRaw === null
+          ? ""
+          : String(dupValRaw).slice(0, 80);
+
       return res.status(400).json({
         success: false,
-        message: "Duplicate key error",
+        message: dupVal
+          ? `Duplicate key error: ${dupField}=${dupVal}`
+          : `Duplicate key error: ${dupField}`,
         error: err.message,
-        keyPattern: err.keyPattern,
-        keyValue: err.keyValue,
+        keyPattern,
+        keyValue,
       });
     }
 

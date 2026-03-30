@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const crypto = require("crypto");
 
 const vehicleSchema = new mongoose.Schema({
   // Vehicle Registration Information (Primary Key)
@@ -144,9 +145,13 @@ vehicleSchema.pre('save', function(next) {
 vehicleSchema.methods.generateQRCode = function() {
   // QR code contains vehicle ID for officer scanning
   const qrData = {
-    vehicleId: this._id,
+    // Include _id explicitly to avoid any accidental collisions
+    vehicleId: String(this._id),
     vehicleNumber: this.vehicleNumber,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    // Add a nonce to make sure QR codes are unique even if created quickly
+    // (helps avoid MongoDB duplicate-key errors on `qrCode`).
+    nonce: crypto.randomBytes(8).toString("hex"),
   };
   return Buffer.from(JSON.stringify(qrData)).toString('base64');
 };
