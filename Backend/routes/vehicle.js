@@ -152,8 +152,12 @@ router.get("/user/:userId", async (req, res) => {
         });
 
         if (iot) {
+          // Use timestamp-based online check instead of stale boolean.
+          // Render free tier sleeps the server, making iot.isOnline unreliable.
+          const ONLINE_TTL_MS = 10 * 60 * 1000; // 10 minutes (matches frontend)
+          const lastHb = iot.lastHeartbeat ? new Date(iot.lastHeartbeat).getTime() : 0;
           v.iotDeviceId = iot.deviceId; // frontend expects string deviceId
-          v.iotOnline = !!iot.isOnline;
+          v.iotOnline = lastHb > 0 && (Date.now() - lastHb < ONLINE_TTL_MS);
           v.iotLastHeartbeat = iot.lastHeartbeat;
         } else {
           v.iotOnline = false;

@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Gauge } from "lucide-react"; // ✅ fixed icon
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
-// Connect to Socket.IO server
-const API_URL = import.meta.env.VITE_API_URL || "";
-const socket = io(API_URL);
+// The backend URL - baked in at build time by Vite
+const BACKEND_URL = import.meta.env.VITE_API_URL || "";
 
 const LiveSpeedometer = ({
   initialOnline,
@@ -24,6 +23,7 @@ const LiveSpeedometer = ({
     if (initialLastHeartbeat) return new Date(initialLastHeartbeat).getTime();
     return null;
   });
+  const socketRef = useRef<Socket | null>(null);
 
   // When switching vehicle, update the online indicator immediately from DB.
   useEffect(() => {
@@ -43,13 +43,22 @@ const LiveSpeedometer = ({
   }, [initialSpeed]);
 
   useEffect(() => {
+    // Create socket inside useEffect so it always uses the correct runtime URL
+    // (avoids module-level stale closure with empty VITE_API_URL from old builds)
+    const socket = io(BACKEND_URL, {
+      transports: ["polling", "websocket"], // polling first for Render compatibility
+      withCredentials: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+    });
+    socketRef.current = socket;
+
     socket.on("live-speed", (data) => {
       setSpeed(data.speed);
       setLastSignalAt(Date.now());
     });
 
     socket.on("iot-heartbeat", (payload: { timestamp?: string }) => {
-      // Heartbeat means the IoT device is connected and sending data.
       if (payload?.timestamp) {
         const t = Date.parse(payload.timestamp);
         if (!Number.isNaN(t)) {
@@ -63,12 +72,14 @@ const LiveSpeedometer = ({
     return () => {
       socket.off("live-speed");
       socket.off("iot-heartbeat");
+      socket.disconnect();
+      socketRef.current = null;
     };
   }, []);
 
-  // Consider the device online if we got a message recently.
-  // Use a wider window to prevent offline flicker during refresh/network delay.
-  const ONLINE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+  // Consider the device online if we got a signal recently.
+  // 10-minute TTL: Render free tier can cause heartbeat gaps on wake-up.
+  const ONLINE_TTL_MS = 10 * 60 * 1000; // 10 minutes
   const isOnline = lastSignalAt
     ? Date.now() - lastSignalAt < ONLINE_TTL_MS
     : !!initialOnline;
