@@ -335,6 +335,7 @@ const UserDashboard = () => {
             initialOnline={selectedVehicle?.iotOnline}
             initialLastHeartbeat={selectedVehicle?.iotLastHeartbeat}
             initialSpeed={selectedVehicle?.currentSpeed}
+            vehiclePlateNumber={selectedVehicle?.plateNumber}
           />
         </div>
 

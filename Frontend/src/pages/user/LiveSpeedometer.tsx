@@ -11,10 +11,12 @@ const LiveSpeedometer = ({
   initialOnline,
   initialLastHeartbeat,
   initialSpeed,
+  vehiclePlateNumber,
 }: {
   initialOnline?: boolean;
   initialLastHeartbeat?: string | null;
   initialSpeed?: number | null;
+  vehiclePlateNumber?: string;
 }) => {
   const [speed, setSpeed] = useState<number>(() => {
     if (initialSpeed === null || initialSpeed === undefined) return 0;
@@ -44,6 +46,10 @@ const LiveSpeedometer = ({
 
   useEffect(() => {
     socket.on("live-speed", (data) => {
+      // Only update if it belongs to this vehicle, or if no vehicle is selected yet
+      if (vehiclePlateNumber && data.vehicleId && data.vehicleId !== vehiclePlateNumber) {
+        return;
+      }
       setSpeed(data.speed);
       setLastSignalAt(Date.now());
     });
