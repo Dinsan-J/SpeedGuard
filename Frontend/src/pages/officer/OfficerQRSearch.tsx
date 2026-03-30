@@ -56,9 +56,9 @@ const OfficerQRSearch = () => {
 
             const API_URL = import.meta.env.VITE_API_URL || "";
             // Fetch vehicle info from backend using plateNumber
-            const response = await fetch(
-              `${API_URL}/api/vehicle/plate/${decoded.vehicleId}`
-            );
+            const fetchUrl = `${API_URL}/api/vehicle/plate/${encodeURIComponent(decoded.vehicleId)}`;
+            console.log("Fetching:", fetchUrl);
+            const response = await fetch(fetchUrl);
             const data = await response.json();
             if (data.success) {
               setVehicleData(data.vehicle);
@@ -66,8 +66,9 @@ const OfficerQRSearch = () => {
               setCameraError("Vehicle not found");
               setVehicleData(null);
             }
-          } catch (err) {
-            setCameraError("Invalid QR code or backend error");
+          } catch (err: any) {
+            console.error("QR Scan Error:", err);
+            setCameraError(err.message || "Invalid QR code or backend error");
             setVehicleData(null);
           }
           stopCamera();
