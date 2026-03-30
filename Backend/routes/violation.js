@@ -51,7 +51,9 @@ const mapViolationForFrontend = (violationDoc) => {
 router.get("/", async (req, res) => {
   try {
     const { 
-      minSpeed = 70, 
+      // Default to 0 so we show *all* recorded violations.
+      // The frontend can still pass a higher minSpeed if it wants.
+      minSpeed = 0, 
       zoneType, 
       isInZone, 
       limit = 100, 

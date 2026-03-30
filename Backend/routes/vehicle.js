@@ -147,6 +147,11 @@ router.get("/user/:userId", async (req, res) => {
       vehicles.map(async (vehicle) => {
         const v = vehicle.toObject();
 
+        // Ensure frontend-friendly id + plate fields are always present
+        // (`UserVehicles` expects `id` and `plateNumber`).
+        v.id = v.id || String(v._id);
+        v.plateNumber = v.plateNumber || v.vehicleNumber;
+
         const iot = await IoTDevice.findOne({
           assignedVehicleId: vehicle._id,
         });

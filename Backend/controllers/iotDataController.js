@@ -1,6 +1,13 @@
 const IoTDevice = require('../models/IoTDevice');
 const Vehicle = require('../models/Vehicle');
-const Driver = require('../models/Driver');
+// NOTE:
+// For app-registered users, driver information actually lives in the
+// `DriverProfile` collection, which is referenced from `User.driverProfile`.
+// Vehicles created via `/api/vehicle/*` currently store `driverId` pointing
+// to that DriverProfile document, not to the legacy `Driver` model.
+// To ensure IoT violations are created correctly for real users, we resolve
+// driver data from `DriverProfile` here.
+const Driver = require('../models/DriverProfile');
 const Violation = require('../models/Violation');
 const GeofencingService = require('../services/geofencingService');
 const MLRiskService = require('../services/mlRiskService');
@@ -86,7 +93,7 @@ exports.ingestIoTData = async (req, res) => {
     // `driverId` may not be populated depending on how the vehicle was stored.
     // For online-status we can still proceed; for violation creation we need driver data.
     let driver = vehicle.driverId;
-    if (!driver || !driver.licenseNumber) {
+    if (!driver || !driver.drivingLicenseNumber) {
       if (vehicle.driverId) {
         driver = await Driver.findById(vehicle.driverId);
       } else {
@@ -95,7 +102,7 @@ exports.ingestIoTData = async (req, res) => {
     }
 
     if (driver) {
-      console.log(`👤 Driver: ${driver.fullName} (License: ${driver.licenseNumber})`);
+      console.log(`👤 Driver: ${driver.fullName} (License: ${driver.drivingLicenseNumber})`);
     } else {
       console.log(`⚠️  No driver attached to vehicle ${vehicle.vehicleNumber}. Skipping violation creation.`);
     }
@@ -116,7 +123,18 @@ exports.ingestIoTData = async (req, res) => {
     }
 
     // Step 5: Check for speed violation
-    const speedLimit = vehicle.speedLimit;
+    // Derive an effective speed limit. Some older vehicle records may be missing
+    // a `speedLimit` value, so we fall back to sensible defaults by type.
+    const DEFAULT_LIMITS = {
+      motorcycle: 70,
+      light_vehicle: 70,
+      three_wheeler: 50,
+      heavy_vehicle: 50,
+    };
+    const speedLimit =
+      typeof vehicle.speedLimit === "number" && !Number.isNaN(vehicle.speedLimit)
+        ? vehicle.speedLimit
+        : DEFAULT_LIMITS[vehicle.vehicleType] || 70;
     const isViolation = speed > speedLimit;
 
     console.log(`🚦 Speed Limit: ${speedLimit} km/h`);
@@ -177,14 +195,21 @@ exports.ingestIoTData = async (req, res) => {
       zoneType: geofencing.zoneType
     };
 
-    const driverData = {
-      licenseNumber: driver.licenseNumber,
-      meritPoints: driver.meritPoints,
-      totalViolations: driver.totalViolations,
-      drivingStatus: driver.drivingStatus
-    };
+    const driverData = driver
+      ? {
+          // ML service expects `licenseNumber` key; we provide the driving
+          // license number from DriverProfile.
+          licenseNumber: driver.drivingLicenseNumber,
+          meritPoints: driver.meritPoints,
+          totalViolations: driver.totalViolations,
+          drivingStatus: driver.drivingStatus,
+        }
+      : null;
 
-    const riskAssessment = await MLRiskService.calculateRiskScore(violationData, driverData);
+    const riskAssessment = await MLRiskService.calculateRiskScore(
+      violationData,
+      driverData
+    );
 
     console.log(`🤖 ML Risk Assessment:`);
     console.log(`   Risk Score: ${(riskAssessment.riskScore * 100).toFixed(1)}%`);
