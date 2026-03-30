@@ -13,16 +13,31 @@ const mlRoutes = require("./routes/predict");
 
 const app = express();
 const server = http.createServer(app); // wrap express with http
+const allowedOrigins = [
+  "http://localhost:8080",
+  "http://localhost:5173",
+  "https://speedguard-zeta.vercel.app"
+];
+
+const corsOrigin = (origin, callback) => {
+  // Allow if no origin (e.g. mobile apps, curl) or if origin is explicitly allowed or a Vercel deployment
+  if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+    callback(null, true);
+  } else {
+    callback(null, false);
+  }
+};
+
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:8080", "https://speedguard-zeta.vercel.app"],
+    origin: corsOrigin,
     credentials: true,
   },
 });
 
 app.use(
   cors({
-    origin: ["http://localhost:8080", "https://speedguard-zeta.vercel.app"],
+    origin: corsOrigin,
     credentials: true,
   })
 );
