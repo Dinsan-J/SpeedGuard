@@ -6,8 +6,14 @@ const vehicleSchema = new mongoose.Schema({
   vehicleNumber: { 
     type: String, 
     uppercase: true,
+    unique: true,
+    required: true
   },
-  plateNumber: { type: String, uppercase: true },
+  plateNumber: { 
+    type: String, 
+    uppercase: true
+    // No unique constraint - plateNumber is just an alias for vehicleNumber
+  },
   
   // Vehicle Type and Speed Limit (Core Feature)
   vehicleType: {
@@ -129,6 +135,11 @@ vehicleSchema.pre('save', function(next) {
       heavy_vehicle: 50
     };
     this.speedLimit = speedLimits[this.vehicleType];
+  }
+  
+  // Set plateNumber to vehicleNumber if not provided
+  if (!this.plateNumber && this.vehicleNumber) {
+    this.plateNumber = this.vehicleNumber;
   }
   
   // Generate QR code if not exists

@@ -1,0 +1,3 @@
+Keys: _id,plateNumber,make,model,year,color,status,registrationExpiry,insuranceExpiry,violations,owner,__v,iotDeviceId,currentLocation,currentSpeed,isOnline,lastLocationUpdate
+plateNumber: BHZ-9638
+vehicleNumber: undefined
