@@ -210,8 +210,8 @@ router.get("/plate/:plateNumber", async (req, res) => {
     if (!vehicle) {
       return res.json({ success: false, message: "Vehicle not found" });
     }
-    // Fetch violations for this vehicle
-    const violations = await Violation.find({ vehicleId: vehicle.plateNumber });
+    // Fetch violations for this vehicle using ObjectId
+    const violations = await Violation.find({ vehicleId: vehicle._id });
 
     // Calculate fine for each violation
     const violationsWithFines = violations.map(v => {
