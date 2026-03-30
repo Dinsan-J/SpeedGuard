@@ -4,17 +4,9 @@ const vehicleSchema = new mongoose.Schema({
   // Vehicle Registration Information (Primary Key)
   vehicleNumber: { 
     type: String, 
-    required: true, 
-    unique: true,
     uppercase: true,
-    validate: {
-      validator: function(v) {
-        // Sri Lankan vehicle number plate validation
-        return /^[A-Z]{2,3}-\d{4}$|^[A-Z]{3}-\d{4}$|^\d{2,3}-\d{4}$/.test(v);
-      },
-      message: 'Invalid Sri Lankan vehicle number plate format'
-    }
   },
+  plateNumber: { type: String, uppercase: true },
   
   // Vehicle Type and Speed Limit (Core Feature)
   vehicleType: {
