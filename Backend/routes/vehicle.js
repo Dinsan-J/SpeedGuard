@@ -25,6 +25,27 @@ router.post("/add", async (req, res) => {
   try {
     const { userId, vehicleData } = req.body;
 
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required field: userId",
+      });
+    }
+
+    if (!vehicleData || typeof vehicleData !== "object") {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required field: vehicleData",
+      });
+    }
+
+    if (!vehicleData.vehicleNumber || !vehicleData.vehicleType) {
+      return res.status(400).json({
+        success: false,
+        message: "Vehicle number and type are required",
+      });
+    }
+
     // Find the user and their driver profile
     const user = await User.findById(userId).populate('driverProfile');
     if (!user || user.role !== 'driver') {
@@ -110,7 +131,38 @@ router.post("/add", async (req, res) => {
     res.json({ success: true, vehicle });
   } catch (err) {
     console.log("Add vehicle error:", err);
-    res.status(500).json({ success: false, message: "Error adding vehicle" });
+
+    // Make the error visible to the frontend (instead of a generic 500),
+    // so we can debug issues like CastError / ValidationError quickly.
+    if (err && err.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid id format",
+        error: err.message,
+      });
+    }
+
+    if (err && err.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: "Vehicle validation failed",
+        error: err.message,
+      });
+    }
+
+    if (err && err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Duplicate key error",
+        error: err.message,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Error adding vehicle",
+      error: err && err.message ? err.message : String(err),
+    });
   }
 });
 
